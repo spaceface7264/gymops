@@ -92,12 +92,17 @@ RLS helpers: `is_superadmin()`, `is_admin()`, `member_gym_ids()`, `managed_gym_i
 ```
 gymops/
   src/
+    components/ui/          shadcn/ui primitives
     features/<module>/      components, hooks, queries, types per feature
-    lib/                    supabase client, i18n, router, platform shims (web vs tauri)
+    lib/                    supabase client, generated database.types.ts, query client,
+                            i18n, platform shims (web vs tauri)
     locales/{en,da}/        one JSON namespace per feature
+    routes/                 route table, layouts, page components
+    test/                   Vitest setup and render helpers
   supabase/
     migrations/             schema source of truth, one file per feature
-    tests/                  pgTAP RLS tests
+    seeds/                  local-only SQL loaded by `db reset`; never in `db push`
+    tests/                  pgTAP RLS tests (every .sql here is run as a test)
     functions/              invite, notify, assistant, brp-sync
     seed.sql
   src-tauri/                desktop shell
@@ -121,6 +126,8 @@ gymops/
 | Self-hosted Postgres/Node backend                                         | More ops work; team already uses Supabase.                                                                                                                                                                                                 |
 | Both chat and assistant in V1                                             | Assistant needs guides to exist first; team chat ships in V1, assistant in V1.5.                                                                                                                                                           |
 | oxlint as the linter (current Vite template default) | Faster, but the project needs type-aware rules (banning `any`, cross-feature and deep relative imports per §5) that ESLint + typescript-eslint provide today. Revisit when oxlint ships type-aware rules. |
+| Docker Desktop as the container runtime | OrbStack is lighter and starts faster for the same Docker API; any Docker-compatible runtime works, so this is a local preference, not a project dependency. |
+| pgTAP + test helpers installed by a migration | Migrations deploy, and test scaffolding has no business in a production database. They load from `supabase/seeds/`, which `db reset` runs locally and in CI but `db push` never does. |
 
 ## 5. Conventions
 
