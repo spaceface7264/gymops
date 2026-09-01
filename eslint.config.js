@@ -1,0 +1,70 @@
+import js from '@eslint/js'
+import pluginQuery from '@tanstack/eslint-plugin-query'
+import configPrettier from 'eslint-config-prettier'
+import reactHooks from 'eslint-plugin-react-hooks'
+import reactRefresh from 'eslint-plugin-react-refresh'
+import globals from 'globals'
+import tseslint from 'typescript-eslint'
+
+export default tseslint.config(
+  { ignores: ['dist', 'coverage', 'src-tauri', 'supabase/.temp'] },
+  js.configs.recommended,
+  ...tseslint.configs.recommendedTypeChecked.map((config) => ({
+    ...config,
+    files: ['**/*.{ts,tsx}'],
+  })),
+  reactHooks.configs.flat['recommended-latest'],
+  reactRefresh.configs.vite,
+  pluginQuery.configs['flat/recommended'],
+  configPrettier,
+  {
+    files: ['**/*.{ts,tsx}'],
+    languageOptions: {
+      ecmaVersion: 2023,
+      globals: globals.browser,
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+    rules: {
+      // Spec §5: TypeScript strict everywhere, no `any`.
+      '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/consistent-type-imports': [
+        'error',
+        { fixStyle: 'inline-type-imports' },
+      ],
+      // Spec §5: components never call Supabase directly; no cross-feature imports.
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@/features/*/*'],
+              message:
+                'Import from the feature index (`@/features/<name>`) instead of reaching into it.',
+            },
+            {
+              group: ['../*/../*'],
+              message: 'Use the `@/` alias instead of deep relative paths.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    // shadcn/ui primitives export variant helpers alongside components.
+    files: ['src/components/ui/**/*.tsx'],
+    rules: { 'react-refresh/only-export-components': 'off' },
+  },
+  {
+    // Config files are plain JS and outside the type-checked program.
+    files: ['**/*.js'],
+    languageOptions: { globals: globals.node },
+  },
+  {
+    files: ['**/*.test.{ts,tsx}', 'src/test/**/*.{ts,tsx}'],
+    rules: { '@typescript-eslint/no-explicit-any': 'off' },
+  },
+)

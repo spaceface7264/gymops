@@ -1,0 +1,9 @@
+dist
+coverage
+node_modules
+package-lock.json
+src/lib/database.types.ts
+PROJECT_SPEC.md
+PROJECT_TASKS.md
+PROJECT_STATE.md
+CLAUDE.md

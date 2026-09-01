@@ -18,19 +18,19 @@ A single internal system for a chain of 10+ bouldering gyms in Denmark (200+ use
 
 Permission matrix (also the RLS test spec):
 
-| Action | Superadmin | Admin | Manager | Staff |
-|---|---|---|---|---|
-| Manage gyms, promote/demote admins | yes | no | no | no |
-| Invite users, assign to gyms | yes | yes | own gyms, staff only | no |
-| Publish company-wide news/guides | yes | yes | no | no |
-| Publish gym news/guides, edit checklist templates | yes | yes | own gyms | no |
-| Complete checklists, write daily log, report incidents | yes | yes | yes | own gyms |
-| Change incident status | yes | yes | own gyms | no |
-| See acknowledgement reports | yes | yes | own gyms | no |
-| Create custom chat channels | company | company | own gyms | no |
-| Delete any chat message (non-DM) | yes | yes | own gyms | no |
-| Read DMs they are not part of | no | no | no | no |
-| View audit log | yes | no | no | no |
+| Action                                                 | Superadmin | Admin   | Manager              | Staff    |
+| ------------------------------------------------------ | ---------- | ------- | -------------------- | -------- |
+| Manage gyms, promote/demote admins                     | yes        | no      | no                   | no       |
+| Invite users, assign to gyms                           | yes        | yes     | own gyms, staff only | no       |
+| Publish company-wide news/guides                       | yes        | yes     | no                   | no       |
+| Publish gym news/guides, edit checklist templates      | yes        | yes     | own gyms             | no       |
+| Complete checklists, write daily log, report incidents | yes        | yes     | yes                  | own gyms |
+| Change incident status                                 | yes        | yes     | own gyms             | no       |
+| See acknowledgement reports                            | yes        | yes     | own gyms             | no       |
+| Create custom chat channels                            | company    | company | own gyms             | no       |
+| Delete any chat message (non-DM)                       | yes        | yes     | own gyms             | no       |
+| Read DMs they are not part of                          | no         | no      | no                   | no       |
+| View audit log                                         | yes        | no      | no                   | no       |
 
 ### 2.2 V1 modules
 
@@ -106,20 +106,20 @@ gymops/
 
 ## 4. Rejected options and why
 
-| Option | Rejected because |
-|---|---|
-| Next.js full-stack with its own API layer | Would duplicate permissions (API + RLS), require running a Node server, and make the desktop app a thin browser window dependent on that server. RLS alone covers the rules. |
-| Electron desktop shell | 80–200 MB installers vs ~5 MB for Tauri; Tauri has first-party updater/deep-link/notification plugins. Electron only wins for Node native modules (RFID, printers), not needed now. Re-evaluate if reception hardware integration appears. |
-| Separate desktop and mobile web clients | Doubles frontend work for better offline at the desk. Offline can be added later for checklists specifically. |
-| Native iOS/Android apps | Only worth it for push and offline; PWA web push covers iOS 16.4+ when installed to Home Screen, which is acceptable. |
-| Google Workspace SSO | Not all staff have company Google accounts; invite-only email/password is simpler. Can be added as an additional provider later. |
-| Markdown editor or PDF document library for guides | Managers need a friendly editor; rich text with images/files/video links chosen. |
-| Shift rostering in the calendar | A large product on its own (availability, swaps, hours). Calendar stays events-only. |
-| Threads, reactions, message search in chat V1 | Cut to ship chat sooner; listed as first chat follow-ups if channels get busy. |
-| Embeddings/pgvector pipeline for the assistant | Corpus is small; Postgres full-text search behind Claude tools is enough to start and needs no extra provider. pgvector is the upgrade path if recall is poor. |
-| Assistant taking actions (create incidents etc.) or reading live ops data | Read-only over guides/news keeps permissions and data exposure simple in V1.5. Revisit after usage. |
-| Self-hosted Postgres/Node backend | More ops work; team already uses Supabase. |
-| Both chat and assistant in V1 | Assistant needs guides to exist first; team chat ships in V1, assistant in V1.5. |
+| Option                                                                    | Rejected because                                                                                                                                                                                                                           |
+| ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Next.js full-stack with its own API layer                                 | Would duplicate permissions (API + RLS), require running a Node server, and make the desktop app a thin browser window dependent on that server. RLS alone covers the rules.                                                               |
+| Electron desktop shell                                                    | 80–200 MB installers vs ~5 MB for Tauri; Tauri has first-party updater/deep-link/notification plugins. Electron only wins for Node native modules (RFID, printers), not needed now. Re-evaluate if reception hardware integration appears. |
+| Separate desktop and mobile web clients                                   | Doubles frontend work for better offline at the desk. Offline can be added later for checklists specifically.                                                                                                                              |
+| Native iOS/Android apps                                                   | Only worth it for push and offline; PWA web push covers iOS 16.4+ when installed to Home Screen, which is acceptable.                                                                                                                      |
+| Google Workspace SSO                                                      | Not all staff have company Google accounts; invite-only email/password is simpler. Can be added as an additional provider later.                                                                                                           |
+| Markdown editor or PDF document library for guides                        | Managers need a friendly editor; rich text with images/files/video links chosen.                                                                                                                                                           |
+| Shift rostering in the calendar                                           | A large product on its own (availability, swaps, hours). Calendar stays events-only.                                                                                                                                                       |
+| Threads, reactions, message search in chat V1                             | Cut to ship chat sooner; listed as first chat follow-ups if channels get busy.                                                                                                                                                             |
+| Embeddings/pgvector pipeline for the assistant                            | Corpus is small; Postgres full-text search behind Claude tools is enough to start and needs no extra provider. pgvector is the upgrade path if recall is poor.                                                                             |
+| Assistant taking actions (create incidents etc.) or reading live ops data | Read-only over guides/news keeps permissions and data exposure simple in V1.5. Revisit after usage.                                                                                                                                        |
+| Self-hosted Postgres/Node backend                                         | More ops work; team already uses Supabase.                                                                                                                                                                                                 |
+| Both chat and assistant in V1                                             | Assistant needs guides to exist first; team chat ships in V1, assistant in V1.5.                                                                                                                                                           |
 
 ## 5. Conventions
 
