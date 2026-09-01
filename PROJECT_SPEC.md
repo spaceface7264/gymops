@@ -120,6 +120,7 @@ gymops/
 | Assistant taking actions (create incidents etc.) or reading live ops data | Read-only over guides/news keeps permissions and data exposure simple in V1.5. Revisit after usage.                                                                                                                                        |
 | Self-hosted Postgres/Node backend                                         | More ops work; team already uses Supabase.                                                                                                                                                                                                 |
 | Both chat and assistant in V1                                             | Assistant needs guides to exist first; team chat ships in V1, assistant in V1.5.                                                                                                                                                           |
+| oxlint as the linter (current Vite template default) | Faster, but the project needs type-aware rules (banning `any`, cross-feature and deep relative imports per §5) that ESLint + typescript-eslint provide today. Revisit when oxlint ships type-aware rules. |
 
 ## 5. Conventions
 
