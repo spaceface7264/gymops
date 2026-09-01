@@ -4,14 +4,16 @@ Last updated: 2026-09-01
 
 ## Currently working on
 
-**P1-01 to P1-09 done** on branch `phase-1-scaffold`. Next up: **P1-10** (GitHub Actions: lint, unit tests, `supabase db reset` + pgTAP), which finishes phase 1. Then phase 2 — and P2-03 is where the hosted project is needed; see "Hosted project cutover".
+**Phase 1 is done** on branch `phase-1-scaffold` — P1-10 added `.github/workflows/ci.yml`. Next up: **phase 2**, and P2-03 is where the hosted project is needed; see "Hosted project cutover".
+
+The repo has no git remote yet, so CI has never actually run on GitHub: the workflow is verified only by running the same commands locally. Push the branch and check the first run.
 
 ## Phase status
 
 | Phase                    | Status         | Notes                                           |
 | ------------------------ | -------------- | ----------------------------------------------- |
 | Design                   | ✅ Complete    | Approved 2026-09-01. Spec in `PROJECT_SPEC.md`. |
-| P1 Scaffold and auth | 🔄 In progress | P1-01 to P1-09 done. P1-10 (CI) left. |
+| P1 Scaffold and auth | ✅ Complete | P1-01 to P1-10 done on `phase-1-scaffold`. |
 | P2 Users and gyms admin  | ⬜ Not started |                                                 |
 | P3 News and guides       | ⬜ Not started |                                                 |
 | P4 Daily ops             | ⬜ Not started |                                                 |
@@ -35,7 +37,8 @@ Update this list as work begins:
 | P1-07 | ✅ done | 2026-09-01 | 2026-09-01 | `AuthLayout` plus the sign-in, forgot-password, reset-password and accept-invite screens; hooks `useRequestPasswordReset`, `useSetPassword`, `useCompleteInvite`; shared `PasswordFields` + `checkPassword` mirroring the server policy. 30 unit tests; both flows driven end to end in Chrome against the local stack (Mailpit → link → session → password → sign-in), which is how the implicit-invite bug surfaced. |
 | P1-09 | ✅ done | 2026-09-01 | 2026-09-01 | `supabase/seed.sql`: 3 gyms, one user per role (`<role>@gymops.test` / `Password123`, raised from `password123` in P1-07 to satisfy the password policy), memberships. Password sign-in and per-role RLS verified through the local API. |
 | P1-08 | ✅ done | 2026-09-01 | 2026-09-01 | `AppShell` (sidebar from `md`, bottom tab bar on phones), nav from `src/routes/nav.ts` with placeholders for unbuilt modules, `src/features/gyms` (provider, `useGymScope`, switcher, `useGyms`), `useLocaleSync`, sign out. 15 tests; checked in Chrome as manager and admin, desktop and phone width. |
-| P1-10 … P8-06 | ⬜ not started | | | |
+| P1-10 | ✅ done | 2026-09-01 | 2026-09-01 | `.github/workflows/ci.yml`: job `web` (typecheck, lint, format:check, test, build on Node 20) and job `database` (pinned Supabase CLI, `supabase start -x` the services the tests do not need, `db reset`, `test db`). Both sequences verified locally; never run on GitHub — the repo has no remote. |
+| P2-01 … P8-06 | ⬜ not started | | | |
 
 Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
 
@@ -44,6 +47,7 @@ Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
 | Item                                                        | Needed for                           | Owner                      | Status               |
 | ----------------------------------------------------------- | ------------------------------------ | -------------------------- | -------------------- |
 | Supabase project (hosted) | P2-03 (`invite` Edge Function) | Rami | `.env.local` points at the local stack since P1-02; the hosted `ngcqpftfqepvhpjikaqq` values sit commented out beneath it. Confirm that ref is the GymOps project — the Supabase MCP connection currently points at a different project (`ooikemajridlhceejgmo`), which times out. Steps in "Hosted project cutover" below. |
+| GitHub repository (remote) | P1-10 CI actually running | Rami | `.github/workflows/ci.yml` exists and its steps pass locally, but the repo has no remote, so no run has happened. Add the remote, push `phase-1-scaffold`, confirm both jobs go green. |
 | Resend account + API key | P2-03 (real invite mail), P5-03 | Rami | not created. `[auth.rate_limit] email_sent = 2` per hour and hosted Supabase's built-in SMTP are both far below what inviting 200+ staff needs, so a provider must exist before invites go out for real. |
 | VAPID key pair                                              | P5-03                                | generated during P5-03     | —                    |
 | Anthropic API key                                           | P8-03                                | Rami                       | not created          |
@@ -136,6 +140,7 @@ of truth; nothing in config.toml applies to a hosted project)
 | 2026-09-01 | P1-08: sign out shipped ahead of the rest of the shell. The screens run on machines shared between shifts, and P1-07 showed what a stale session costs: an invite link opened in a browser that still held someone else's session acted as that person. |
 | 2026-09-01 | Development stays on the local stack until P2-03. CI (P1-10) runs `supabase db reset` + pgTAP locally, and no task before the `invite` Edge Function needs a deployed project; the cutover steps live in "Hosted project cutover" above so they are not re-derived under pressure. || 2026-09-01 | P1-08: the nav is data (`src/routes/nav.ts`) and the router builds placeholder routes from the same list, so a phase cannot add a page without adding its nav entry. |
 | 2026-09-01 | P1-08: the selected gym lives in `GymProvider`, stored per device under `gymops.gym` and always validated against what the signed-in user may see; `null` means "all gyms" and is offered to admins and superadmins only. A staff member with one gym sees its name, not a dead dropdown. |
+| 2026-09-01 | P1-10: CI is two jobs — the web gates and the database — so they run in parallel and the job name says which half broke. The database job starts the stack with `-x` and keeps only postgres, gotrue (the seed writes `auth.users`) and storage-api (`db reset` creates the buckets); the Supabase CLI version is pinned. |
 | 2026-09-01 | P1-08: `profiles.locale` overrides the browser language once the profile loads (`useLocaleSync`), which is where P1-06 said this belonged. The signed-out screens keep detecting from the browser. |
 
 ## How to update this file

@@ -108,6 +108,7 @@ gymops/
     functions/              invite, notify, assistant, brp-sync
     seed.sql
   src-tauri/                desktop shell
+  .github/workflows/        CI: web gates + migrations/pgTAP on every push and PR
   PROJECT_SPEC.md  PROJECT_TASKS.md  PROJECT_STATE.md  CLAUDE.md
 ```
 
@@ -151,6 +152,10 @@ gymops/
 | Waiting for the full app shell before adding sign out | Front-desk machines are shared between shifts, so leaving no way out of a session is a permissions problem, not a missing convenience. The header carries the signed-in address and a sign-out button from P1-07 onward. |
 | Switching the client to `flowType: 'implicit'` so invite links work | PKCE is required for the recovery link and for the `gymops://` desktop deep link (P7-02). Only the invite callback needs implicit handling, and `useUrlSession` is a dozen lines. |
 | Marking the `invites` row accepted from the client | Acceptance changes gym membership and the admin flag; those are permission decisions and stay server-side in the `invite` Edge Function (P2-03). The accept screen only sets password, name and locale. |
+| One CI job running both the web gates and the database | The web gates finish in a couple of minutes; the database job spends most of its time booting containers. Two jobs run in parallel and the failed job's name says which half broke. |
+| Starting the whole Supabase stack in CI | pgTAP needs Postgres, plus gotrue (the seed inserts `auth.users` rows) and storage-api (`db reset` creates the three buckets). `supabase start -x` drops realtime, imgproxy, studio, postgres-meta, edge-runtime, logflare, vector and supavisor. |
+| `supabase/setup-cli` with `version: latest` | A CLI release would then break CI on an unrelated commit. The version is pinned to 2.116.0, the one used locally, and bumped deliberately. |
+| Running CI on the newest Node LTS | CI runs Node 20, the version this project is developed on, so a green build means the same toolchain that runs locally. |
 | Staff seeing every profile in their own gyms | Not needed by any V1 screen before chat. `profiles` is readable by yourself, admins and the managers of your gyms; widen it in P6 if the chat member list needs it. |
 
 ## 5. Conventions
