@@ -1,0 +1,17 @@
+{
+  "app": {
+    "name": "GymOps"
+  },
+  "language": {
+    "da": "Danish",
+    "en": "English",
+    "label": "Language"
+  },
+  "home": {
+    "placeholder": "Scaffold ready. Auth and the app shell land in phase 1."
+  },
+  "notFound": {
+    "body": "The page you are looking for does not exist.",
+    "title": "Page not found"
+  }
+}

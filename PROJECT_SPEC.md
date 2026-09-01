@@ -99,6 +99,7 @@ gymops/
     locales/{en,da}/        one JSON namespace per feature
     routes/                 route table, layouts, page components
     test/                   Vitest setup and render helpers
+    types/                  ambient module declarations (typed i18next keys)
   supabase/
     migrations/             schema source of truth, one file per feature
     seeds/                  local-only SQL loaded by `db reset`; never in `db push`
@@ -128,6 +129,8 @@ gymops/
 | oxlint as the linter (current Vite template default) | Faster, but the project needs type-aware rules (banning `any`, cross-feature and deep relative imports per §5) that ESLint + typescript-eslint provide today. Revisit when oxlint ships type-aware rules. |
 | Docker Desktop as the container runtime | OrbStack is lighter and starts faster for the same Docker API; any Docker-compatible runtime works, so this is a local preference, not a project dependency. |
 | pgTAP + test helpers installed by a migration | Migrations deploy, and test scaffolding has no business in a production database. They load from `supabase/seeds/`, which `db reset` runs locally and in CI but `db push` never does. |
+| i18next HTTP backend with lazily loaded namespaces | Both languages are a few kilobytes and the Tauri shell loads from the filesystem, so namespaces are bundled with the app. Revisit if the translation volume grows. |
+| A separate CI script (or i18next-parser) for the missing-key check | `src/lib/i18n.test.ts` compares the key sets across locales in `npm test`, which CI already runs, and `src/types/i18next.d.ts` makes `t()` key-checked at compile time — a typo fails `typecheck` before it reaches CI. |
 | Separate `is_admin()` and "admin or superadmin" checks in every policy | A superadmin can do everything an admin can (§2.1), so `is_admin()` returns true for superadmins and `is_superadmin()` guards only the three superadmin-only actions. Fewer places to get wrong. |
 | Column grants (or column-specific policies) to protect `profiles.is_admin` | RLS cannot restrict which columns an `update` touches and column grants cannot express "only a superadmin". A `before update` trigger raises instead, and it applies only to `authenticated` sessions so seeds and service-role calls behave like they do under RLS. |
 | Own invite token column and accept flow | Supabase Auth's `inviteUserByEmail` already issues and verifies the token; `invites` only records what the person becomes on accept (gym, role, admin flag) plus its status. |

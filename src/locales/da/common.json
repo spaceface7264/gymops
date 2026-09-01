@@ -1,0 +1,17 @@
+{
+  "app": {
+    "name": "GymOps"
+  },
+  "language": {
+    "da": "Dansk",
+    "en": "Engelsk",
+    "label": "Sprog"
+  },
+  "home": {
+    "placeholder": "Skelettet er klar. Login og app-rammen kommer i fase 1."
+  },
+  "notFound": {
+    "body": "Siden, du leder efter, findes ikke.",
+    "title": "Siden blev ikke fundet"
+  }
+}
