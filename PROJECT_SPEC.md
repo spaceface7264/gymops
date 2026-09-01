@@ -99,7 +99,7 @@ gymops/
     locales/{en,da}/        one JSON namespace per feature
     routes/                 route table, layouts, page components
     test/                   Vitest setup and render helpers
-    types/                  ambient module declarations (typed i18next keys)
+    types/                  ambient declarations (typed i18next keys, import.meta.env)
   supabase/
     migrations/             schema source of truth, one file per feature
     seeds/                  local-only SQL loaded by `db reset`; never in `db push`

@@ -41,7 +41,7 @@ Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
 
 | Item                                                        | Needed for                           | Owner                      | Status               |
 | ----------------------------------------------------------- | ------------------------------------ | -------------------------- | -------------------- |
-| Supabase project (hosted) | first deploy after P1 | Rami | `.env.local` already points at project `ngcqpftfqepvhpjikaqq` — confirm it is the GymOps one |
+| Supabase project (hosted) | first deploy after P1 | Rami | `.env.local` points at the local stack since P1-02; the hosted `ngcqpftfqepvhpjikaqq` values sit commented out beneath it. Confirm that ref is the GymOps project before the first deploy. |
 | Resend account + API key                                    | P5-03                                | Rami                       | not created          |
 | VAPID key pair                                              | P5-03                                | generated during P5-03     | —                    |
 | Anthropic API key                                           | P8-03                                | Rami                       | not created          |
