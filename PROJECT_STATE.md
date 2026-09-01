@@ -43,13 +43,70 @@ Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
 
 | Item                                                        | Needed for                           | Owner                      | Status               |
 | ----------------------------------------------------------- | ------------------------------------ | -------------------------- | -------------------- |
-| Supabase project (hosted) | first deploy after P1 | Rami | `.env.local` points at the local stack since P1-02; the hosted `ngcqpftfqepvhpjikaqq` values sit commented out beneath it. Confirm that ref is the GymOps project before the first deploy. |
-| Resend account + API key                                    | P5-03                                | Rami                       | not created          |
+| Supabase project (hosted) | P2-03 (`invite` Edge Function) | Rami | `.env.local` points at the local stack since P1-02; the hosted `ngcqpftfqepvhpjikaqq` values sit commented out beneath it. Confirm that ref is the GymOps project — the Supabase MCP connection currently points at a different project (`ooikemajridlhceejgmo`), which times out. Steps in "Hosted project cutover" below. |
+| Resend account + API key | P2-03 (real invite mail), P5-03 | Rami | not created. `[auth.rate_limit] email_sent = 2` per hour and hosted Supabase's built-in SMTP are both far below what inviting 200+ staff needs, so a provider must exist before invites go out for real. |
 | VAPID key pair                                              | P5-03                                | generated during P5-03     | —                    |
 | Anthropic API key                                           | P8-03                                | Rami                       | not created          |
 | Apple Developer ID + Windows signing cert                   | first public desktop release (P7-04) | Rami                       | not started          |
 | BRP Systems API key, service account, rate limits, webhooks | V3                                   | Rami → BRP account manager | not requested        |
 | Final product name                                          | before public release                | Rami                       | placeholder `gymops` |
+
+## Hosted project cutover
+
+Everything through P1-10 runs on the local stack: CI is `supabase db reset` + pgTAP, and
+`supabase/seeds/` never reaches a deployed database. The first task that cannot be finished
+locally is **P2-03** (the `invite` Edge Function needs to be deployed and to send real mail);
+after that come P4-02 (pg_cron), P5-03 (`notify`, database webhook, Resend, VAPID), P5-05
+(web push needs HTTPS and a real origin), P7-02 (`gymops://` plus a web fallback page) and
+P8-03 (assistant, `ANTHROPIC_API_KEY`). Work through this list once, at P2-03.
+
+**Before touching anything**
+
+- [ ] Confirm which hosted project is GymOps. `.env.local` carries `ngcqpftfqepvhpjikaqq`
+      commented out; the Supabase MCP connection points at `ooikemajridlhceejgmo` and times
+      out. One of them is right, possibly neither.
+- [ ] Confirm the project runs Postgres 17 (`db.major_version = 17` locally). A mismatch
+      changes what migrations are allowed to assume.
+- [ ] Create the Resend account and get the API key.
+
+**Schema and code**
+
+- [ ] `supabase link --project-ref <ref>`, then `supabase db push`. Never `db reset` against
+      hosted, and never let `supabase/seed.sql` or `supabase/seeds/` near it: they contain
+      pgTAP helpers and four users with a published password.
+- [ ] Enable **pg_cron** (P4-02) and confirm `pg_graphql`/`pgcrypto` availability.
+- [ ] Create the three private buckets — `content`, `incidents`, `chat`, all
+      `public = false`, 50 MiB — and apply the storage RLS policies from migrations.
+- [ ] Regenerate `src/lib/database.types.ts` and check it matches; `db:types` is pinned to
+      `--local`, so a hosted-only drift would go unnoticed.
+
+**Auth settings to mirror from `supabase/config.toml`** (the dashboard is a separate source
+of truth; nothing in config.toml applies to a hosted project)
+
+- [ ] Sign-ups **off** (`[auth] enable_signup = false`) — invite-only.
+- [ ] Email provider **on** (`[auth.email] enable_signup = true`). Turning this off kills
+      password login; it cost a debugging session in P1-09.
+- [ ] `minimum_password_length = 10` and `lower_upper_letters_digits`. `checkPassword()` in
+      `src/features/auth/password.ts` mirrors these — a mismatch means users see GoTrue's
+      untranslated error instead of ours.
+- [ ] Site URL = the deployed web origin, and the redirect allow-list must include
+      `/auth/callback`, `/reset-password`, `/accept-invite` and `gymops://auth/callback`.
+- [ ] Raise `email_sent` well above 2/hour; keep anonymous sign-ins, manual linking, MFA and
+      every external provider off.
+- [ ] Point SMTP at Resend and set the sender name and admin address.
+
+**Secrets** (Supabase secrets and GitHub Actions secrets only, per spec §5)
+
+- [ ] Service-role key for the `invite` function (P2-03).
+- [ ] `RESEND_API_KEY` and the VAPID key pair (P5-03), plus the database webhook on
+      `notifications` insert → `notify`.
+- [ ] `ANTHROPIC_API_KEY` (P8-03).
+
+**First user**
+
+- [ ] Seeds never run against hosted, so create the first superadmin deliberately — invite
+      or an explicit SQL insert — and verify sign-in, password recovery and invite accept
+      against the hosted project before relying on it.
 
 ## Decisions log
 
@@ -75,7 +132,9 @@ Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
 | 2026-09-01 | P1-07: recovery links are PKCE (`?code=`) and the client exchanges them itself; admin-issued invite links are implicit (`#access_token=`), which auth-js refuses to read under `flowType: 'pkce'`. `useUrlSession` adopts the fragment with `setSession` and strips it from the URL, so the tokens never enter browser history. Both screens treat `signedOut` (or an `error_code` in the link) as expired. |
 | 2026-09-01 | P1-07: the accept-invite screen writes only password, name and locale. Gym membership and the admin flag come from the `invites` row and are applied by the `invite` Edge Function (P2-03). |
 | 2026-09-01 | P1-07: forgot-password shows the same confirmation whether or not the address has an account, so the screen cannot enumerate staff. |
-| 2026-09-01 | P1-07: `additional_redirect_urls` gained `/reset-password` and `/accept-invite`; the same paths must be added to the hosted project's redirect allow-list before the first deploy. || 2026-09-01 | P1-08: sign out shipped ahead of the rest of the shell. The screens run on machines shared between shifts, and P1-07 showed what a stale session costs: an invite link opened in a browser that still held someone else's session acted as that person. |
+| 2026-09-01 | P1-07: `additional_redirect_urls` gained `/reset-password` and `/accept-invite`; the same paths must be added to the hosted project's redirect allow-list before the first deploy. |
+| 2026-09-01 | P1-08: sign out shipped ahead of the rest of the shell. The screens run on machines shared between shifts, and P1-07 showed what a stale session costs: an invite link opened in a browser that still held someone else's session acted as that person. |
+| 2026-09-01 | Development stays on the local stack until P2-03. CI (P1-10) runs `supabase db reset` + pgTAP locally, and no task before the `invite` Edge Function needs a deployed project; the cutover steps live in "Hosted project cutover" above so they are not re-derived under pressure. |
 
 ## How to update this file
 
