@@ -63,3 +63,64 @@ export function useSignOut() {
     onSuccess: () => queryClient.clear(),
   })
 }
+
+/**
+ * Mails a recovery link. The link lands on `/reset-password`, where the
+ * Supabase client exchanges its `code` for a short-lived session (PKCE).
+ */
+export function useRequestPasswordReset() {
+  return useMutation({
+    mutationFn: async (email: string) => {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      })
+      if (error) throw error
+    },
+  })
+}
+
+/** Sets a new password for the session a recovery link established. */
+export function useSetPassword() {
+  return useMutation({
+    mutationFn: async (password: string) => {
+      const { error } = await supabase.auth.updateUser({ password })
+      if (error) throw error
+    },
+  })
+}
+
+export type InviteCompletion = {
+  password: string
+  fullName: string
+  locale: Profile['locale']
+}
+
+/**
+ * Finishes an invite: password on the auth user, name and locale on the
+ * profile `handle_new_user` created when the invite was issued. Gym membership
+ * and the admin flag come from the `invites` row and are applied by the
+ * `invite` Edge Function (P2-03), not here.
+ */
+export function useCompleteInvite() {
+  const { user } = useAuth()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ password, fullName, locale }: InviteCompletion) => {
+      if (!user) throw new Error('No invited user session')
+
+      const { error } = await supabase.auth.updateUser({
+        password,
+        data: { full_name: fullName, locale },
+      })
+      if (error) throw error
+
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ full_name: fullName, locale })
+        .eq('id', user.id)
+      if (profileError) throw profileError
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['auth'] }),
+  })
+}

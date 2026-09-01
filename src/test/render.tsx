@@ -6,6 +6,10 @@ import { MemoryRouter, Route, Routes } from 'react-router'
 import { i18next } from '@/lib/i18n'
 
 type ProviderOptions = RenderOptions & {
+  /** Path the component is mounted at. Defaults to `/`. */
+  path?: string
+  /** History the router starts with. Defaults to `[path]`. */
+  initialEntries?: string[]
   /** Extra routes rendered next to the component, e.g. a redirect target. */
   routes?: { path: string; element: ReactElement }[]
 }
@@ -15,7 +19,12 @@ type ProviderOptions = RenderOptions & {
  * Retries are off so failing queries surface immediately in tests.
  */
 export function renderWithProviders(ui: ReactElement, options?: ProviderOptions) {
-  const { routes = [], ...renderOptions } = options ?? {}
+  const {
+    path = '/',
+    initialEntries = [path],
+    routes = [],
+    ...renderOptions
+  } = options ?? {}
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   })
@@ -24,9 +33,9 @@ export function renderWithProviders(ui: ReactElement, options?: ProviderOptions)
     return (
       <I18nextProvider i18n={i18next}>
         <QueryClientProvider client={queryClient}>
-          <MemoryRouter>
+          <MemoryRouter initialEntries={initialEntries}>
             <Routes>
-              <Route path="/" element={children} />
+              <Route path={path} element={children} />
               {routes.map((route) => (
                 <Route key={route.path} path={route.path} element={route.element} />
               ))}

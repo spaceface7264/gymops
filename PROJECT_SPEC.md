@@ -94,6 +94,7 @@ gymops/
   src/
     components/ui/          shadcn/ui primitives
     features/<module>/      components, hooks, queries, types per feature
+                            (auth also owns the shared password fields and their rule)
     lib/                    supabase client, generated database.types.ts, query client,
                             i18n, platform shims (web vs tauri)
     locales/{en,da}/        one JSON namespace per feature
@@ -137,6 +138,12 @@ gymops/
 | Separate `is_admin()` and "admin or superadmin" checks in every policy | A superadmin can do everything an admin can (§2.1), so `is_admin()` returns true for superadmins and `is_superadmin()` guards only the three superadmin-only actions. Fewer places to get wrong. |
 | Column grants (or column-specific policies) to protect `profiles.is_admin` | RLS cannot restrict which columns an `update` touches and column grants cannot express "only a superadmin". A `before update` trigger raises instead, and it applies only to `authenticated` sessions so seeds and service-role calls behave like they do under RLS. |
 | Own invite token column and accept flow | Supabase Auth's `inviteUserByEmail` already issues and verifies the token; `invites` only records what the person becomes on accept (gym, role, admin flag) plus its status. |
+| A single shared "set password" screen for both recovery and invite | The invite screen also collects name and language and reads as a welcome; only the password fields and their validation are shared (`features/auth/password-fields.tsx`). |
+| A Radix/shadcn `Select` for the invite locale picker | One field on one screen; a native `<select>` is keyboard- and screen-reader-correct out of the box and needs no extra primitive. |
+| A client-side password rule of "8 characters or more" | GoTrue rejects anything weaker than `minimum_password_length = 10` plus `lower_upper_letters_digits` with an English server message. `checkPassword()` mirrors config.toml so the user sees a translated rule instead. |
+| Keeping the seed password `password123` | It violates the project's own password policy, so it cannot be set through the API or the UI — only by the seed's direct bcrypt insert. Changed to `Password123` (P1-09 seed, CLAUDE.md). |
+| Forcing invite links through PKCE too | `inviteUserByEmail` is issued server-side, where no code verifier exists, so its link is an implicit hash fragment. `detectSessionInUrl` handles both callback shapes, so both screens simply wait for a session. |
+| Marking the `invites` row accepted from the client | Acceptance changes gym membership and the admin flag; those are permission decisions and stay server-side in the `invite` Edge Function (P2-03). The accept screen only sets password, name and locale. |
 | Staff seeing every profile in their own gyms | Not needed by any V1 screen before chat. `profiles` is readable by yourself, admins and the managers of your gyms; widen it in P6 if the chat member list needs it. |
 
 ## 5. Conventions

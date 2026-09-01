@@ -3,9 +3,45 @@
     "name": "GymOps"
   },
   "auth": {
+    "acceptInvite": {
+      "confirm": "Repeat password",
+      "description": "Set a password and tell us how to address you. Your gyms are already assigned.",
+      "expired": "This invite link has expired. Ask an administrator for a new one.",
+      "failed": "The account could not be created. Try the link again.",
+      "fullName": "Full name",
+      "password": "Password",
+      "submit": "Create account",
+      "submitting": "Creating account…",
+      "title": "Welcome to GymOps"
+    },
+    "forgotPassword": {
+      "backToSignIn": "Back to sign in",
+      "description": "Enter your work email and we will send you a link to choose a new password.",
+      "email": "Email",
+      "failed": "The reset link could not be sent. Try again in a moment.",
+      "sent": "If that address belongs to a GymOps account, a reset link is on its way.",
+      "submit": "Send reset link",
+      "submitting": "Sending…",
+      "title": "Forgot your password?"
+    },
+    "passwordHint": "At least 10 characters, with an uppercase letter, a lowercase letter and a number.",
+    "passwordMismatch": "The two passwords do not match.",
+    "passwordPolicy": "That password is too weak: use at least 10 characters, with an uppercase letter, a lowercase letter and a number.",
+    "resetPassword": {
+      "confirm": "Repeat new password",
+      "description": "Choose a new password for your GymOps account.",
+      "expired": "This link has expired or has already been used.",
+      "failed": "The password could not be saved. Request a new link and try again.",
+      "password": "New password",
+      "requestNew": "Request a new link",
+      "submit": "Save password",
+      "submitting": "Saving…",
+      "title": "Choose a new password"
+    },
     "signIn": {
       "email": "Email",
       "failed": "That email and password did not match. Try again.",
+      "forgotPassword": "Forgot your password?",
       "password": "Password",
       "submit": "Sign in",
       "submitting": "Signing in…",

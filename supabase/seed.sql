@@ -1,7 +1,7 @@
 -- P1-09 — local fixtures, applied by `supabase db reset`. Never deployed:
 -- seeds are not part of `db push`.
 --
--- Three gyms and one user per role, all with the password `password123`:
+-- Three gyms and one user per role, all with the password `Password123`:
 --   super@gymops.test     superadmin
 --   admin@gymops.test     admin
 --   manager@gymops.test   manager of Copenhagen Nord and Aarhus C
@@ -37,7 +37,7 @@ begin
     )
     values (
       seed_user.id, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
-      seed_user.email, extensions.crypt('password123', extensions.gen_salt('bf')), now(),
+      seed_user.email, extensions.crypt('Password123', extensions.gen_salt('bf')), now(),
       '', '', '', '',
       '{"provider":"email","providers":["email"]}'::jsonb,
       jsonb_build_object('full_name', seed_user.full_name, 'locale', seed_user.locale),
