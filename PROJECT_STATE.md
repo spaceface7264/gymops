@@ -4,14 +4,14 @@ Last updated: 2026-09-01
 
 ## Currently working on
 
-**P1-01 and P1-02 done** on branch `phase-1-scaffold`. Next up: **P1-03** (i18n) and **P1-04** (core migration), which can run in parallel.
+**P1-01, P1-02, P1-04 and P1-05 done** on branch `phase-1-scaffold`. Next up: **P1-03** (i18n), then **P1-06** (Supabase client and auth) which P1-04 has unblocked.
 
 ## Phase status
 
 | Phase                    | Status         | Notes                                           |
 | ------------------------ | -------------- | ----------------------------------------------- |
 | Design                   | ✅ Complete    | Approved 2026-09-01. Spec in `PROJECT_SPEC.md`. |
-| P1 Scaffold and auth | 🔄 In progress | P1-01, P1-02 done. |
+| P1 Scaffold and auth | 🔄 In progress | P1-01, P1-02, P1-04, P1-05 done. |
 | P2 Users and gyms admin  | ⬜ Not started |                                                 |
 | P3 News and guides       | ⬜ Not started |                                                 |
 | P4 Daily ops             | ⬜ Not started |                                                 |
@@ -28,6 +28,8 @@ Update this list as work begins:
 | --- | --- | --- | --- | --- |
 | P1-01 | ✅ done | 2026-09-01 | 2026-09-01 | Vite 8 + React 19 + TS 6, Tailwind v4, shadcn/ui, React Router 7, TanStack Query 5, ESLint 10 + Prettier, Vitest 4 + RTL. Branch `phase-1-scaffold`. |
 | P1-02 | ✅ done | 2026-09-01 | 2026-09-01 | `supabase init`, invite-only auth config, 3 storage buckets, pgTAP harness (5/5 pass), `db:*` npm scripts, generated `database.types.ts`. |
+| P1-04 | ✅ done | 2026-09-01 | 2026-09-01 | `gyms`, `profiles`, `gym_memberships`, `invites`, `audit_log`; helpers `is_superadmin()`, `is_admin()`, `member_gym_ids()`, `managed_gym_ids()`; RLS on all five; `handle_new_user` and privilege-guard triggers. Migration `20260901194004_core_schema.sql`. |
+| P1-05 | ✅ done | 2026-09-01 | 2026-09-01 | `supabase/tests/010-core-permissions.test.sql` — 33 assertions covering the §2.1 matrix for the core tables. 38/38 pass with the harness. |
 | P1-03 … P8-06 | ⬜ not started | | | |
 
 Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
@@ -55,6 +57,10 @@ Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
 | 2026-09-01 | P1-02: OrbStack is the container runtime for the local Supabase stack (lighter than Docker Desktop; any Docker-compatible runtime works). |
 | 2026-09-01 | P1-02: pgTAP and the `tests` schema helpers live in `supabase/seeds/test-helpers.sql`, loaded by `db reset`. Not a migration, so they never reach a deployed database; not under `supabase/tests/`, because `supabase test db` treats every `.sql` there as a test. |
 | 2026-09-01 | P1-01: kept ESLint + Prettier as specced rather than the oxlint the current Vite template ships. Typed linting (`recommendedTypeChecked`) is scoped to `.ts`/`.tsx`. |
+| 2026-09-01 | P1-04: `is_admin()` is true for superadmins as well; `is_superadmin()` guards only gym management, admin promotion and the audit log. |
+| 2026-09-01 | P1-04: privileged `profiles` columns (`is_admin`, `is_superadmin`, `active`) are protected by a `before update` trigger, not by RLS, which cannot restrict columns. The trigger only applies to `authenticated` sessions, so seeds and service-role calls behave as they do under RLS. |
+| 2026-09-01 | P1-04: `invites` stores no token — Supabase Auth's `inviteUserByEmail` owns it; the row records target gym, role, admin flag and status. |
+| 2026-09-01 | P1-04: `profiles` is readable by yourself, admins and the managers of your gyms. Staff-to-staff visibility waits for chat (P6). |
 
 ## How to update this file
 

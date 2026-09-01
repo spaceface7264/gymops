@@ -128,6 +128,10 @@ gymops/
 | oxlint as the linter (current Vite template default) | Faster, but the project needs type-aware rules (banning `any`, cross-feature and deep relative imports per §5) that ESLint + typescript-eslint provide today. Revisit when oxlint ships type-aware rules. |
 | Docker Desktop as the container runtime | OrbStack is lighter and starts faster for the same Docker API; any Docker-compatible runtime works, so this is a local preference, not a project dependency. |
 | pgTAP + test helpers installed by a migration | Migrations deploy, and test scaffolding has no business in a production database. They load from `supabase/seeds/`, which `db reset` runs locally and in CI but `db push` never does. |
+| Separate `is_admin()` and "admin or superadmin" checks in every policy | A superadmin can do everything an admin can (§2.1), so `is_admin()` returns true for superadmins and `is_superadmin()` guards only the three superadmin-only actions. Fewer places to get wrong. |
+| Column grants (or column-specific policies) to protect `profiles.is_admin` | RLS cannot restrict which columns an `update` touches and column grants cannot express "only a superadmin". A `before update` trigger raises instead, and it applies only to `authenticated` sessions so seeds and service-role calls behave like they do under RLS. |
+| Own invite token column and accept flow | Supabase Auth's `inviteUserByEmail` already issues and verifies the token; `invites` only records what the person becomes on accept (gym, role, admin flag) plus its status. |
+| Staff seeing every profile in their own gyms | Not needed by any V1 screen before chat. `profiles` is readable by yourself, admins and the managers of your gyms; widen it in P6 if the chat member list needs it. |
 
 ## 5. Conventions
 
