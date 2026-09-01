@@ -6,6 +6,7 @@ import {
   PasswordFields,
   checkPassword,
   useAuth,
+  useUrlSession,
   useSetPassword,
   type PasswordProblem,
 } from '@/features/auth'
@@ -19,6 +20,7 @@ import { AuthLayout } from '@/routes/auth-layout'
 export function ResetPasswordPage() {
   const { t } = useTranslation()
   const { status } = useAuth()
+  const urlSession = useUrlSession()
   const setPassword = useSetPassword()
   const [password, setPasswordValue] = useState('')
   const [confirm, setConfirm] = useState('')
@@ -33,9 +35,9 @@ export function ResetPasswordPage() {
     if (!nextProblem) setPassword.mutate(password)
   }
 
-  if (status === 'loading') return null
+  if (status === 'loading' || urlSession === 'adopting') return null
 
-  if (status === 'signedOut') {
+  if (status === 'signedOut' || urlSession === 'failed') {
     return (
       <AuthLayout title={t('auth.resetPassword.title')}>
         <div className="space-y-4">

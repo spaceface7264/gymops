@@ -8,6 +8,7 @@ import {
   PasswordFields,
   checkPassword,
   useAuth,
+  useUrlSession,
   useCompleteInvite,
   type PasswordProblem,
 } from '@/features/auth'
@@ -22,6 +23,7 @@ import { AuthLayout } from '@/routes/auth-layout'
 export function AcceptInvitePage() {
   const { t, i18n } = useTranslation()
   const { status } = useAuth()
+  const urlSession = useUrlSession()
   const completeInvite = useCompleteInvite()
   const [fullName, setFullName] = useState('')
   const [locale, setLocale] = useState<Locale>(() =>
@@ -45,9 +47,9 @@ export function AcceptInvitePage() {
     )
   }
 
-  if (status === 'loading') return null
+  if (status === 'loading' || urlSession === 'adopting') return null
 
-  if (status === 'signedOut') {
+  if (status === 'signedOut' || urlSession === 'failed') {
     return (
       <AuthLayout title={t('auth.acceptInvite.title')}>
         <p className="text-sm">{t('auth.acceptInvite.expired')}</p>
