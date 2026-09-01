@@ -2,13 +2,23 @@
   "app": {
     "name": "GymOps"
   },
+  "auth": {
+    "signIn": {
+      "email": "Email",
+      "failed": "That email and password did not match. Try again.",
+      "password": "Password",
+      "submit": "Sign in",
+      "submitting": "Signing in…",
+      "title": "Sign in"
+    }
+  },
+  "home": {
+    "placeholder": "Scaffold ready. Auth and the app shell land in phase 1."
+  },
   "language": {
     "da": "Danish",
     "en": "English",
     "label": "Language"
-  },
-  "home": {
-    "placeholder": "Scaffold ready. Auth and the app shell land in phase 1."
   },
   "notFound": {
     "body": "The page you are looking for does not exist.",

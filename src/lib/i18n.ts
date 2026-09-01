@@ -28,7 +28,7 @@ void i18next
     fallbackLng: 'en',
     supportedLngs: supportedLocales,
     detection: {
-      // `profiles.locale` wins once the user is signed in (P1-06).
+      // `profiles.locale` takes over once the app shell reads it (P1-08).
       order: ['localStorage', 'navigator'],
       lookupLocalStorage: 'gymops.locale',
       caches: ['localStorage'],

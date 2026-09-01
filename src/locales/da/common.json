@@ -2,13 +2,23 @@
   "app": {
     "name": "GymOps"
   },
+  "auth": {
+    "signIn": {
+      "email": "E-mail",
+      "failed": "E-mail og adgangskode passer ikke. Prøv igen.",
+      "password": "Adgangskode",
+      "submit": "Log ind",
+      "submitting": "Logger ind…",
+      "title": "Log ind"
+    }
+  },
+  "home": {
+    "placeholder": "Skelettet er klar. Login og app-rammen kommer i fase 1."
+  },
   "language": {
     "da": "Dansk",
     "en": "Engelsk",
     "label": "Sprog"
-  },
-  "home": {
-    "placeholder": "Skelettet er klar. Login og app-rammen kommer i fase 1."
   },
   "notFound": {
     "body": "Siden, du leder efter, findes ikke.",
