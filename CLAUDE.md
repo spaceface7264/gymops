@@ -21,3 +21,5 @@ Requires a Docker-compatible container runtime (OrbStack installed 2026-09-01) f
 | `npm run db:migration <name>` | new migration file |
 | `npm run db:types` | regenerate `src/lib/database.types.ts` (commit it) |
 | `npm run typecheck lint format:check test build` | the gates CI runs |
+
+Seed users (local only, from `supabase/seed.sql`): `super@`, `admin@`, `manager@`, `staff@` `gymops.test`, all with password `password123`; gyms Copenhagen Nord, Aarhus C, Odense.

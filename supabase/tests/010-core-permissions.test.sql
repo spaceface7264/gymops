@@ -59,9 +59,9 @@ select is(
 
 select tests.authenticate_as('staff_a');
 select is(
-  (select count(*)::int from public.gyms),
+  (select count(*)::int from public.gyms where slug in ('gym-a', 'gym-b')),
   2,
-  'any authenticated user can read gyms'
+  'any authenticated user can read gyms, including ones they are not a member of'
 );
 select throws_ok(
   $$ insert into public.gyms (name, slug) values ('Gym C', 'gym-c') $$,
@@ -115,14 +115,14 @@ select throws_ok(
 
 select tests.authenticate_as('manager_a');
 select is(
-  (select count(*)::int from public.profiles),
+  (select count(*)::int from public.profiles where email like '%@example.test'),
   2,
   'manager sees themselves and the members of their gyms'
 );
 
 select tests.authenticate_as('admin');
 select is(
-  (select count(*)::int from public.profiles),
+  (select count(*)::int from public.profiles where email like '%@example.test'),
   5,
   'admin sees every profile'
 );
