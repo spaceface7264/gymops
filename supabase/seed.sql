@@ -1,0 +1,2 @@
+-- Local seed data, applied by `supabase db reset`.
+-- Real fixtures (3 gyms, one user per role, memberships) land in P1-09.
