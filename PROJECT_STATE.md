@@ -4,14 +4,14 @@ Last updated: 2026-09-01
 
 ## Currently working on
 
-**P1-01 to P1-07 and P1-09 done** on branch `phase-1-scaffold`. **P1-08 started**: the header now shows who is signed in and offers sign out. Left in P1-08: nav, gym switcher, "all gyms" for admins, responsive layout, `profiles.locale` → i18next. Then P1-10 (CI).
+**P1-01 to P1-09 done** on branch `phase-1-scaffold`. Next up: **P1-10** (GitHub Actions: lint, unit tests, `supabase db reset` + pgTAP), which finishes phase 1. Then phase 2 — and P2-03 is where the hosted project is needed; see "Hosted project cutover".
 
 ## Phase status
 
 | Phase                    | Status         | Notes                                           |
 | ------------------------ | -------------- | ----------------------------------------------- |
 | Design                   | ✅ Complete    | Approved 2026-09-01. Spec in `PROJECT_SPEC.md`. |
-| P1 Scaffold and auth | 🔄 In progress | P1-01 to P1-07 and P1-09 done. P1-08 in progress, P1-10 left. |
+| P1 Scaffold and auth | 🔄 In progress | P1-01 to P1-09 done. P1-10 (CI) left. |
 | P2 Users and gyms admin  | ⬜ Not started |                                                 |
 | P3 News and guides       | ⬜ Not started |                                                 |
 | P4 Daily ops             | ⬜ Not started |                                                 |
@@ -34,7 +34,7 @@ Update this list as work begins:
 | P1-06 | ✅ done | 2026-09-01 | 2026-09-01 | `src/lib/supabase.ts` (typed, PKCE), `src/features/auth` (provider, `useAuth`, `RequireAuth`, `useProfile`/`useSignIn`/`useSignOut`), all routes below `/` guarded. Provisional login screen until P1-07. 19 unit tests; sign-in verified end to end in a headless browser. |
 | P1-07 | ✅ done | 2026-09-01 | 2026-09-01 | `AuthLayout` plus the sign-in, forgot-password, reset-password and accept-invite screens; hooks `useRequestPasswordReset`, `useSetPassword`, `useCompleteInvite`; shared `PasswordFields` + `checkPassword` mirroring the server policy. 30 unit tests; both flows driven end to end in Chrome against the local stack (Mailpit → link → session → password → sign-in), which is how the implicit-invite bug surfaced. |
 | P1-09 | ✅ done | 2026-09-01 | 2026-09-01 | `supabase/seed.sql`: 3 gyms, one user per role (`<role>@gymops.test` / `Password123`, raised from `password123` in P1-07 to satisfy the password policy), memberships. Password sign-in and per-role RLS verified through the local API. |
-| P1-08 | 🔄 in progress | 2026-09-01 | | Header with the signed-in user and sign out (`RootLayout`), 2 tests, verified in Chrome. Nav, gym switcher, "all gyms", responsive layout and the `profiles.locale` sync are still open. |
+| P1-08 | ✅ done | 2026-09-01 | 2026-09-01 | `AppShell` (sidebar from `md`, bottom tab bar on phones), nav from `src/routes/nav.ts` with placeholders for unbuilt modules, `src/features/gyms` (provider, `useGymScope`, switcher, `useGyms`), `useLocaleSync`, sign out. 15 tests; checked in Chrome as manager and admin, desktop and phone width. |
 | P1-10 … P8-06 | ⬜ not started | | | |
 
 Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
@@ -134,7 +134,9 @@ of truth; nothing in config.toml applies to a hosted project)
 | 2026-09-01 | P1-07: forgot-password shows the same confirmation whether or not the address has an account, so the screen cannot enumerate staff. |
 | 2026-09-01 | P1-07: `additional_redirect_urls` gained `/reset-password` and `/accept-invite`; the same paths must be added to the hosted project's redirect allow-list before the first deploy. |
 | 2026-09-01 | P1-08: sign out shipped ahead of the rest of the shell. The screens run on machines shared between shifts, and P1-07 showed what a stale session costs: an invite link opened in a browser that still held someone else's session acted as that person. |
-| 2026-09-01 | Development stays on the local stack until P2-03. CI (P1-10) runs `supabase db reset` + pgTAP locally, and no task before the `invite` Edge Function needs a deployed project; the cutover steps live in "Hosted project cutover" above so they are not re-derived under pressure. |
+| 2026-09-01 | Development stays on the local stack until P2-03. CI (P1-10) runs `supabase db reset` + pgTAP locally, and no task before the `invite` Edge Function needs a deployed project; the cutover steps live in "Hosted project cutover" above so they are not re-derived under pressure. || 2026-09-01 | P1-08: the nav is data (`src/routes/nav.ts`) and the router builds placeholder routes from the same list, so a phase cannot add a page without adding its nav entry. |
+| 2026-09-01 | P1-08: the selected gym lives in `GymProvider`, stored per device under `gymops.gym` and always validated against what the signed-in user may see; `null` means "all gyms" and is offered to admins and superadmins only. A staff member with one gym sees its name, not a dead dropdown. |
+| 2026-09-01 | P1-08: `profiles.locale` overrides the browser language once the profile loads (`useLocaleSync`), which is where P1-06 said this belonged. The signed-out screens keep detecting from the browser. |
 
 ## How to update this file
 

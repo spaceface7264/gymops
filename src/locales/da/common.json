@@ -50,6 +50,10 @@
     "signOut": "Log ud",
     "signingOut": "Logger ud…"
   },
+  "gym": {
+    "all": "Alle centre",
+    "label": "Center"
+  },
   "home": {
     "placeholder": "Skelettet er klar. Login og app-rammen kommer i fase 1."
   },
@@ -57,6 +61,21 @@
     "da": "Dansk",
     "en": "Engelsk",
     "label": "Sprog"
+  },
+  "module": {
+    "comingIn": "Kommer i fase {{phase}}.",
+    "notYet": "Denne sektion er ikke bygget endnu."
+  },
+  "nav": {
+    "admin": "Administration",
+    "chat": "Chat",
+    "checklists": "Tjeklister",
+    "dailyLog": "Dagbog",
+    "guides": "Vejledninger",
+    "home": "Forside",
+    "incidents": "Hændelser",
+    "label": "Sektioner",
+    "news": "Nyheder"
   },
   "notFound": {
     "body": "Siden, du leder efter, findes ikke.",

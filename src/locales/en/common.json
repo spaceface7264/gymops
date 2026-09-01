@@ -50,6 +50,10 @@
     "signOut": "Sign out",
     "signingOut": "Signing out…"
   },
+  "gym": {
+    "all": "All gyms",
+    "label": "Gym"
+  },
   "home": {
     "placeholder": "Scaffold ready. Auth and the app shell land in phase 1."
   },
@@ -57,6 +61,21 @@
     "da": "Danish",
     "en": "English",
     "label": "Language"
+  },
+  "module": {
+    "comingIn": "Arrives in phase {{phase}}.",
+    "notYet": "This section is not built yet."
+  },
+  "nav": {
+    "admin": "Admin",
+    "chat": "Chat",
+    "checklists": "Checklists",
+    "dailyLog": "Daily log",
+    "guides": "Guides",
+    "home": "Home",
+    "incidents": "Incidents",
+    "label": "Sections",
+    "news": "News"
   },
   "notFound": {
     "body": "The page you are looking for does not exist.",
