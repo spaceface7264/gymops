@@ -28,6 +28,20 @@
       "timezone": "Tidszone",
       "title": "Centre"
     },
+    "invite": {
+      "already_a_user": "Adressen hører allerede til en GymOps-konto.",
+      "description": "De får en e-mail med et link til at vælge adgangskode. Center og rolle er besluttet her.",
+      "email": "Arbejds-e-mail",
+      "forbidden": "Du må ikke tildele den rolle.",
+      "fullName": "Fulde navn",
+      "gym": "Center",
+      "invite": "Invitér",
+      "role": "Rolle",
+      "send": "Send invitation",
+      "sending": "Sender…",
+      "title": "Invitér en person",
+      "unknown": "Invitationen kunne ikke sendes. Prøv igen om et øjeblik."
+    },
     "loadFailed": "Listen kunne ikke indlæses.",
     "loading": "Indlæser…",
     "roles": {

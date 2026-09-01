@@ -28,6 +28,20 @@
       "timezone": "Time zone",
       "title": "Gyms"
     },
+    "invite": {
+      "already_a_user": "That address already belongs to a GymOps account.",
+      "description": "They get an email with a link to set their password. Their gym and role are already decided here.",
+      "email": "Work email",
+      "forbidden": "You may not hand out that role.",
+      "fullName": "Full name",
+      "gym": "Gym",
+      "invite": "Invite",
+      "role": "Role",
+      "send": "Send invite",
+      "sending": "Sending…",
+      "title": "Invite someone",
+      "unknown": "The invite could not be sent. Try again in a moment."
+    },
     "loadFailed": "This list could not be loaded.",
     "loading": "Loading…",
     "roles": {

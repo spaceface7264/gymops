@@ -13,6 +13,7 @@ import {
 import { useProfile } from '@/features/auth'
 import { useGymScope } from '@/features/gyms'
 import { useAdminGyms, useAdminUsers, useSetUserActive, type AdminUser } from './queries'
+import { InviteDialog } from './invite-dialog'
 import { RolesDialog } from './roles-dialog'
 
 /**
@@ -54,6 +55,7 @@ export function UsersPanel() {
   const gyms = useAdminGyms()
   const setActive = useSetUserActive()
   const [editing, setEditing] = useState<AdminUser | undefined>(undefined)
+  const [inviting, setInviting] = useState(false)
   const isAdmin = Boolean(profile?.is_admin || profile?.is_superadmin)
 
   // An admin may assign any open gym; a manager only the ones they manage, and
@@ -71,7 +73,16 @@ export function UsersPanel() {
 
   return (
     <section className="space-y-4">
-      <h2 className="text-lg font-semibold">{t('admin.users.title')}</h2>
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-lg font-semibold">{t('admin.users.title')}</h2>
+        <Button
+          size="sm"
+          disabled={assignableGyms.length === 0}
+          onClick={() => setInviting(true)}
+        >
+          {t('admin.invite.invite')}
+        </Button>
+      </div>
 
       {users.isPending && (
         <p className="text-muted-foreground text-sm">{t('admin.loading')}</p>
@@ -135,6 +146,14 @@ export function UsersPanel() {
           </TableBody>
         </Table>
       )}
+
+      <InviteDialog
+        gyms={assignableGyms}
+        canMakeManagers={isAdmin}
+        canMakeAdmins={Boolean(profile?.is_superadmin)}
+        open={inviting}
+        onOpenChange={setInviting}
+      />
 
       {editing && (
         <RolesDialog

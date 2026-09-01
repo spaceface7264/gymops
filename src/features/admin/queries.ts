@@ -195,3 +195,56 @@ export function useAuditLog() {
     },
   })
 }
+
+export type InviteInput = {
+  email: string
+  fullName: string
+  /** Company-wide admin: no gym, no gym role. Superadmins only. */
+  asAdmin: boolean
+  gymId?: string
+  role?: Database['public']['Enums']['gym_role']
+}
+
+/** What the `invite` function refuses with; anything else is a bug or an outage. */
+export type InviteProblem = 'forbidden' | 'already_a_user' | 'unknown'
+
+export class InviteError extends Error {
+  problem: InviteProblem
+
+  constructor(problem: InviteProblem) {
+    super(problem)
+    this.name = 'InviteError'
+    this.problem = problem
+  }
+}
+
+async function readProblem(error: unknown): Promise<InviteProblem> {
+  const context = (error as { context?: { json?: () => Promise<unknown> } }).context
+  if (!context?.json) return 'unknown'
+
+  const body: unknown = await context.json().catch(() => null)
+  const code = (body as { error?: unknown } | null)?.error
+  return code === 'forbidden' || code === 'already_a_user' ? code : 'unknown'
+}
+
+/**
+ * Invites go through the Edge Function (P2-03): it holds the service-role key
+ * that `inviteUserByEmail` needs, and it applies the gym membership the invite
+ * promises. The client never writes `invites` directly.
+ */
+export function useInviteUser() {
+  const queryClient = useQueryClient()
+
+  return useMutation<{ userId: string }, InviteError, InviteInput>({
+    mutationFn: async (input) => {
+      const result = await supabase.functions.invoke<{ userId: string }>('invite', {
+        body: input,
+      })
+
+      if (result.error) throw new InviteError(await readProblem(result.error))
+      if (!result.data) throw new InviteError('unknown')
+      return result.data
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin'] }),
+  })
+}
