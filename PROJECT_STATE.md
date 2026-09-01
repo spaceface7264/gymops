@@ -4,14 +4,14 @@ Last updated: 2026-09-01
 
 ## Currently working on
 
-**P1-01 to P1-07 and P1-09 done** on branch `phase-1-scaffold`. Next up: **P1-08** (app shell: nav, header, gym switcher, `profiles.locale` → i18next), then P1-10 (CI).
+**P1-01 to P1-07 and P1-09 done** on branch `phase-1-scaffold`. **P1-08 started**: the header now shows who is signed in and offers sign out. Left in P1-08: nav, gym switcher, "all gyms" for admins, responsive layout, `profiles.locale` → i18next. Then P1-10 (CI).
 
 ## Phase status
 
 | Phase                    | Status         | Notes                                           |
 | ------------------------ | -------------- | ----------------------------------------------- |
 | Design                   | ✅ Complete    | Approved 2026-09-01. Spec in `PROJECT_SPEC.md`. |
-| P1 Scaffold and auth | 🔄 In progress | P1-01 to P1-07 and P1-09 done. P1-08 and P1-10 left. |
+| P1 Scaffold and auth | 🔄 In progress | P1-01 to P1-07 and P1-09 done. P1-08 in progress, P1-10 left. |
 | P2 Users and gyms admin  | ⬜ Not started |                                                 |
 | P3 News and guides       | ⬜ Not started |                                                 |
 | P4 Daily ops             | ⬜ Not started |                                                 |
@@ -34,7 +34,8 @@ Update this list as work begins:
 | P1-06 | ✅ done | 2026-09-01 | 2026-09-01 | `src/lib/supabase.ts` (typed, PKCE), `src/features/auth` (provider, `useAuth`, `RequireAuth`, `useProfile`/`useSignIn`/`useSignOut`), all routes below `/` guarded. Provisional login screen until P1-07. 19 unit tests; sign-in verified end to end in a headless browser. |
 | P1-07 | ✅ done | 2026-09-01 | 2026-09-01 | `AuthLayout` plus the sign-in, forgot-password, reset-password and accept-invite screens; hooks `useRequestPasswordReset`, `useSetPassword`, `useCompleteInvite`; shared `PasswordFields` + `checkPassword` mirroring the server policy. 30 unit tests; both flows driven end to end in Chrome against the local stack (Mailpit → link → session → password → sign-in), which is how the implicit-invite bug surfaced. |
 | P1-09 | ✅ done | 2026-09-01 | 2026-09-01 | `supabase/seed.sql`: 3 gyms, one user per role (`<role>@gymops.test` / `Password123`, raised from `password123` in P1-07 to satisfy the password policy), memberships. Password sign-in and per-role RLS verified through the local API. |
-| P1-08 … P8-06 | ⬜ not started | | | |
+| P1-08 | 🔄 in progress | 2026-09-01 | | Header with the signed-in user and sign out (`RootLayout`), 2 tests, verified in Chrome. Nav, gym switcher, "all gyms", responsive layout and the `profiles.locale` sync are still open. |
+| P1-10 … P8-06 | ⬜ not started | | | |
 
 Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
 
@@ -74,7 +75,7 @@ Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
 | 2026-09-01 | P1-07: recovery links are PKCE (`?code=`) and the client exchanges them itself; admin-issued invite links are implicit (`#access_token=`), which auth-js refuses to read under `flowType: 'pkce'`. `useUrlSession` adopts the fragment with `setSession` and strips it from the URL, so the tokens never enter browser history. Both screens treat `signedOut` (or an `error_code` in the link) as expired. |
 | 2026-09-01 | P1-07: the accept-invite screen writes only password, name and locale. Gym membership and the admin flag come from the `invites` row and are applied by the `invite` Edge Function (P2-03). |
 | 2026-09-01 | P1-07: forgot-password shows the same confirmation whether or not the address has an account, so the screen cannot enumerate staff. |
-| 2026-09-01 | P1-07: `additional_redirect_urls` gained `/reset-password` and `/accept-invite`; the same paths must be added to the hosted project's redirect allow-list before the first deploy. |
+| 2026-09-01 | P1-07: `additional_redirect_urls` gained `/reset-password` and `/accept-invite`; the same paths must be added to the hosted project's redirect allow-list before the first deploy. || 2026-09-01 | P1-08: sign out shipped ahead of the rest of the shell. The screens run on machines shared between shifts, and P1-07 showed what a stale session costs: an invite link opened in a browser that still held someone else's session acted as that person. |
 
 ## How to update this file
 

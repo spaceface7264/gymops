@@ -46,7 +46,9 @@
       "submit": "Sign in",
       "submitting": "Signing in…",
       "title": "Sign in"
-    }
+    },
+    "signOut": "Sign out",
+    "signingOut": "Signing out…"
   },
   "home": {
     "placeholder": "Scaffold ready. Auth and the app shell land in phase 1."

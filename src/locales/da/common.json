@@ -46,7 +46,9 @@
       "submit": "Log ind",
       "submitting": "Logger ind…",
       "title": "Log ind"
-    }
+    },
+    "signOut": "Log ud",
+    "signingOut": "Logger ud…"
   },
   "home": {
     "placeholder": "Skelettet er klar. Login og app-rammen kommer i fase 1."
