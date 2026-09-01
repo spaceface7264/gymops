@@ -15,6 +15,7 @@ export type GymInput = {
 
 export const adminKeys = {
   gyms: ['admin', 'gyms'] as const,
+  users: (gymId: string | null) => ['admin', 'users', gymId] as const,
 }
 
 /**
@@ -70,5 +71,56 @@ export function useSetGymActive() {
   return useGymWrite(async ({ id, active }: { id: string; active: boolean }) => {
     const { error } = await supabase.from('gyms').update({ active }).eq('id', id)
     if (error) throw error
+  })
+}
+
+export type AdminUser = Database['public']['Tables']['profiles']['Row'] & {
+  gym_memberships: {
+    role: Database['public']['Enums']['gym_role']
+    gyms: { id: string; name: string } | null
+  }[]
+}
+
+const userColumns = '*, gym_memberships(role, gyms(id, name))'
+
+/**
+ * The people the signed-in user may see: everyone for an admin, the members of
+ * their own gyms for a manager (`profiles_select`). `gymId` narrows that to one
+ * gym — the shell's switcher is the filter, so there is no second gym control.
+ */
+export function useAdminUsers(gymId: string | null) {
+  return useQuery({
+    queryKey: adminKeys.users(gymId),
+    queryFn: async () => {
+      // An inner join on the gym drops the users who are not in it, and with it
+      // the admins, who hold no membership anywhere. That is the intent: "who
+      // works at this gym", not "who can see this gym".
+      const query = gymId
+        ? supabase
+            .from('profiles')
+            .select('*, gym_memberships!inner(role, gyms(id, name))')
+            .eq('gym_memberships.gym_id', gymId)
+        : supabase.from('profiles').select(userColumns)
+
+      const { data, error } = await query.order('full_name', { nullsFirst: false })
+      if (error) throw error
+      return data
+    },
+  })
+}
+
+/**
+ * Only an admin may deactivate someone: `guard_profile_privileges` raises if
+ * anyone else touches `active`, so the button is admin-only in the UI too.
+ */
+export function useSetUserActive() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ id, active }: { id: string; active: boolean }) => {
+      const { error } = await supabase.from('profiles').update({ active }).eq('id', id)
+      if (error) throw error
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'users'] }),
   })
 }

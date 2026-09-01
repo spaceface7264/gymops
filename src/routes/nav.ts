@@ -23,7 +23,10 @@ export type NavEntry = {
     | 'nav.chat'
     | 'nav.admin'
   icon: LucideIcon
-  /** Hidden from managers and staff; the database enforces the same rule. */
+  /**
+   * Hidden from staff. Managers see it too: they administer their own gyms'
+   * staff (spec §2.1). The database enforces the same rule either way.
+   */
   adminOnly?: boolean
   /** Phase that replaces the placeholder with the real module. */
   phase?: string
@@ -45,6 +48,6 @@ export const navEntries: NavEntry[] = [
   { to: '/admin', labelKey: 'nav.admin', icon: Settings, adminOnly: true },
 ]
 
-export function visibleNavEntries(isAdmin: boolean): NavEntry[] {
-  return navEntries.filter((entry) => !entry.adminOnly || isAdmin)
+export function visibleNavEntries(canAdminister: boolean): NavEntry[] {
+  return navEntries.filter((entry) => !entry.adminOnly || canAdminister)
 }

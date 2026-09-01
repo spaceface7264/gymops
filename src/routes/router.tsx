@@ -1,5 +1,5 @@
 import { createBrowserRouter } from 'react-router'
-import { GymsPanel } from '@/features/admin'
+import { GymsPanel, UsersPanel } from '@/features/admin'
 import { RequireAuth } from '@/features/auth'
 import { GymProvider } from '@/features/gyms'
 import { AcceptInvitePage } from '@/routes/accept-invite-page'
@@ -38,6 +38,7 @@ export const router = createBrowserRouter([
         path: 'admin',
         element: <AdminPage />,
         children: [
+          { path: 'users', element: <UsersPanel /> },
           {
             path: 'gyms',
             element: (

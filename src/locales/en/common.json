@@ -3,7 +3,6 @@
     "actions": "Actions",
     "cancel": "Cancel",
     "edit": "Edit",
-    "empty": "Nothing to administer here yet.",
     "gyms": {
       "active": "Active",
       "city": "City",
@@ -24,7 +23,22 @@
     "loadFailed": "This list could not be loaded.",
     "loading": "Loading…",
     "save": "Save",
-    "saving": "Saving…"
+    "saving": "Saving…",
+    "users": {
+      "active": "Active",
+      "admin": "Admin",
+      "deactivate": "Deactivate",
+      "empty": "No users in this gym yet.",
+      "inactive": "Inactive",
+      "manager": "Manager",
+      "name": "Name",
+      "reactivate": "Reactivate",
+      "roles": "Roles",
+      "staff": "Staff",
+      "status": "Status",
+      "superadmin": "Superadmin",
+      "title": "Users"
+    }
   },
   "app": {
     "name": "GymOps"

@@ -112,6 +112,19 @@ describe('AppShell navigation', () => {
     expect(within(nav).queryByRole('link', { name: 'Admin' })).not.toBeInTheDocument()
   })
 
+  it('adds Admin for a manager, who administers their own gyms', async () => {
+    single.mockResolvedValue({
+      data: profile({ gym_memberships: [{ role: 'manager', gyms: nord }] }),
+      error: null,
+    })
+    renderShell()
+    const nav = await screen.findByRole('navigation', { name: 'Sections' })
+
+    await waitFor(() =>
+      expect(within(nav).getByRole('link', { name: 'Admin' })).toBeInTheDocument(),
+    )
+  })
+
   it('adds Admin for an admin', async () => {
     single.mockResolvedValue({ data: profile({ is_admin: true }), error: null })
     renderShell()

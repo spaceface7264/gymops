@@ -127,24 +127,27 @@ describe('GymsPanel', () => {
 })
 
 describe('AdminPage', () => {
-  it('sends a superadmin to the gyms section', async () => {
+  it('sends anyone who opens /admin to the user list', async () => {
     renderWithProviders(<AdminPage />, {
       path: '/admin',
-      routes: [{ path: '/admin/gyms', element: <p>gyms section</p> }],
+      routes: [{ path: '/admin/users', element: <p>users section</p> }],
     })
 
-    expect(await screen.findByText('gyms section')).toBeInTheDocument()
+    expect(await screen.findByText('users section')).toBeInTheDocument()
+  })
+
+  it('offers a superadmin the gyms section', async () => {
+    renderWithProviders(<AdminPage />, { path: '/admin/users' })
+
+    expect(await screen.findByRole('link', { name: 'Gyms' })).toBeInTheDocument()
   })
 
   it('hides gym management from an admin who is not a superadmin', async () => {
     profile.mockReturnValue({ id: 'user-1', is_admin: true, is_superadmin: false })
-    renderWithProviders(<AdminPage />, {
-      path: '/admin',
-      routes: [{ path: '/admin/gyms', element: <p>gyms section</p> }],
-    })
+    renderWithProviders(<AdminPage />, { path: '/admin/users' })
 
-    expect(await screen.findByText(/Nothing to administer/)).toBeInTheDocument()
-    expect(screen.queryByText('gyms section')).not.toBeInTheDocument()
+    expect(await screen.findByRole('link', { name: 'Users' })).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Gyms' })).not.toBeInTheDocument()
   })
 })
 

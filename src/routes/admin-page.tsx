@@ -5,12 +5,16 @@ import { cn } from '@/lib/utils'
 
 type AdminSection = {
   to: string
-  labelKey: 'admin.gyms.title'
+  labelKey: 'admin.users.title' | 'admin.gyms.title'
   /** Gym management and the audit log are superadmin-only (spec §2.1). */
   superadminOnly?: boolean
 }
 
+/** Every admin sees the user list, so `/admin` always has somewhere to go. */
+const defaultSection = '/admin/users'
+
 const sections: AdminSection[] = [
+  { to: defaultSection, labelKey: 'admin.users.title' },
   { to: '/admin/gyms', labelKey: 'admin.gyms.title', superadminOnly: true },
 ]
 
@@ -30,10 +34,7 @@ export function AdminPage() {
 
   if (!profile) return null
 
-  const first = visible[0]
-  if (location.pathname === '/admin') {
-    return first ? <Navigate to={first.to} replace /> : <p>{t('admin.empty')}</p>
-  }
+  if (location.pathname === '/admin') return <Navigate to={defaultSection} replace />
 
   return (
     <div className="space-y-6">

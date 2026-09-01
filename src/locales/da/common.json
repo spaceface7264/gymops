@@ -3,7 +3,6 @@
     "actions": "Handlinger",
     "cancel": "Annullér",
     "edit": "Redigér",
-    "empty": "Der er endnu ikke noget at administrere her.",
     "gyms": {
       "active": "Aktiv",
       "city": "By",
@@ -24,7 +23,22 @@
     "loadFailed": "Listen kunne ikke indlæses.",
     "loading": "Indlæser…",
     "save": "Gem",
-    "saving": "Gemmer…"
+    "saving": "Gemmer…",
+    "users": {
+      "active": "Aktiv",
+      "admin": "Administrator",
+      "deactivate": "Deaktivér",
+      "empty": "Der er endnu ingen brugere i dette center.",
+      "inactive": "Inaktiv",
+      "manager": "Leder",
+      "name": "Navn",
+      "reactivate": "Aktivér igen",
+      "roles": "Roller",
+      "staff": "Medarbejder",
+      "status": "Status",
+      "superadmin": "Superadministrator",
+      "title": "Brugere"
+    }
   },
   "app": {
     "name": "GymOps"
