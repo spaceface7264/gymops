@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { Session } from '@supabase/supabase-js'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -86,6 +86,27 @@ describe('AcceptInvitePage', () => {
 
     expect(await screen.findByText('Signed in home')).toBeInTheDocument()
     expect(update).toHaveBeenCalledWith({ full_name: 'Ida Staff', locale: 'da' })
+  })
+
+  it('offers the name the inviter typed, and lets it be corrected', async () => {
+    getSession.mockResolvedValue({
+      data: {
+        session: {
+          ...session,
+          user: { ...session.user, user_metadata: { full_name: 'Nina Nyansat' } },
+        },
+      },
+      error: null,
+    })
+    const user = userEvent.setup()
+    renderPage()
+
+    const field = await screen.findByLabelText('Full name')
+    await waitFor(() => expect(field).toHaveValue('Nina Nyansat'))
+
+    await user.clear(field)
+    await user.type(field, 'Nina N.')
+    expect(field).toHaveValue('Nina N.')
   })
 
   it('switches the interface to the language the newcomer picked', async () => {

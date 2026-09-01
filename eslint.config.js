@@ -14,6 +14,8 @@ export default tseslint.config(
       'coverage',
       'src-tauri',
       'supabase/.temp',
+      // Deno, with its own imports and type-checked by `supabase functions`.
+      'supabase/functions',
       'src/lib/database.types.ts',
     ],
   },

@@ -22,10 +22,15 @@ import { AuthLayout } from '@/routes/auth-layout'
  */
 export function AcceptInvitePage() {
   const { t, i18n } = useTranslation()
-  const { status } = useAuth()
+  const { status, user } = useAuth()
   const urlSession = useUrlSession()
   const completeInvite = useCompleteInvite()
-  const [fullName, setFullName] = useState('')
+  // The inviter already typed a name (P2-03 puts it in the user metadata), so
+  // offer it and let it be corrected. null means "not touched yet"; the session
+  // arrives after the first render, which rules out an initial state.
+  const [typedName, setTypedName] = useState<string | null>(null)
+  const invitedName: unknown = user?.user_metadata?.full_name
+  const fullName = typedName ?? (typeof invitedName === 'string' ? invitedName : '')
   const [locale, setLocale] = useState<Locale>(() =>
     supportedLocales.includes(i18n.language as Locale) ? (i18n.language as Locale) : 'da',
   )
@@ -70,7 +75,7 @@ export function AcceptInvitePage() {
             autoComplete="name"
             required
             value={fullName}
-            onChange={(event) => setFullName(event.target.value)}
+            onChange={(event) => setTypedName(event.target.value)}
           />
         </div>
         <div className="space-y-2">
