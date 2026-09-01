@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils'
 
 type AdminSection = {
   to: string
-  labelKey: 'admin.users.title' | 'admin.gyms.title'
+  labelKey: 'admin.users.title' | 'admin.gyms.title' | 'admin.audit.title'
   /** Gym management and the audit log are superadmin-only (spec §2.1). */
   superadminOnly?: boolean
 }
@@ -16,6 +16,7 @@ const defaultSection = '/admin/users'
 const sections: AdminSection[] = [
   { to: defaultSection, labelKey: 'admin.users.title' },
   { to: '/admin/gyms', labelKey: 'admin.gyms.title', superadminOnly: true },
+  { to: '/admin/audit', labelKey: 'admin.audit.title', superadminOnly: true },
 ]
 
 function visibleSections(isSuperadmin: boolean) {

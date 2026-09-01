@@ -124,3 +124,74 @@ export function useSetUserActive() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'users'] }),
   })
 }
+
+export type Membership = { gymId: string; role: Database['public']['Enums']['gym_role'] }
+
+function useUserWrite<TVariables>(mutationFn: (variables: TVariables) => Promise<void>) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin'] }),
+  })
+}
+
+/**
+ * Grant a gym role or change one. `gym_memberships` is unique on
+ * (user_id, gym_id), so an upsert covers both; the audit trigger from P2-06
+ * records which of the two it was.
+ */
+export function useSetMembership() {
+  return useUserWrite(
+    async ({ userId, gymId, role }: Membership & { userId: string }) => {
+      const { error } = await supabase
+        .from('gym_memberships')
+        .upsert(
+          { user_id: userId, gym_id: gymId, role },
+          { onConflict: 'user_id,gym_id' },
+        )
+      if (error) throw error
+    },
+  )
+}
+
+export function useRemoveMembership() {
+  return useUserWrite(async ({ userId, gymId }: { userId: string; gymId: string }) => {
+    const { error } = await supabase
+      .from('gym_memberships')
+      .delete()
+      .eq('user_id', userId)
+      .eq('gym_id', gymId)
+    if (error) throw error
+  })
+}
+
+/** Only a superadmin may promote or demote an admin (`guard_profile_privileges`). */
+export function useSetAdmin() {
+  return useUserWrite(async ({ id, isAdmin }: { id: string; isAdmin: boolean }) => {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ is_admin: isAdmin })
+      .eq('id', id)
+    if (error) throw error
+  })
+}
+
+export type AuditEntry = Database['public']['Tables']['audit_log']['Row']
+
+/** The audit log, newest first. `audit_log_select` limits this to superadmins. */
+export function useAuditLog() {
+  return useQuery({
+    queryKey: ['admin', 'audit'] as const,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('audit_log')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(100)
+
+      if (error) throw error
+      return data
+    },
+  })
+}

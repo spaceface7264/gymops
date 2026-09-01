@@ -1,3 +1,4 @@
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -11,7 +12,8 @@ import {
 } from '@/components/ui/table'
 import { useProfile } from '@/features/auth'
 import { useGymScope } from '@/features/gyms'
-import { useAdminUsers, useSetUserActive, type AdminUser } from './queries'
+import { useAdminGyms, useAdminUsers, useSetUserActive, type AdminUser } from './queries'
+import { RolesDialog } from './roles-dialog'
 
 /**
  * Who this person is, in the order that decides what they may do: the
@@ -49,8 +51,23 @@ export function UsersPanel() {
   const { gymId } = useGymScope()
   const { data: profile } = useProfile()
   const users = useAdminUsers(gymId)
+  const gyms = useAdminGyms()
   const setActive = useSetUserActive()
+  const [editing, setEditing] = useState<AdminUser | undefined>(undefined)
   const isAdmin = Boolean(profile?.is_admin || profile?.is_superadmin)
+
+  // An admin may assign any open gym; a manager only the ones they manage, and
+  // there only staff. `gym_memberships` enforces both.
+  const managedGymIds = useMemo(
+    () =>
+      profile?.gym_memberships
+        .filter((membership) => membership.role === 'manager')
+        .map((membership) => membership.gyms?.id) ?? [],
+    [profile],
+  )
+  const assignableGyms = (gyms.data ?? []).filter(
+    (gym) => gym.active && (isAdmin || managedGymIds.includes(gym.id)),
+  )
 
   return (
     <section className="space-y-4">
@@ -72,7 +89,7 @@ export function UsersPanel() {
               <TableHead>{t('admin.users.name')}</TableHead>
               <TableHead>{t('admin.users.roles')}</TableHead>
               <TableHead>{t('admin.users.status')}</TableHead>
-              {isAdmin && <TableHead className="sr-only">{t('admin.actions')}</TableHead>}
+              <TableHead className="sr-only">{t('admin.actions')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -92,8 +109,11 @@ export function UsersPanel() {
                     {user.active ? t('admin.users.active') : t('admin.users.inactive')}
                   </Badge>
                 </TableCell>
-                {isAdmin && (
-                  <TableCell className="text-right whitespace-nowrap">
+                <TableCell className="space-x-2 text-right whitespace-nowrap">
+                  <Button variant="outline" size="sm" onClick={() => setEditing(user)}>
+                    {t('admin.roles.edit')}
+                  </Button>
+                  {isAdmin && (
                     <Button
                       variant="outline"
                       size="sm"
@@ -108,12 +128,23 @@ export function UsersPanel() {
                         ? t('admin.users.deactivate')
                         : t('admin.users.reactivate')}
                     </Button>
-                  </TableCell>
-                )}
+                  )}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
+      )}
+
+      {editing && (
+        <RolesDialog
+          user={editing}
+          assignableGyms={assignableGyms}
+          canMakeManagers={isAdmin}
+          canMakeAdmins={Boolean(profile?.is_superadmin)}
+          open
+          onOpenChange={() => setEditing(undefined)}
+        />
       )}
 
       {users.data?.length === 0 && (

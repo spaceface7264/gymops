@@ -1,6 +1,14 @@
 {
   "admin": {
     "actions": "Actions",
+    "audit": {
+      "empty": "Nothing has been recorded yet.",
+      "system": "System",
+      "title": "Audit log",
+      "what": "Change",
+      "when": "When",
+      "who": "By"
+    },
     "cancel": "Cancel",
     "edit": "Edit",
     "gyms": {
@@ -22,6 +30,14 @@
     },
     "loadFailed": "This list could not be loaded.",
     "loading": "Loading…",
+    "roles": {
+      "description": "Every change here is recorded in the audit log.",
+      "edit": "Roles",
+      "failed": "That change was refused. You may not have the rights for it.",
+      "isAdmin": "Company-wide admin",
+      "none": "No role",
+      "title": "Roles"
+    },
     "save": "Save",
     "saving": "Saving…",
     "users": {

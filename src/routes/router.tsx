@@ -1,5 +1,5 @@
 import { createBrowserRouter } from 'react-router'
-import { GymsPanel, UsersPanel } from '@/features/admin'
+import { AuditPanel, GymsPanel, UsersPanel } from '@/features/admin'
 import { RequireAuth } from '@/features/auth'
 import { GymProvider } from '@/features/gyms'
 import { AcceptInvitePage } from '@/routes/accept-invite-page'
@@ -44,6 +44,14 @@ export const router = createBrowserRouter([
             element: (
               <RequireSuperadmin>
                 <GymsPanel />
+              </RequireSuperadmin>
+            ),
+          },
+          {
+            path: 'audit',
+            element: (
+              <RequireSuperadmin>
+                <AuditPanel />
               </RequireSuperadmin>
             ),
           },

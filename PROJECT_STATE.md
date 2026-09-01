@@ -4,7 +4,7 @@ Last updated: 2026-09-01
 
 ## Currently working on
 
-**Phase 2 is under way** on branch `phase-2-admin`: P2-06, P2-01 and P2-02 are done. P2-03 is
+**Phase 2 is under way** on branch `phase-2-admin`: P2-06, P2-01, P2-02 and P2-05 are done. P2-03 and P2-04 (invites) are left. P2-03 is
 where the hosted project is needed; see "Hosted project cutover".
 
 The repo has no git remote yet, so CI has never actually run on GitHub: the workflow is verified only by running the same commands locally. Push the branch and check the first run.
@@ -15,7 +15,7 @@ The repo has no git remote yet, so CI has never actually run on GitHub: the work
 | ------------------------ | -------------- | ----------------------------------------------- |
 | Design                   | ✅ Complete    | Approved 2026-09-01. Spec in `PROJECT_SPEC.md`. |
 | P1 Scaffold and auth | ✅ Complete | P1-01 to P1-10 done on `phase-1-scaffold`. |
-| P2 Users and gyms admin  | 🔄 In progress | P2-06, P2-01, P2-02 done on `phase-2-admin`.    |
+| P2 Users and gyms admin  | 🔄 In progress | P2-06, P2-01, P2-02, P2-05 done.                |
 | P3 News and guides       | ⬜ Not started |                                                 |
 | P4 Daily ops             | ⬜ Not started |                                                 |
 | P5 Notifications and PWA | ⬜ Not started |                                                 |
@@ -42,6 +42,7 @@ Update this list as work begins:
 | P2-06 | ✅ done | 2026-09-01 | 2026-09-01 | `20260901210000_audit_role_changes.sql`: security-definer triggers writing `profile.privileges_changed` and `membership.granted`/`role_changed`/`revoked` to `audit_log`. `supabase/tests/020-audit-role-changes.test.sql` — 13 assertions; 51/51 pass with the harness. Commit `fe453af`. |
 | P2-01 | ✅ done | 2026-09-01 | 2026-09-01 | `src/features/admin` (queries, `GymsPanel`, `GymDialog`, `toSlug`) and `src/routes/admin-page.tsx` (`AdminPage` layout + `RequireSuperadmin`); `/admin` redirects to the first section the user may see. shadcn `table`, `badge`, `dialog` added. 75 unit tests; create/edit/deactivate driven in Chrome as a superadmin. Commit `a3d78a1`. |
 | P2-02 | ✅ done | 2026-09-01 | 2026-09-01 | `UsersPanel` at `/admin/users` (now the section `/admin` redirects to): role badges, active/inactive, deactivate for admins only, filtered by the shell's gym switcher. The nav's Admin entry is now shown to managers too — they administer their own gyms' staff. 83 unit tests; checked in Chrome as a superadmin (all gyms and one gym) and as a manager (own gyms only, no deactivate, `/admin/gyms` bounces home). |
+| P2-05 | ✅ done | 2026-09-01 | 2026-09-01 | `RolesDialog` from the user list (gym roles for admins, staff-in-own-gyms for managers, the admin flag for superadmins) and `AuditPanel` at `/admin/audit`, superadmin-only. Membership writes are upserts, so the P2-06 trigger records grant vs role change. 90 unit tests; role changes and the resulting log entries checked in Chrome as a superadmin. |
 | P2-03 … P8-06 | ⬜ not started | | | |
 
 Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
@@ -151,6 +152,8 @@ of truth; nothing in config.toml applies to a hosted project)
 | 2026-09-01 | P2-01: `toSlug` maps æ/ø/å to ae/oe/aa before stripping accents. NFD does not decompose them, so the ASCII filter silently ate them and "Aalborg Øst" became `aalborg-st` — found by driving the real browser, not by the unit tests. |
 | 2026-09-01 | P2-02: the shell's gym switcher is the user list's filter rather than a second gym control on the page. Selecting a gym joins `gym_memberships` inner, so the list answers "who works here" and drops the admins, who hold no membership anywhere; "all gyms" lists everyone the viewer may see. |
 | 2026-09-01 | P2-02: the Admin nav entry is shown to managers, not only admins — a manager invites and lists their own gyms' staff (spec §2.1). Deactivating stays admin-only, matching `guard_profile_privileges`, and nobody can deactivate themselves. |
+| 2026-09-01 | P2-05: role editing is one dialog per user listing the gyms the *actor* may assign — every gym for an admin, the managed ones for a manager — rather than a separate screen per membership. Each change is its own write, so the audit trail is one row per decision. |
+| 2026-09-01 | P2-05: the audit view resolves actor names from the user list rather than a join: `audit_log.actor_id` points at `auth.users`, which PostgREST cannot embed, and a superadmin can already read every profile. |
 | 2026-09-01 | P1-08: `profiles.locale` overrides the browser language once the profile loads (`useLocaleSync`), which is where P1-06 said this belonged. The signed-out screens keep detecting from the browser. |
 
 ## How to update this file

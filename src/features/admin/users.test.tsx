@@ -7,6 +7,9 @@ import { renderWithProviders } from '@/test/render'
 type Row = Record<string, unknown>
 
 const rows = vi.fn<() => Promise<{ data: Row[]; error: null }>>()
+const gymRows = vi.fn<() => Promise<{ data: Row[]; error: null }>>()
+const upsert = vi.fn<(values: Row, options: Row) => Promise<{ error: null }>>()
+const remove = vi.fn<() => Promise<{ error: null }>>()
 const update = vi.fn<(values: Row) => Promise<{ error: null }>>()
 const eq = vi.fn<(column: string, value: unknown) => void>()
 const profile = vi.fn<() => Row>()
@@ -14,15 +17,17 @@ const gymId = vi.fn<() => string | null>()
 
 vi.mock('@/lib/supabase', () => ({
   supabase: {
-    from: () => ({
+    from: (table: string) => ({
       select: () => ({
-        order: () => rows(),
+        order: () => (table === 'gyms' ? gymRows() : rows()),
         eq: (column: string, value: unknown) => {
           eq(column, value)
           return { order: () => rows() }
         },
       }),
       update: (values: Row) => ({ eq: () => update(values) }),
+      upsert: (values: Row, options: Row) => upsert(values, options),
+      delete: () => ({ eq: () => ({ eq: () => remove() }) }),
     }),
   },
 }))
@@ -63,8 +68,16 @@ const sam = {
 beforeEach(() => {
   vi.clearAllMocks()
   rows.mockResolvedValue({ data: [anders, mette, sam], error: null })
+  gymRows.mockResolvedValue({ data: [{ ...nord, active: true }], error: null })
   update.mockResolvedValue({ error: null })
-  profile.mockReturnValue({ id: 'user-anders', is_admin: true, is_superadmin: false })
+  upsert.mockResolvedValue({ error: null })
+  remove.mockResolvedValue({ error: null })
+  profile.mockReturnValue({
+    id: 'user-anders',
+    is_admin: true,
+    is_superadmin: false,
+    gym_memberships: [],
+  })
   gymId.mockReturnValue(null)
 })
 
@@ -112,10 +125,84 @@ describe('UsersPanel', () => {
   })
 
   it('offers a manager no deactivate button at all', async () => {
-    profile.mockReturnValue({ id: 'user-mette', is_admin: false, is_superadmin: false })
+    profile.mockReturnValue({
+      id: 'user-mette',
+      is_admin: false,
+      is_superadmin: false,
+      gym_memberships: [{ role: 'manager', gyms: nord }],
+    })
     renderWithProviders(<UsersPanel />)
 
     await screen.findByText('Mette Manager')
     expect(screen.queryByRole('button', { name: 'Deactivate' })).not.toBeInTheDocument()
+  })
+})
+
+describe('RolesDialog', () => {
+  it('offers an admin every gym and both roles, preselecting what the user holds', async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<UsersPanel />)
+
+    const row = (await screen.findByText('Mette Manager')).closest('tr') as HTMLElement
+    await user.click(within(row).getByRole('button', { name: 'Roles' }))
+
+    const select = screen.getByLabelText('Copenhagen Nord')
+    expect(select).toHaveValue('manager')
+    expect(within(select).getByRole('option', { name: 'Manager' })).toBeInTheDocument()
+  })
+
+  it('lets a manager grant staff only', async () => {
+    profile.mockReturnValue({
+      id: 'user-mette',
+      is_admin: false,
+      is_superadmin: false,
+      gym_memberships: [{ role: 'manager', gyms: nord }],
+    })
+    const user = userEvent.setup()
+    renderWithProviders(<UsersPanel />)
+
+    const row = (await screen.findByText('Sam Staff')).closest('tr') as HTMLElement
+    await user.click(within(row).getByRole('button', { name: 'Roles' }))
+
+    const select = screen.getByLabelText('Copenhagen Nord')
+    expect(
+      within(select).queryByRole('option', { name: 'Manager' }),
+    ).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('Company-wide admin')).not.toBeInTheDocument()
+  })
+
+  it('offers the admin flag to a superadmin only', async () => {
+    profile.mockReturnValue({
+      id: 'user-sofie',
+      is_admin: true,
+      is_superadmin: true,
+      gym_memberships: [],
+    })
+    const user = userEvent.setup()
+    renderWithProviders(<UsersPanel />)
+
+    const row = (await screen.findByText('Mette Manager')).closest('tr') as HTMLElement
+    await user.click(within(row).getByRole('button', { name: 'Roles' }))
+
+    expect(screen.getByLabelText('Company-wide admin')).not.toBeChecked()
+  })
+
+  it('upserts the membership when a role is picked and removes it on "no role"', async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<UsersPanel />)
+
+    const row = (await screen.findByText('Sam Staff')).closest('tr') as HTMLElement
+    await user.click(within(row).getByRole('button', { name: 'Roles' }))
+
+    await user.selectOptions(screen.getByLabelText('Copenhagen Nord'), 'manager')
+    await waitFor(() =>
+      expect(upsert).toHaveBeenCalledWith(
+        { user_id: 'user-sam', gym_id: 'gym-nord', role: 'manager' },
+        { onConflict: 'user_id,gym_id' },
+      ),
+    )
+
+    await user.selectOptions(screen.getByLabelText('Copenhagen Nord'), 'none')
+    await waitFor(() => expect(remove).toHaveBeenCalled())
   })
 })

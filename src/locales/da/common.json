@@ -1,6 +1,14 @@
 {
   "admin": {
     "actions": "Handlinger",
+    "audit": {
+      "empty": "Der er endnu ikke registreret noget.",
+      "system": "System",
+      "title": "Revisionslog",
+      "what": "Ændring",
+      "when": "Hvornår",
+      "who": "Af"
+    },
     "cancel": "Annullér",
     "edit": "Redigér",
     "gyms": {
@@ -22,6 +30,14 @@
     },
     "loadFailed": "Listen kunne ikke indlæses.",
     "loading": "Indlæser…",
+    "roles": {
+      "description": "Alle ændringer her registreres i revisionsloggen.",
+      "edit": "Roller",
+      "failed": "Ændringen blev afvist. Du har måske ikke rettigheder til den.",
+      "isAdmin": "Administrator for hele virksomheden",
+      "none": "Ingen rolle",
+      "title": "Roller"
+    },
     "save": "Gem",
     "saving": "Gemmer…",
     "users": {
