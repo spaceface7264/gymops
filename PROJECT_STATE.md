@@ -4,7 +4,8 @@ Last updated: 2026-09-01
 
 ## Currently working on
 
-**Phase 1 is done** on branch `phase-1-scaffold` — P1-10 added `.github/workflows/ci.yml`. Next up: **phase 2**, and P2-03 is where the hosted project is needed; see "Hosted project cutover".
+**Phase 2 is under way** on branch `phase-2-admin`: P2-06 and P2-01 are done. P2-03 is
+where the hosted project is needed; see "Hosted project cutover".
 
 The repo has no git remote yet, so CI has never actually run on GitHub: the workflow is verified only by running the same commands locally. Push the branch and check the first run.
 
@@ -14,7 +15,7 @@ The repo has no git remote yet, so CI has never actually run on GitHub: the work
 | ------------------------ | -------------- | ----------------------------------------------- |
 | Design                   | ✅ Complete    | Approved 2026-09-01. Spec in `PROJECT_SPEC.md`. |
 | P1 Scaffold and auth | ✅ Complete | P1-01 to P1-10 done on `phase-1-scaffold`. |
-| P2 Users and gyms admin  | ⬜ Not started |                                                 |
+| P2 Users and gyms admin  | 🔄 In progress | P2-06 and P2-01 done on `phase-2-admin`.        |
 | P3 News and guides       | ⬜ Not started |                                                 |
 | P4 Daily ops             | ⬜ Not started |                                                 |
 | P5 Notifications and PWA | ⬜ Not started |                                                 |
@@ -38,7 +39,9 @@ Update this list as work begins:
 | P1-09 | ✅ done | 2026-09-01 | 2026-09-01 | `supabase/seed.sql`: 3 gyms, one user per role (`<role>@gymops.test` / `Password123`, raised from `password123` in P1-07 to satisfy the password policy), memberships. Password sign-in and per-role RLS verified through the local API. |
 | P1-08 | ✅ done | 2026-09-01 | 2026-09-01 | `AppShell` (sidebar from `md`, bottom tab bar on phones), nav from `src/routes/nav.ts` with placeholders for unbuilt modules, `src/features/gyms` (provider, `useGymScope`, switcher, `useGyms`), `useLocaleSync`, sign out. 15 tests; checked in Chrome as manager and admin, desktop and phone width. |
 | P1-10 | ✅ done | 2026-09-01 | 2026-09-01 | `.github/workflows/ci.yml`: job `web` (typecheck, lint, format:check, test, build on Node 20) and job `database` (pinned Supabase CLI, `supabase start -x` the services the tests do not need, `db reset`, `test db`). Both sequences verified locally; never run on GitHub — the repo has no remote. |
-| P2-01 … P8-06 | ⬜ not started | | | |
+| P2-06 | ✅ done | 2026-09-01 | 2026-09-01 | `20260901210000_audit_role_changes.sql`: security-definer triggers writing `profile.privileges_changed` and `membership.granted`/`role_changed`/`revoked` to `audit_log`. `supabase/tests/020-audit-role-changes.test.sql` — 13 assertions; 51/51 pass with the harness. Commit `fe453af`. |
+| P2-01 | ✅ done | 2026-09-01 | 2026-09-01 | `src/features/admin` (queries, `GymsPanel`, `GymDialog`, `toSlug`) and `src/routes/admin-page.tsx` (`AdminPage` layout + `RequireSuperadmin`); `/admin` redirects to the first section the user may see. shadcn `table`, `badge`, `dialog` added. 75 unit tests; create/edit/deactivate driven in Chrome as a superadmin. Commit `a3d78a1`. |
+| P2-02 … P8-06 | ⬜ not started | | | |
 
 Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
 
@@ -141,6 +144,10 @@ of truth; nothing in config.toml applies to a hosted project)
 | 2026-09-01 | Development stays on the local stack until P2-03. CI (P1-10) runs `supabase db reset` + pgTAP locally, and no task before the `invite` Edge Function needs a deployed project; the cutover steps live in "Hosted project cutover" above so they are not re-derived under pressure. || 2026-09-01 | P1-08: the nav is data (`src/routes/nav.ts`) and the router builds placeholder routes from the same list, so a phase cannot add a page without adding its nav entry. |
 | 2026-09-01 | P1-08: the selected gym lives in `GymProvider`, stored per device under `gymops.gym` and always validated against what the signed-in user may see; `null` means "all gyms" and is offered to admins and superadmins only. A staff member with one gym sees its name, not a dead dropdown. |
 | 2026-09-01 | P1-10: CI is two jobs — the web gates and the database — so they run in parallel and the job name says which half broke. The database job starts the stack with `-x` and keeps only postgres, gotrue (the seed writes `auth.users`) and storage-api (`db reset` creates the buckets); the Supabase CLI version is pinned. |
+| 2026-09-01 | P2-06: the audit triggers are security definer and `audit_log` keeps no insert policy, so a client can neither forge an entry nor read one unless it is a superadmin. Membership updates that leave `role` alone write nothing, so the log stays a role history rather than a row-touch log. |
+| 2026-09-01 | P2-01: the admin module is one route with a section per task (`/admin/gyms` first), not one nav entry per admin screen — the shell's nav is for the modules staff use during a shift. `/admin` redirects to the first section the signed-in user may open. |
+| 2026-09-01 | P2-01: the time-zone field is a native select over `Intl.supportedValuesOf('timeZone')`. A hand-curated Danish list would be shorter, but P4-02 generates checklist runs at 03:00 gym-local and a gym abroad must not need a migration. |
+| 2026-09-01 | P2-01: `toSlug` maps æ/ø/å to ae/oe/aa before stripping accents. NFD does not decompose them, so the ASCII filter silently ate them and "Aalborg Øst" became `aalborg-st` — found by driving the real browser, not by the unit tests. |
 | 2026-09-01 | P1-08: `profiles.locale` overrides the browser language once the profile loads (`useLocaleSync`), which is where P1-06 said this belonged. The signed-out screens keep detecting from the browser. |
 
 ## How to update this file

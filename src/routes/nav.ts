@@ -42,7 +42,7 @@ export const navEntries: NavEntry[] = [
   { to: '/daily-log', labelKey: 'nav.dailyLog', icon: NotebookPen, phase: '4' },
   { to: '/incidents', labelKey: 'nav.incidents', icon: TriangleAlert, phase: '4' },
   { to: '/chat', labelKey: 'nav.chat', icon: MessagesSquare, phase: '6' },
-  { to: '/admin', labelKey: 'nav.admin', icon: Settings, adminOnly: true, phase: '2' },
+  { to: '/admin', labelKey: 'nav.admin', icon: Settings, adminOnly: true },
 ]
 
 export function visibleNavEntries(isAdmin: boolean): NavEntry[] {

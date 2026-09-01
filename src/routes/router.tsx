@@ -1,7 +1,9 @@
 import { createBrowserRouter } from 'react-router'
+import { GymsPanel } from '@/features/admin'
 import { RequireAuth } from '@/features/auth'
 import { GymProvider } from '@/features/gyms'
 import { AcceptInvitePage } from '@/routes/accept-invite-page'
+import { AdminPage, RequireSuperadmin } from '@/routes/admin-page'
 import { AppShell } from '@/routes/app-shell'
 import { ForgotPasswordPage } from '@/routes/forgot-password-page'
 import { HomePage } from '@/routes/home-page'
@@ -13,8 +15,8 @@ import { ResetPasswordPage } from '@/routes/reset-password-page'
 
 /**
  * Route table. Everything below `/` requires a session and renders inside the
- * app shell; modules whose phase has not landed render a placeholder, which
- * keeps this table and the nav (`nav.ts`) in step.
+ * app shell; modules whose phase has not landed render a
+ * placeholder, so a nav entry without a `phase` must have a route here.
  */
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -32,8 +34,22 @@ export const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <HomePage /> },
+      {
+        path: 'admin',
+        element: <AdminPage />,
+        children: [
+          {
+            path: 'gyms',
+            element: (
+              <RequireSuperadmin>
+                <GymsPanel />
+              </RequireSuperadmin>
+            ),
+          },
+        ],
+      },
       ...navEntries
-        .filter((entry) => entry.to !== '/')
+        .filter((entry) => entry.phase)
         .map((entry) => ({
           path: entry.to.slice(1),
           element: <ModulePlaceholder entry={entry} />,

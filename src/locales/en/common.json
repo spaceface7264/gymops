@@ -1,4 +1,31 @@
 {
+  "admin": {
+    "actions": "Actions",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "empty": "Nothing to administer here yet.",
+    "gyms": {
+      "active": "Active",
+      "city": "City",
+      "create": "New gym",
+      "createTitle": "New gym",
+      "deactivate": "Deactivate",
+      "dialogDescription": "A gym is deactivated, never deleted, so its history stays readable.",
+      "editTitle": "Edit gym",
+      "inactive": "Inactive",
+      "name": "Name",
+      "reactivate": "Reactivate",
+      "saveFailed": "The gym could not be saved. Check the name and slug and try again.",
+      "slug": "Slug",
+      "status": "Status",
+      "timezone": "Time zone",
+      "title": "Gyms"
+    },
+    "loadFailed": "This list could not be loaded.",
+    "loading": "Loading…",
+    "save": "Save",
+    "saving": "Saving…"
+  },
   "app": {
     "name": "GymOps"
   },

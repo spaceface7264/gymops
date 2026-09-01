@@ -1,4 +1,31 @@
 {
+  "admin": {
+    "actions": "Handlinger",
+    "cancel": "Annullér",
+    "edit": "Redigér",
+    "empty": "Der er endnu ikke noget at administrere her.",
+    "gyms": {
+      "active": "Aktiv",
+      "city": "By",
+      "create": "Nyt center",
+      "createTitle": "Nyt center",
+      "deactivate": "Deaktivér",
+      "dialogDescription": "Et center deaktiveres, det slettes aldrig, så historikken bevares.",
+      "editTitle": "Redigér center",
+      "inactive": "Inaktiv",
+      "name": "Navn",
+      "reactivate": "Aktivér igen",
+      "saveFailed": "Centret kunne ikke gemmes. Tjek navn og slug, og prøv igen.",
+      "slug": "Slug",
+      "status": "Status",
+      "timezone": "Tidszone",
+      "title": "Centre"
+    },
+    "loadFailed": "Listen kunne ikke indlæses.",
+    "loading": "Indlæser…",
+    "save": "Gem",
+    "saving": "Gemmer…"
+  },
   "app": {
     "name": "GymOps"
   },
