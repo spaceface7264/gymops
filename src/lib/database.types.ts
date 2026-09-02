@@ -302,6 +302,105 @@ export type Database = {
           },
         ]
       }
+      event_gyms: {
+        Row: {
+          event_id: string
+          gym_id: string
+        }
+        Insert: {
+          event_id: string
+          gym_id: string
+        }
+        Update: {
+          event_id?: string
+          gym_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_gyms_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_gyms_gym_id_fkey"
+            columns: ["gym_id"]
+            isOneToOne: false
+            referencedRelation: "gyms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          description: string
+          end_time: string | null
+          ends_on: string | null
+          event_type: Database["public"]["Enums"]["event_type"]
+          id: string
+          last_on: string | null
+          link: string | null
+          start_time: string | null
+          starts_on: string
+          title: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          description?: string
+          end_time?: string | null
+          ends_on?: string | null
+          event_type?: Database["public"]["Enums"]["event_type"]
+          id?: string
+          last_on?: string | null
+          link?: string | null
+          start_time?: string | null
+          starts_on: string
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          description?: string
+          end_time?: string | null
+          ends_on?: string | null
+          event_type?: Database["public"]["Enums"]["event_type"]
+          id?: string
+          last_on?: string | null
+          link?: string | null
+          start_time?: string | null
+          starts_on?: string
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       guide_acks: {
         Row: {
           acknowledged_at: string
@@ -924,6 +1023,7 @@ export type Database = {
       can_listen_to_checklists: { Args: { topic: string }; Returns: boolean }
       can_publish_content: { Args: { target_gym_id: string }; Returns: boolean }
       can_read_content: { Args: { target_gym_id: string }; Returns: boolean }
+      can_read_event: { Args: { target_event_id: string }; Returns: boolean }
       content_object_gym: { Args: { object_name: string }; Returns: string }
       content_search_vector: {
         Args: { doc: Json; title: string }
@@ -943,6 +1043,7 @@ export type Database = {
       checklist_kind: "opening" | "closing" | "custom"
       content_status: "draft" | "published"
       daily_log_kind: "handover" | "note" | "issue"
+      event_type: "community" | "campaign" | "groups" | "offer" | "other"
       gym_role: "manager" | "staff"
       incident_kind: "injury" | "equipment" | "cleaning" | "other"
       incident_severity: "low" | "medium" | "high"
@@ -1078,6 +1179,7 @@ export const Constants = {
       checklist_kind: ["opening", "closing", "custom"],
       content_status: ["draft", "published"],
       daily_log_kind: ["handover", "note", "issue"],
+      event_type: ["community", "campaign", "groups", "offer", "other"],
       gym_role: ["manager", "staff"],
       incident_kind: ["injury", "equipment", "cleaning", "other"],
       incident_severity: ["low", "medium", "high"],

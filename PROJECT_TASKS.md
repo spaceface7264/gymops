@@ -56,6 +56,7 @@ Legend: P1 = Phase 1 etc. Effort: S (< half day), M (1–2 days), L (3+ days).
 | P4-08 | Incident form (camera capture), list, detail, status flow, comments, assignee                       | P4-07, P3-01        | L      |
 | P4-09 | Daily-log "issue" → pre-filled incident                                                             | P4-06, P4-08        | S      |
 | P4-10 | Home page: today's checklists, open incidents, latest log entry                                     | P4-04, P4-08, P4-06 | S      |
+| P4-11 | Migration: `events` + `event_gyms`, RLS (admin-only writes), pgTAP; Events page, list and month views | P1-04, P1-08        | M      |
 
 ## Phase 5 — Notifications and PWA
 
@@ -106,7 +107,7 @@ Legend: P1 = Phase 1 etc. Effort: S (< half day), M (1–2 days), L (3+ days).
 
 ## Later (not scheduled)
 
-- V2: tasks (`tasks`, recurrence, assignment, incident → task), calendars (`events`, per gym + company).
+- V2: tasks (`tasks`, recurrence, assignment, incident → task). Calendars shipped early as P4-11.
 - V3: dashboards, `brp-sync` Edge Function (needs BRP API key, service account, rate limits, webhook info).
 - Chat follow-ups: threads, reactions, search.
 - Assistant follow-ups: pgvector retrieval, live ops data, actions.
