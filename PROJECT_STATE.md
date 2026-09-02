@@ -27,7 +27,8 @@ item of "Hosted project cutover". P4-02 is done and did *not* need it — the
 local stack ships `pg_cron` — but the extension has to be enabled on the hosted
 project before the schema is pushed there.
 
-Next up: **P4-05**, completion history and missed runs on the manager home.
+Next up: **P4-06**, the daily log — the first task of the phase that is not
+about checklists.
 
 Testing Realtime locally needs the full stack: the run screen's live sync does
 not work under the CI-style `supabase start -x …`, which leaves the realtime
@@ -41,7 +42,7 @@ container out. `supabase stop && supabase start` brings it back.
 | P1 Scaffold and auth | ✅ Complete | P1-01 to P1-10, merged in PR #1. |
 | P2 Users and gyms admin  | ✅ Complete    | P2-01 to P2-06, merged in PR #2.                |
 | P3 News and guides       | ✅ Complete    | P3-01 to P3-07 (PR #3) and the audit fixes (#4). |
-| P4 Daily ops             | 🔄 In progress | `phase-4-daily-ops`. P4-01 … P4-04 done.        |
+| P4 Daily ops             | 🔄 In progress | `phase-4-daily-ops`. P4-01 … P4-05 done.        |
 | P5 Notifications and PWA | ⬜ Not started |                                                 |
 | P6 Team chat             | ⬜ Not started |                                                 |
 | P7 Desktop and release   | ⬜ Not started |                                                 |
@@ -81,7 +82,8 @@ Update this list as work begins:
 | P4-02 | ✅ done | 2026-09-02 | 2026-09-02 | `20260902160000_checklist_generation.sql`: `pg_cron` plus `generate_checklist_runs(as_of)`, a security-definer function that creates one run per due template per gym and snapshots the template's items into it. The job runs hourly at :00 and each gym generates when *its own* clock reads 03:xx, so one schedule serves every time zone, the 45-minute ones included. Idempotent on the P4-01 unique key; inactive gyms, inactive templates and templates with no items generate nothing. `supabase/tests/080-checklist-generation.test.sql` — 13 assertions, 168 pgTAP total. |
 | P4-03 | ✅ done | 2026-09-02 | 2026-09-02 | `features/checklists`: `/checklists/templates` lists every template the viewer may see with its scope, kind, schedule and size, and `…/new` and `…/:templateId/edit` edit one — name, kind, scope, the seven weekday toggles, and the items with up/down reordering and a required flag. Items are diffed on save (ids kept, positions renumbered, dropped rows deleted) so a run item does not lose the template item it came from. Deactivation replaces deletion. `/checklists` redirects to the templates page until P4-04 puts the runs at the index. 9 new unit tests (162 total); checked against the real API as `manager@gymops.test` — the template saved, company-wide and another gym's were refused with 403, and P4-02 generated a run with both items from it. |
 | P4-04 | ✅ done | 2026-09-02 | 2026-09-02 | `/checklists` is now the run screen: today's runs for the gym in scope (each gym's own date), progress over the required items, a Complete badge, per-item notes saved on blur, and ticking that sends only `done_at`. `20260902170000_checklist_realtime.sql` publishes `checklist_run_items` and opens one private channel per gym scope, authorised by `can_listen_to_checklists()` — the first policy this project puts on `realtime.messages`. 8 new pgTAP assertions (176 total), 9 unit tests (171 total). Verified on the running stack: staff joined their own gym's channel, were refused another gym's and `checklists:all`, and received the manager's tick live; a tick over REST claiming someone else's `done_by` was still recorded as the manager's. |
-| P4-05 … P8-06 | ⬜ not started | | | |
+| P4-05 | ✅ done | 2026-09-02 | 2026-09-02 | `ChecklistHistoryCard` on the home page, for admins and managers only: how many of the last seven days' runs were completed, and every run nobody finished — name, date, gym when the scope is all of them, and how far it got. `runOutcome()` calls a run missed only once the gym's own day is over, so this evening's unfinished closing is not an accusation. Read-only, no migration. 8 new unit tests (179 total); the classification re-checked over REST as `manager@gymops.test` against generated runs for yesterday and today. |
+| P4-06 … P8-06 | ⬜ not started | | | |
 
 Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
 
@@ -268,6 +270,9 @@ of truth; nothing in config.toml applies to a hosted project)
 | 2026-09-02 | P4-04: `replica identity full` on `checklist_run_items` was tried and reverted. Realtime's RLS check is `exists(select 1 from … where <primary key>)`, and the WAL already carries the whole new tuple for an update, so it changed nothing but the WAL volume. It is only needed for DELETE payloads, which nothing subscribes to. |
 | 2026-09-02 | P4-04: "who ticked it" shows a name only when `profiles` lets the viewer see one — admins and the managers of your gyms. Staff see the time alone. Widening `profiles` for this screen was rejected; it is the same gap P3 recorded, and P6 (chat member lists) is where it gets decided. |
 | 2026-09-02 | P4-04 diagnostic note: a client that joins a topic it is not authorised for tears down its own socket, so a *later* legitimate subscription on the same client receives nothing. That first looked like Realtime dropping staff events and cost an afternoon; it is a property of the test client, not of the policy. |
+
+| 2026-09-02 | P4-05: a run counts as missed only when the gym's own date has moved past it, not when the clock passes some cut-off. A closing checklist is finished at closing time, and a card that called it missed at 18:00 would be wrong every single evening. |
+| 2026-09-02 | P4-05: the home block is hidden from staff as an affordance, not as a permission — RLS still lets any member read their gym's runs, and the run screen shows them today's. What managers get is the week and the gaps, which is the thing they act on. |
 
 ## How to update this file
 

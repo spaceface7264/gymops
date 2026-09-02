@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { Database } from '@/lib/database.types'
 import { supabase } from '@/lib/supabase'
-import { localDate, possibleLocalDates } from './local-date'
+import { localDate, possibleLocalDates, recentDates } from './local-date'
 
 type TemplateRow = Database['public']['Tables']['checklist_templates']['Row']
 type ItemRow = Database['public']['Tables']['checklist_template_items']['Row']
@@ -42,6 +42,8 @@ export const checklistKeys = {
   template: (templateId: string) => ['checklists', 'templates', templateId] as const,
   runs: (gymId: string | null, from: string, to: string) =>
     ['checklists', 'runs', gymId ?? 'all', from, to] as const,
+  history: (gymId: string | null, from: string, to: string) =>
+    ['checklists', 'history', gymId ?? 'all', from, to] as const,
 }
 
 /**
@@ -295,4 +297,44 @@ export function isRunComplete(run: ChecklistRun) {
 export function runProgress(run: ChecklistRun) {
   const required = run.checklist_run_items.filter((item) => item.required)
   return { done: required.filter((item) => item.done_at).length, total: required.length }
+}
+
+export type RunOutcome = 'complete' | 'open' | 'missed'
+
+/**
+ * A run is missed once its own day is over and a required item is still
+ * unticked — "over" on the gym's clock, the same one that dated it.
+ */
+export function runOutcome(run: ChecklistRun, at: Date = new Date()): RunOutcome {
+  if (isRunComplete(run)) return 'complete'
+  if (!run.gyms) return 'open'
+  return run.run_date < localDate(run.gyms.timezone, at) ? 'missed' : 'open'
+}
+
+/**
+ * The runs of the last `days` days, for the completion history a manager sees
+ * on the home page. The window is bounded in UTC and a day wider on each side
+ * than the dates it needs, because each gym dates its own runs.
+ */
+export function useRecentRuns(gymId: string | null, days = 7) {
+  const [from, to] = recentDates(days)
+
+  return useQuery({
+    queryKey: checklistKeys.history(gymId, from, to),
+    queryFn: async () => {
+      let query = supabase
+        .from('checklist_runs')
+        .select(runColumns)
+        .gte('run_date', from)
+        .lte('run_date', to)
+        .order('run_date', { ascending: false })
+        .order('position', { referencedTable: 'checklist_run_items' })
+
+      if (gymId) query = query.eq('gym_id', gymId)
+
+      const { data, error } = await query
+      if (error) throw error
+      return data
+    },
+  })
 }

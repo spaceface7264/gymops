@@ -266,6 +266,14 @@
     "label": "Gym"
   },
   "home": {
+    "checklists": {
+      "missed": "Missed checklists",
+      "missedBadge": "Missed",
+      "noRuns": "No checklists have run here yet.",
+      "nothingMissed": "Nothing was missed in the last {{days}} days.",
+      "summary": "{{done}} of {{total}} checklists completed in the last {{days}} days.",
+      "title": "Checklists this week"
+    },
     "news": {
       "allCaughtUp": "Nothing new — you are up to date.",
       "allNews": "All news",

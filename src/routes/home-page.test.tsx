@@ -20,8 +20,18 @@ function builder() {
 }
 
 vi.mock('@/lib/supabase', () => ({ supabase: { from: () => builder() } }))
-vi.mock('@/features/auth', () => ({ useAuth: () => ({ user: { id: 'user-1' } }) }))
-vi.mock('@/features/gyms', () => ({ useGymScope: () => ({ gymId: 'gym-nord' }) }))
+// Staff: the checklist block below the news is for the people who run a gym,
+// so these cases see the news alone.
+vi.mock('@/features/auth', () => ({
+  useAuth: () => ({ user: { id: 'user-1' } }),
+  useProfile: () => ({
+    data: { id: 'user-1', is_admin: false, is_superadmin: false, gym_memberships: [] },
+  }),
+}))
+vi.mock('@/features/gyms', () => ({
+  useGymScope: () => ({ gymId: 'gym-nord' }),
+  useGyms: () => ({ data: [] }),
+}))
 
 const post = (overrides: Row): Row => ({
   id: 'post-1',

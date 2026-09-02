@@ -266,6 +266,14 @@
     "label": "Center"
   },
   "home": {
+    "checklists": {
+      "missed": "Manglende tjeklister",
+      "missedBadge": "Ikke udført",
+      "noRuns": "Der er endnu ikke kørt nogen tjeklister her.",
+      "nothingMissed": "Intet blev overset de sidste {{days}} dage.",
+      "summary": "{{done}} af {{total}} tjeklister er udført de sidste {{days}} dage.",
+      "title": "Ugens tjeklister"
+    },
     "news": {
       "allCaughtUp": "Ikke noget nyt — du er ajour.",
       "allNews": "Alle nyheder",

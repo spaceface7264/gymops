@@ -174,6 +174,7 @@ gymops/
 | One shared Realtime channel for every gym's checklists | Payloads are RLS-filtered either way, but a private channel per gym scope (`checklists:<gym id>`) refuses the join itself, so a gym's activity is not something another gym's client is merely trusted not to read. `can_listen_to_checklists()` is the rule, and it is tested like every other permission helper. |
 | Patching the cached run from the Realtime payload | The event may belong to a run the screen is not showing, and the screen would then have to reconcile two sources of truth. It refetches the gym's runs instead — one small query per change. |
 | `replica identity full` on `checklist_run_items` | Tried while diagnosing missing events. Realtime checks RLS with `exists(… where <primary key>)` and the WAL already carries the whole new tuple on update, so it only added WAL volume. It matters for DELETE payloads, which nothing subscribes to. |
+| Calling a checklist missed at a fixed time of day | A closing checklist is finished when the gym closes, so any cut-off before midnight would flag it wrongly every evening. A run is missed once the gym's own date has moved past it — the same clock that dated it (§2.2, P4-02). |
 | Staff seeing every profile in their own gyms | Not needed by any V1 screen before chat. `profiles` is readable by yourself, admins and the managers of your gyms; widen it in P6 if the chat member list needs it. |
 
 ## 5. Conventions

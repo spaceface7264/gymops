@@ -17,7 +17,7 @@ export function localDate(timeZone: string, at: Date = new Date()): string {
   return `${part('year')}-${part('month')}-${part('day')}`
 }
 
-const dayMs = 24 * 60 * 60 * 1000
+export const dayMs = 24 * 60 * 60 * 1000
 
 /**
  * The dates that can be "today" somewhere: no time zone is more than a day
@@ -26,6 +26,14 @@ const dayMs = 24 * 60 * 60 * 1000
 export function possibleLocalDates(at: Date = new Date()): [string, string] {
   return [
     localDate('UTC', new Date(at.getTime() - dayMs)),
+    localDate('UTC', new Date(at.getTime() + dayMs)),
+  ]
+}
+
+/** The UTC bounds of a "last N days" window, a day wide on either side. */
+export function recentDates(days: number, at: Date = new Date()): [string, string] {
+  return [
+    localDate('UTC', new Date(at.getTime() - days * dayMs)),
     localDate('UTC', new Date(at.getTime() + dayMs)),
   ]
 }
