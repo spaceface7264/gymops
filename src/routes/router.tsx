@@ -8,6 +8,7 @@ import { AppShell } from '@/routes/app-shell'
 import { ForgotPasswordPage } from '@/routes/forgot-password-page'
 import { HomePage } from '@/routes/home-page'
 import { LoginPage } from '@/routes/login-page'
+import { GuideDetailPage, GuideEditorPage, GuidesPage } from '@/features/guides'
 import { NewsFeed, PostDetailPage, PostEditorPage } from '@/features/news'
 import { ModulePlaceholder } from '@/routes/module-placeholder'
 import { navEntries } from '@/routes/nav'
@@ -39,6 +40,10 @@ export const router = createBrowserRouter([
       { path: 'news/new', element: <PostEditorPage /> },
       { path: 'news/:postId', element: <PostDetailPage /> },
       { path: 'news/:postId/edit', element: <PostEditorPage /> },
+      { path: 'guides', element: <GuidesPage /> },
+      { path: 'guides/new', element: <GuideEditorPage /> },
+      { path: 'guides/:guideId', element: <GuideDetailPage /> },
+      { path: 'guides/:guideId/edit', element: <GuideEditorPage /> },
       {
         path: 'admin',
         element: <AdminPage />,
