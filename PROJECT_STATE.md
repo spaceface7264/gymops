@@ -1,10 +1,14 @@
 # GymOps — Project State
 
-Last updated: 2026-09-01
+Last updated: 2026-09-02
 
 ## Currently working on
 
-**Phase 1 is done** on branch `phase-1-scaffold` — P1-10 added `.github/workflows/ci.yml`. Next up: **phase 2**, and P2-03 is where the hosted project is needed; see "Hosted project cutover".
+**Phase 2 is done** on branch `phase-2-admin` (P2-01 … P2-06). Everything runs
+against the local stack; the `invite` function (P2-03) has never been deployed,
+and doing so — with a Resend account behind it — is the first item of "Hosted
+project cutover". Next up: **phase 3, news and guides** (P3-01 … P3-07), which
+needs no hosted project.
 
 The repo has no git remote yet, so CI has never actually run on GitHub: the workflow is verified only by running the same commands locally. Push the branch and check the first run.
 
@@ -14,7 +18,7 @@ The repo has no git remote yet, so CI has never actually run on GitHub: the work
 | ------------------------ | -------------- | ----------------------------------------------- |
 | Design                   | ✅ Complete    | Approved 2026-09-01. Spec in `PROJECT_SPEC.md`. |
 | P1 Scaffold and auth | ✅ Complete | P1-01 to P1-10 done on `phase-1-scaffold`. |
-| P2 Users and gyms admin  | ⬜ Not started |                                                 |
+| P2 Users and gyms admin  | ✅ Complete    | P2-01 to P2-06 done on `phase-2-admin`.         |
 | P3 News and guides       | ⬜ Not started |                                                 |
 | P4 Daily ops             | ⬜ Not started |                                                 |
 | P5 Notifications and PWA | ⬜ Not started |                                                 |
@@ -38,7 +42,13 @@ Update this list as work begins:
 | P1-09 | ✅ done | 2026-09-01 | 2026-09-01 | `supabase/seed.sql`: 3 gyms, one user per role (`<role>@gymops.test` / `Password123`, raised from `password123` in P1-07 to satisfy the password policy), memberships. Password sign-in and per-role RLS verified through the local API. |
 | P1-08 | ✅ done | 2026-09-01 | 2026-09-01 | `AppShell` (sidebar from `md`, bottom tab bar on phones), nav from `src/routes/nav.ts` with placeholders for unbuilt modules, `src/features/gyms` (provider, `useGymScope`, switcher, `useGyms`), `useLocaleSync`, sign out. 15 tests; checked in Chrome as manager and admin, desktop and phone width. |
 | P1-10 | ✅ done | 2026-09-01 | 2026-09-01 | `.github/workflows/ci.yml`: job `web` (typecheck, lint, format:check, test, build on Node 20) and job `database` (pinned Supabase CLI, `supabase start -x` the services the tests do not need, `db reset`, `test db`). Both sequences verified locally; never run on GitHub — the repo has no remote. |
-| P2-01 … P8-06 | ⬜ not started | | | |
+| P2-06 | ✅ done | 2026-09-01 | 2026-09-01 | `20260901210000_audit_role_changes.sql`: security-definer triggers writing `profile.privileges_changed` and `membership.granted`/`role_changed`/`revoked` to `audit_log`. `supabase/tests/020-audit-role-changes.test.sql` — 13 assertions; 51/51 pass with the harness. Commit `fe453af`. |
+| P2-01 | ✅ done | 2026-09-01 | 2026-09-01 | `src/features/admin` (queries, `GymsPanel`, `GymDialog`, `toSlug`) and `src/routes/admin-page.tsx` (`AdminPage` layout + `RequireSuperadmin`); `/admin` redirects to the first section the user may see. shadcn `table`, `badge`, `dialog` added. 75 unit tests; create/edit/deactivate driven in Chrome as a superadmin. Commit `a3d78a1`. |
+| P2-02 | ✅ done | 2026-09-01 | 2026-09-01 | `UsersPanel` at `/admin/users` (now the section `/admin` redirects to): role badges, active/inactive, deactivate for admins only, filtered by the shell's gym switcher. The nav's Admin entry is now shown to managers too — they administer their own gyms' staff. 83 unit tests; checked in Chrome as a superadmin (all gyms and one gym) and as a manager (own gyms only, no deactivate, `/admin/gyms` bounces home). |
+| P2-05 | ✅ done | 2026-09-01 | 2026-09-01 | `RolesDialog` from the user list (gym roles for admins, staff-in-own-gyms for managers, the admin flag for superadmins) and `AuditPanel` at `/admin/audit`, superadmin-only. Membership writes are upserts, so the P2-06 trigger records grant vs role change. 90 unit tests; role changes and the resulting log entries checked in Chrome as a superadmin. |
+| P2-03 | ✅ done | 2026-09-02 | 2026-09-02 | `supabase/functions/invite`: checks the caller against the §2.1 matrix, records the `invites` row, calls `inviteUserByEmail`, then applies the membership or admin flag with the service role. Migration `20260901220000_invite_acceptance.sql` closes the pending invite on first sign-in (4 pgTAP assertions, 55/55 pass). The accept screen now offers the name the inviter typed. Verified locally end to end: mail in Mailpit → link → password → session → membership → invite accepted, plus the whole permission matrix by HTTP (201/403/409/400/401). **Not deployed** — hosted cutover pending. |
+| P2-04 | ✅ done | 2026-09-02 | 2026-09-02 | `InviteDialog` on the user list: role and gym limited to what the inviter may hand out (staff-in-own-gyms for a manager, the company-wide admin only for a superadmin), defaulting to the gym in the switcher. The function's refusals are shown as translated messages. 96 unit tests; a manager invited two people in Chrome, and the "already a user" refusal was checked in the dialog. |
+| P3-01 … P8-06 | ⬜ not started | | | |
 
 Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
 
@@ -46,9 +56,9 @@ Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
 
 | Item                                                        | Needed for                           | Owner                      | Status               |
 | ----------------------------------------------------------- | ------------------------------------ | -------------------------- | -------------------- |
-| Supabase project (hosted) | P2-03 (`invite` Edge Function) | Rami | `.env.local` points at the local stack since P1-02; the hosted `ngcqpftfqepvhpjikaqq` values sit commented out beneath it. Confirm that ref is the GymOps project — the Supabase MCP connection currently points at a different project (`ooikemajridlhceejgmo`), which times out. Steps in "Hosted project cutover" below. |
-| GitHub repository (remote) | P1-10 CI actually running | Rami | `.github/workflows/ci.yml` exists and its steps pass locally, but the repo has no remote, so no run has happened. Add the remote, push `phase-1-scaffold`, confirm both jobs go green. |
-| Resend account + API key | P2-03 (real invite mail), P5-03 | Rami | not created. `[auth.rate_limit] email_sent = 2` per hour and hosted Supabase's built-in SMTP are both far below what inviting 200+ staff needs, so a provider must exist before invites go out for real. |
+| Supabase project (hosted) | deploying `invite` (P2-03, written and working locally) | Rami | `.env.local` points at the local stack since P1-02; the hosted `ngcqpftfqepvhpjikaqq` values sit commented out beneath it. Confirm that ref is the GymOps project — the Supabase MCP connection currently points at a different project (`ooikemajridlhceejgmo`), which times out. Steps in "Hosted project cutover" below. |
+| GitHub repository (remote) | P1-10 CI actually running | Rami | `.github/workflows/ci.yml` exists and its steps pass locally, but the repo has no remote, so no run has happened. Add the remote, push `phase-1-scaffold` and `phase-2-admin`, confirm both jobs go green. |
+| Resend account + API key | real invite mail (P2-03), P5-03 | Rami | not created. `[auth.rate_limit] email_sent = 2` per hour and hosted Supabase's built-in SMTP are both far below what inviting 200+ staff needs, so a provider must exist before invites go out for real. |
 | VAPID key pair                                              | P5-03                                | generated during P5-03     | —                    |
 | Anthropic API key                                           | P8-03                                | Rami                       | not created          |
 | Apple Developer ID + Windows signing cert                   | first public desktop release (P7-04) | Rami                       | not started          |
@@ -141,6 +151,18 @@ of truth; nothing in config.toml applies to a hosted project)
 | 2026-09-01 | Development stays on the local stack until P2-03. CI (P1-10) runs `supabase db reset` + pgTAP locally, and no task before the `invite` Edge Function needs a deployed project; the cutover steps live in "Hosted project cutover" above so they are not re-derived under pressure. || 2026-09-01 | P1-08: the nav is data (`src/routes/nav.ts`) and the router builds placeholder routes from the same list, so a phase cannot add a page without adding its nav entry. |
 | 2026-09-01 | P1-08: the selected gym lives in `GymProvider`, stored per device under `gymops.gym` and always validated against what the signed-in user may see; `null` means "all gyms" and is offered to admins and superadmins only. A staff member with one gym sees its name, not a dead dropdown. |
 | 2026-09-01 | P1-10: CI is two jobs — the web gates and the database — so they run in parallel and the job name says which half broke. The database job starts the stack with `-x` and keeps only postgres, gotrue (the seed writes `auth.users`) and storage-api (`db reset` creates the buckets); the Supabase CLI version is pinned. |
+| 2026-09-01 | P2-06: the audit triggers are security definer and `audit_log` keeps no insert policy, so a client can neither forge an entry nor read one unless it is a superadmin. Membership updates that leave `role` alone write nothing, so the log stays a role history rather than a row-touch log. |
+| 2026-09-01 | P2-01: the admin module is one route with a section per task (`/admin/gyms` first), not one nav entry per admin screen — the shell's nav is for the modules staff use during a shift. `/admin` redirects to the first section the signed-in user may open. |
+| 2026-09-01 | P2-01: the time-zone field is a native select over `Intl.supportedValuesOf('timeZone')`. A hand-curated Danish list would be shorter, but P4-02 generates checklist runs at 03:00 gym-local and a gym abroad must not need a migration. |
+| 2026-09-01 | P2-01: `toSlug` maps æ/ø/å to ae/oe/aa before stripping accents. NFD does not decompose them, so the ASCII filter silently ate them and "Aalborg Øst" became `aalborg-st` — found by driving the real browser, not by the unit tests. |
+| 2026-09-01 | P2-02: the shell's gym switcher is the user list's filter rather than a second gym control on the page. Selecting a gym joins `gym_memberships` inner, so the list answers "who works here" and drops the admins, who hold no membership anywhere; "all gyms" lists everyone the viewer may see. |
+| 2026-09-01 | P2-02: the Admin nav entry is shown to managers, not only admins — a manager invites and lists their own gyms' staff (spec §2.1). Deactivating stays admin-only, matching `guard_profile_privileges`, and nobody can deactivate themselves. |
+| 2026-09-01 | P2-05: role editing is one dialog per user listing the gyms the *actor* may assign — every gym for an admin, the managed ones for a manager — rather than a separate screen per membership. Each change is its own write, so the audit trail is one row per decision. |
+| 2026-09-01 | P2-05: the audit view resolves actor names from the user list rather than a join: `audit_log.actor_id` points at `auth.users`, which PostgREST cannot embed, and a superadmin can already read every profile. |
+| 2026-09-02 | P2-03: `inviteUserByEmail` creates the account at invite time, so the function applies the gym membership (or the admin flag) immediately rather than waiting for acceptance. The accept screen stays about the password, as P1-07 decided, and "accepted" is defined as the first sign-in — a trigger on `auth.users` closes the pending row, which is what frees the address for a new invite. |
+| 2026-09-02 | P2-03: the function authorises from the caller's own profile read with the service role, and never trusts the request body for anything but the target. A manager may only create staff in a gym they manage; only a superadmin may invite an admin. RLS on `invites` says the same thing, so a client that skips the function gains nothing. |
+| 2026-09-02 | P2-03: `supabase/functions` is excluded from ESLint — it is Deno, with its own imports — and type-checked by the Supabase CLI instead. |
+| 2026-09-02 | P2-04: the dialog offers only the choices the inviter may make, and the Edge Function checks the same rules again — the UI is a convenience, the function is the gate. Its refusal codes (`forbidden`, `already_a_user`) are translated; anything else is "try again". |
 | 2026-09-01 | P1-08: `profiles.locale` overrides the browser language once the profile loads (`useLocaleSync`), which is where P1-06 said this belonged. The signed-out screens keep detecting from the browser. |
 
 ## How to update this file

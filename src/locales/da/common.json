@@ -1,4 +1,75 @@
 {
+  "admin": {
+    "actions": "Handlinger",
+    "audit": {
+      "empty": "Der er endnu ikke registreret noget.",
+      "system": "System",
+      "title": "Revisionslog",
+      "what": "Ændring",
+      "when": "Hvornår",
+      "who": "Af"
+    },
+    "cancel": "Annullér",
+    "edit": "Redigér",
+    "gyms": {
+      "active": "Aktiv",
+      "city": "By",
+      "create": "Nyt center",
+      "createTitle": "Nyt center",
+      "deactivate": "Deaktivér",
+      "dialogDescription": "Et center deaktiveres, det slettes aldrig, så historikken bevares.",
+      "editTitle": "Redigér center",
+      "inactive": "Inaktiv",
+      "name": "Navn",
+      "reactivate": "Aktivér igen",
+      "saveFailed": "Centret kunne ikke gemmes. Tjek navn og slug, og prøv igen.",
+      "slug": "Slug",
+      "status": "Status",
+      "timezone": "Tidszone",
+      "title": "Centre"
+    },
+    "invite": {
+      "already_a_user": "Adressen hører allerede til en GymOps-konto.",
+      "description": "De får en e-mail med et link til at vælge adgangskode. Center og rolle er besluttet her.",
+      "email": "Arbejds-e-mail",
+      "forbidden": "Du må ikke tildele den rolle.",
+      "fullName": "Fulde navn",
+      "gym": "Center",
+      "invite": "Invitér",
+      "role": "Rolle",
+      "send": "Send invitation",
+      "sending": "Sender…",
+      "title": "Invitér en person",
+      "unknown": "Invitationen kunne ikke sendes. Prøv igen om et øjeblik."
+    },
+    "loadFailed": "Listen kunne ikke indlæses.",
+    "loading": "Indlæser…",
+    "roles": {
+      "description": "Alle ændringer her registreres i revisionsloggen.",
+      "edit": "Roller",
+      "failed": "Ændringen blev afvist. Du har måske ikke rettigheder til den.",
+      "isAdmin": "Administrator for hele virksomheden",
+      "none": "Ingen rolle",
+      "title": "Roller"
+    },
+    "save": "Gem",
+    "saving": "Gemmer…",
+    "users": {
+      "active": "Aktiv",
+      "admin": "Administrator",
+      "deactivate": "Deaktivér",
+      "empty": "Der er endnu ingen brugere i dette center.",
+      "inactive": "Inaktiv",
+      "manager": "Leder",
+      "name": "Navn",
+      "reactivate": "Aktivér igen",
+      "roles": "Roller",
+      "staff": "Medarbejder",
+      "status": "Status",
+      "superadmin": "Superadministrator",
+      "title": "Brugere"
+    }
+  },
   "app": {
     "name": "GymOps"
   },

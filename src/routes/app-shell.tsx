@@ -18,7 +18,14 @@ export function AppShell() {
   const signOut = useSignOut()
   useLocaleSync()
 
-  const entries = visibleNavEntries(Boolean(profile?.is_admin || profile?.is_superadmin))
+  // Managers administer their own gyms' staff, so the admin section is theirs
+  // as well; only staff never see it.
+  const canAdminister = Boolean(
+    profile?.is_admin ||
+    profile?.is_superadmin ||
+    profile?.gym_memberships.some((membership) => membership.role === 'manager'),
+  )
+  const entries = visibleNavEntries(canAdminister)
 
   return (
     <div className="bg-background text-foreground min-h-dvh md:flex">

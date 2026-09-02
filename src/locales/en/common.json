@@ -1,4 +1,75 @@
 {
+  "admin": {
+    "actions": "Actions",
+    "audit": {
+      "empty": "Nothing has been recorded yet.",
+      "system": "System",
+      "title": "Audit log",
+      "what": "Change",
+      "when": "When",
+      "who": "By"
+    },
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "gyms": {
+      "active": "Active",
+      "city": "City",
+      "create": "New gym",
+      "createTitle": "New gym",
+      "deactivate": "Deactivate",
+      "dialogDescription": "A gym is deactivated, never deleted, so its history stays readable.",
+      "editTitle": "Edit gym",
+      "inactive": "Inactive",
+      "name": "Name",
+      "reactivate": "Reactivate",
+      "saveFailed": "The gym could not be saved. Check the name and slug and try again.",
+      "slug": "Slug",
+      "status": "Status",
+      "timezone": "Time zone",
+      "title": "Gyms"
+    },
+    "invite": {
+      "already_a_user": "That address already belongs to a GymOps account.",
+      "description": "They get an email with a link to set their password. Their gym and role are already decided here.",
+      "email": "Work email",
+      "forbidden": "You may not hand out that role.",
+      "fullName": "Full name",
+      "gym": "Gym",
+      "invite": "Invite",
+      "role": "Role",
+      "send": "Send invite",
+      "sending": "Sending…",
+      "title": "Invite someone",
+      "unknown": "The invite could not be sent. Try again in a moment."
+    },
+    "loadFailed": "This list could not be loaded.",
+    "loading": "Loading…",
+    "roles": {
+      "description": "Every change here is recorded in the audit log.",
+      "edit": "Roles",
+      "failed": "That change was refused. You may not have the rights for it.",
+      "isAdmin": "Company-wide admin",
+      "none": "No role",
+      "title": "Roles"
+    },
+    "save": "Save",
+    "saving": "Saving…",
+    "users": {
+      "active": "Active",
+      "admin": "Admin",
+      "deactivate": "Deactivate",
+      "empty": "No users in this gym yet.",
+      "inactive": "Inactive",
+      "manager": "Manager",
+      "name": "Name",
+      "reactivate": "Reactivate",
+      "roles": "Roles",
+      "staff": "Staff",
+      "status": "Status",
+      "superadmin": "Superadmin",
+      "title": "Users"
+    }
+  },
   "app": {
     "name": "GymOps"
   },
