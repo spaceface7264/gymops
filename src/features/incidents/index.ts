@@ -1,3 +1,4 @@
+export { OpenIncidentsCard } from './open-incidents-card'
 export { IncidentBadges } from './incident-badges'
 export { IncidentDetailPage } from './incident-detail'
 export { IncidentFormPage } from './incident-form'

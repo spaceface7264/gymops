@@ -315,12 +315,28 @@
       "summary": "{{done}} of {{total}} checklists completed in the last {{days}} days.",
       "title": "Checklists this week"
     },
+    "dailyLog": {
+      "empty": "Nothing has been logged here yet.",
+      "title": "Latest in the log",
+      "wholeLog": "The whole log"
+    },
+    "incidents": {
+      "all": "All incidents",
+      "allOpen": "All {{count}} open incidents",
+      "none": "Nothing is open here.",
+      "title": "Open incidents",
+      "unassigned": "Nobody yet"
+    },
     "news": {
       "allCaughtUp": "Nothing new — you are up to date.",
       "allNews": "All news",
       "needsConfirmation": "Confirm",
       "title": "News for you",
       "unread": "Unread"
+    },
+    "today": {
+      "openChecklists": "Open the checklists",
+      "title": "Today's checklists"
     }
   },
   "incidents": {

@@ -315,12 +315,28 @@
       "summary": "{{done}} af {{total}} tjeklister er udført de sidste {{days}} dage.",
       "title": "Ugens tjeklister"
     },
+    "dailyLog": {
+      "empty": "Der er endnu ikke logget noget her.",
+      "title": "Seneste i dagbogen",
+      "wholeLog": "Hele dagbogen"
+    },
+    "incidents": {
+      "all": "Alle hændelser",
+      "allOpen": "Alle {{count}} åbne hændelser",
+      "none": "Der er ikke noget åbent her.",
+      "title": "Åbne hændelser",
+      "unassigned": "Ingen endnu"
+    },
     "news": {
       "allCaughtUp": "Ikke noget nyt — du er ajour.",
       "allNews": "Alle nyheder",
       "needsConfirmation": "Bekræft",
       "title": "Nyheder til dig",
       "unread": "Ulæst"
+    },
+    "today": {
+      "openChecklists": "Åbn tjeklisterne",
+      "title": "Dagens tjeklister"
     }
   },
   "incidents": {

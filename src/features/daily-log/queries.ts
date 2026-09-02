@@ -32,6 +32,7 @@ export const dailyLogKeys = {
   all: ['daily-log'] as const,
   list: (gymId: string | null, kind: DailyLogKind | 'all', tag: string | null) =>
     ['daily-log', 'list', gymId ?? 'all', kind, tag ?? 'any'] as const,
+  latest: (gymId: string | null) => ['daily-log', 'latest', gymId ?? 'all'] as const,
 }
 
 /** The gym's timeline, newest first. Deleted entries are left out here. */
@@ -61,6 +62,27 @@ export function useDailyLog(
       const { data, error } = await query
       if (error) throw error
       return data
+    },
+  })
+}
+
+/** The last thing written here, for the home page (P4-10). */
+export function useLatestLogEntry(gymId: string | null) {
+  return useQuery({
+    queryKey: dailyLogKeys.latest(gymId),
+    queryFn: async () => {
+      let query = supabase
+        .from('daily_log_entries')
+        .select(entryColumns)
+        .is('deleted_at', null)
+        .order('created_at', { ascending: false })
+        .limit(1)
+
+      if (gymId) query = query.eq('gym_id', gymId)
+
+      const { data, error } = await query
+      if (error) throw error
+      return data[0] ?? null
     },
   })
 }
