@@ -157,6 +157,8 @@ gymops/
 | Starting the whole Supabase stack in CI | pgTAP needs Postgres, plus gotrue (the seed inserts `auth.users` rows) and storage-api (`db reset` creates the three buckets). `supabase start -x` drops realtime, imgproxy, studio, postgres-meta, edge-runtime, logflare, vector and supavisor. |
 | `supabase/setup-cli` with `version: latest` | A CLI release would then break CI on an unrelated commit. The version is pinned to 2.116.0, the one used locally, and bumped deliberately. |
 | Running CI on the newest Node LTS | CI runs Node 20, the version this project is developed on, so a green build means the same toolchain that runs locally. |
+| A `guide_revisions` table keeping every published body                    | The data model (§3.1) carries no history table, and the requirement is re-confirmation, not archaeology: `guides.version` plus the version stored in `guide_acks` answers "is this reader behind?". History would double the write path and the RLS surface for no V1 screen. |
+| `to_tsvector('danish')` (or `'english'`) for guide and news search        | Authors write in whichever language they please (§2.2), and one stemmer applied to the other language matches worse than no stemmer. Search uses `'simple'` with `websearch_to_tsquery`, title weighted above body. |
 | Staff seeing every profile in their own gyms | Not needed by any V1 screen before chat. `profiles` is readable by yourself, admins and the managers of your gyms; widen it in P6 if the chat member list needs it. |
 
 ## 5. Conventions

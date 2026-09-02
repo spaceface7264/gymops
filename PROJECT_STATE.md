@@ -4,11 +4,13 @@ Last updated: 2026-09-02
 
 ## Currently working on
 
-**Phase 2 is done** on branch `phase-2-admin` (P2-01 … P2-06). Everything runs
-against the local stack; the `invite` function (P2-03) has never been deployed,
-and doing so — with a Resend account behind it — is the first item of "Hosted
-project cutover". Next up: **phase 3, news and guides** (P3-01 … P3-07), which
-needs no hosted project.
+**Phase 3 is done** on branch `phase-3-content` (P3-01 … P3-07), branched off
+`phase-2-admin` because `main` does not yet carry phases 1 and 2. Nothing in it
+needed a hosted project. Next up: **phase 4, daily ops** (P4-01 … P4-10), whose
+P4-02 (pg_cron) is the first task after P2-03 that cannot be finished locally.
+
+The `invite` function (P2-03) has still never been deployed; doing so — with a
+Resend account behind it — is the first item of "Hosted project cutover".
 
 The repo has no git remote yet, so CI has never actually run on GitHub: the workflow is verified only by running the same commands locally. Push the branch and check the first run.
 
@@ -19,7 +21,7 @@ The repo has no git remote yet, so CI has never actually run on GitHub: the work
 | Design                   | ✅ Complete    | Approved 2026-09-01. Spec in `PROJECT_SPEC.md`. |
 | P1 Scaffold and auth | ✅ Complete | P1-01 to P1-10 done on `phase-1-scaffold`. |
 | P2 Users and gyms admin  | ✅ Complete    | P2-01 to P2-06 done on `phase-2-admin`.         |
-| P3 News and guides       | ⬜ Not started |                                                 |
+| P3 News and guides       | ✅ Complete    | P3-01 to P3-07 done on `phase-3-content`.       |
 | P4 Daily ops             | ⬜ Not started |                                                 |
 | P5 Notifications and PWA | ⬜ Not started |                                                 |
 | P6 Team chat             | ⬜ Not started |                                                 |
@@ -48,7 +50,14 @@ Update this list as work begins:
 | P2-05 | ✅ done | 2026-09-01 | 2026-09-01 | `RolesDialog` from the user list (gym roles for admins, staff-in-own-gyms for managers, the admin flag for superadmins) and `AuditPanel` at `/admin/audit`, superadmin-only. Membership writes are upserts, so the P2-06 trigger records grant vs role change. 90 unit tests; role changes and the resulting log entries checked in Chrome as a superadmin. |
 | P2-03 | ✅ done | 2026-09-02 | 2026-09-02 | `supabase/functions/invite`: checks the caller against the §2.1 matrix, records the `invites` row, calls `inviteUserByEmail`, then applies the membership or admin flag with the service role. Migration `20260901220000_invite_acceptance.sql` closes the pending invite on first sign-in (4 pgTAP assertions, 55/55 pass). The accept screen now offers the name the inviter typed. Verified locally end to end: mail in Mailpit → link → password → session → membership → invite accepted, plus the whole permission matrix by HTTP (201/403/409/400/401). **Not deployed** — hosted cutover pending. |
 | P2-04 | ✅ done | 2026-09-02 | 2026-09-02 | `InviteDialog` on the user list: role and gym limited to what the inviter may hand out (staff-in-own-gyms for a manager, the company-wide admin only for a superadmin), defaulting to the gym in the switcher. The function's refusals are shown as translated messages. 96 unit tests; a manager invited two people in Chrome, and the "already a user" refusal was checked in the dialog. |
-| P3-01 … P8-06 | ⬜ not started | | | |
+| P3-02 | ✅ done | 2026-09-02 | 2026-09-02 | `20260902090000_content_schema.sql`: `posts`, `post_reads`, `guide_categories`, `guides`, `guide_acks`; generated `body_text` and weighted `search_vector` columns from `tiptap_text()`; `can_publish_content()`/`can_read_content()` carry the §2.1 content rows; publishing stamps `published_at`; no delete policy anywhere (soft delete). `supabase/tests/040-content-permissions.test.sql` — 44 assertions, 99/99 pass with the harness. |
+| P3-01 | ✅ done | 2026-09-02 | 2026-09-02 | `src/features/content`: `RichTextEditor` (bold, italic, H2, lists, link bar, image upload) and `RichText`, both on one Tiptap schema; `doc.ts` helpers (`toDoc`, `docText`, `excerpt`, `contentImagePath`). Images are uploaded to `content/<gym id or company>/<uuid>.<ext>` and the document keeps the **object path**, signed at render by `useSignedContentUrl`. Migration `20260902100000_content_storage.sql` mirrors the table rules onto `storage.objects` via `content_object_gym()`; `supabase/tests/050-content-storage.test.sql` — 11 assertions, 110/110 pass. 107 unit tests. |
+| P3-03 | ✅ done | 2026-09-02 | 2026-09-02 | `src/features/news`: feed (pinned first, drafts labelled, excerpt, pin from the list), post detail (edit, pin, publish/unpublish, delete behind a dialog) and the editor page at `/news/new` and `/news/:postId/edit`. `usePublishScope()` in `features/content` is the UI half of `can_publish_content()`. News lost its nav placeholder. 121 unit tests; driven in Chrome as a manager (draft → image upload → publish, image signed and rendered) and as staff (another gym's post invisible, no editing controls). |
+| P3-04 | ✅ done | 2026-09-02 | 2026-09-02 | `acknowledgement.tsx` (button + per-gym report) and `use-track-post-read.ts`: opening a published post writes `post_reads` once (`ignoreDuplicates`), the button upserts `acknowledged_at`, and the report lists the audience with the people who have not confirmed first — `gym_memberships` RLS narrows a manager's report to their own gyms without asking for a gym. The reminder itself is P5-02's `ack reminder` trigger. 128 unit tests; the manager/staff report and refusal paths checked against the local API by HTTP. |
+| P3-05 | ✅ done | 2026-09-02 | 2026-09-02 | `src/features/guides`: `/guides` (one tree mixing company and gym categories, guides filtered by the selected branch), the viewer, the editor at `/guides/new` and `/guides/:guideId/edit`, and category create/rename/delete. `guides.version` is bumped only when the author ticks "significant change", and `guide_acks` stores the confirmed version, so a reader who is behind is asked again. Guides lost their nav placeholder. 140 unit tests; the tree, the confirmation and the re-confirmation after a version bump driven in Chrome as staff. |
+| P3-06 | ✅ done | 2026-09-02 | 2026-09-02 | `features/content/search.ts` + `ContentSearch`: one debounced search over both `posts` and `guides` using `websearch_to_tsquery` on the `simple` configuration, with a snippet cut around the first matching word and hits labelled news/guide, scope and draft. The box sits on `/news` and `/guides`. 145 unit tests; a Danish word matched through RLS by HTTP, and another gym's post did not. |
+| P3-07 | ✅ done | 2026-09-02 | 2026-09-02 | `UnreadNewsCard` replaces the placeholder home: published posts this person has not opened, plus the ones they have opened but not acknowledged, confirmations first. One query with `post_reads!left` filtered to the signed-in user. 146 unit tests; checked in Chrome as staff — acknowledging a post drops it off the home block, the unread one stays. |
+| P4-01 … P8-06 | ⬜ not started | | | |
 
 Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
 
@@ -60,6 +69,7 @@ Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
 | GitHub repository (remote) | P1-10 CI actually running | Rami | `.github/workflows/ci.yml` exists and its steps pass locally, but the repo has no remote, so no run has happened. Add the remote, push `phase-1-scaffold` and `phase-2-admin`, confirm both jobs go green. |
 | Resend account + API key | real invite mail (P2-03), P5-03 | Rami | not created. `[auth.rate_limit] email_sent = 2` per hour and hosted Supabase's built-in SMTP are both far below what inviting 200+ staff needs, so a provider must exist before invites go out for real. |
 | VAPID key pair                                              | P5-03                                | generated during P5-03     | —                    |
+| Code splitting for the editor bundle | a comfortable first load on a phone (P5-05, P7-04) | Rami | Tiptap took the built bundle to ~1.15 MB (345 kB gzip) and Vite now warns. Only publishers open the editor, so lazy-loading `RichTextEditor` is the obvious cut. Not urgent on desktop; decide before the PWA and installer work. |
 | Anthropic API key                                           | P8-03                                | Rami                       | not created          |
 | Apple Developer ID + Windows signing cert                   | first public desktop release (P7-04) | Rami                       | not started          |
 | BRP Systems API key, service account, rate limits, webhooks | V3                                   | Rami → BRP account manager | not requested        |
@@ -164,6 +174,31 @@ of truth; nothing in config.toml applies to a hosted project)
 | 2026-09-02 | P2-03: `supabase/functions` is excluded from ESLint — it is Deno, with its own imports — and type-checked by the Supabase CLI instead. |
 | 2026-09-02 | P2-04: the dialog offers only the choices the inviter may make, and the Edge Function checks the same rules again — the UI is a convenience, the function is the gate. Its refusal codes (`forbidden`, `already_a_user`) are translated; anything else is "try again". |
 | 2026-09-01 | P1-08: `profiles.locale` overrides the browser language once the profile loads (`useLocaleSync`), which is where P1-06 said this belonged. The signed-out screens keep detecting from the browser. |
+
+| 2026-09-02 | P3-02: content search is `to_tsvector('simple', …)`, not the Danish or English configuration. Authors write in whichever language they please (spec §2.2) and one stemmer applied to the other language matches worse than no stemmer at all. Title is weight A, body weight B. |
+| 2026-09-02 | P3-02: `body_text` and `search_vector` are generated columns over `tiptap_text(body)`, so no client and no trigger can let them drift from the document. `tiptap_text` uses a **strict** jsonpath with `silent` — lax `$.**.text` unwraps arrays and counted every text node twice, which the pgTAP test caught. |
+| 2026-09-02 | P3-02: guides carry a `version` counter and `guide_acks` stores the version confirmed, rather than a `guide_revisions` history table. §3.1 lists no history table, and re-acknowledgement only needs to know whether the reader is behind. |
+| 2026-09-02 | P3-02: neither `posts` nor `guides` has a delete policy — deleting is setting `deleted_at` (spec §2.5), so a client cannot destroy a row at all. |
+| 2026-09-02 | P3-02: an RLS `update` refusal shows up as zero rows changed, not as `42501`; only `with check` and `insert` raise. The pgTAP tests assert the row count for update denials and `throws_ok` only for inserts. |
+
+| 2026-09-02 | P3-01: the `content` bucket stays private, so an image node stores its **object path** and the URL is signed when the image is shown. A signed URL saved inside a document would carry an expiry into stored content, and re-signing on read is one query with a stale time. |
+| 2026-09-02 | P3-01: an object's first path segment is its scope — a gym id, or `company` — so `storage.objects` policies reuse `can_read_content()`/`can_publish_content()` and an image inherits the permissions of the post it sits in. A segment that is neither resolves to the nil uuid, which belongs to nobody, so a hand-made path is refused rather than treated as company-wide. |
+| 2026-09-02 | P3-01: no delete policy on `content` objects either (spec §2.5). Images are orphaned, not destroyed, when a post stops referring to them. |
+| 2026-09-02 | P3-01: jsdom implements no `Range` measurement and no `elementFromPoint`, so `src/test/setup.ts` stubs them. Without that, typing into or clicking in a Tiptap editor throws inside ProseMirror instead of failing an assertion. |
+
+| 2026-09-02 | P3-03: a post's scope defaults from the gym switcher, but the default is resolved at render rather than captured in `useState`. The profile that says where an author may publish arrives a render later, and the captured version left the form posting `company/…` while the select showed a gym — found by uploading an image in Chrome, where storage RLS refused it. |
+| 2026-09-02 | P3-03: deleting a post asks in a translated dialog, not `window.confirm`, and writes `deleted_at`. Publishing and unpublishing are one-field updates, so the feed's pin control and the detail view share the same mutations. |
+| 2026-09-02 | P3-03: a query whose first attempt fails does not retry while the tab is hidden — TanStack pauses on `focusManager`. It looks like a hang when driving a background tab, but a real user's focused tab shows the error. Left alone; worth remembering the next time a screen sits on "Loading…" under automation. |
+
+| 2026-09-02 | P3-04: the acknowledgement report asks for no gym. `gym_memberships` RLS already limits a manager to their own gyms, so one query answers "who still has to confirm" per gym for a manager and company-wide for an admin — the §2.1 row "See acknowledgement reports" without a second rule in the client. |
+| 2026-09-02 | P3-04: reading a post is recorded with `ignoreDuplicates`, so `read_at` is the *first* time someone opened it and an acknowledgement is never overwritten by a later visit. Drafts are not recorded — only their editors can see them. |
+| 2026-09-02 | P3-04: the reminder half of the task moves to P5-02, whose trigger list already carries "ack reminder". Notifications are created only by database triggers (spec §5) and `notifications` does not exist before P5-01, so a reminder written now would be a second, private notification path. The report is what a manager acts on until then. |
+
+| 2026-09-02 | P3-05: a category is deleted outright rather than soft-deleted — it holds no content of its own — and `on delete restrict` on both the guides and the child categories means only an emptied category can go. Renaming keeps the scope: moving a category between gyms would move the guides under it out of the audience that has been reading them. |
+| 2026-09-02 | P3-05: the tree keeps a category whose parent RLS filtered out, at the root. Losing a whole branch because its parent belongs to another gym would be worse than showing it one level too high. |
+| 2026-09-02 | P3-05: the whole guide list is fetched once and filtered by branch in the client. A chain of this size has a few hundred guides at most, and the tree then filters without a round trip per click. |
+
+| 2026-09-02 | P3-06: search is `websearch_to_tsquery` against the generated `search_vector` columns — quoted phrases and `-word` work without a parser of our own — and it runs as two queries rather than a view or an RPC, so RLS on each table is what limits the hits. There is no Search nav entry: the box sits on the two modules it covers. |
 
 ## How to update this file
 

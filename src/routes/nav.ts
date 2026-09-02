@@ -39,8 +39,8 @@ export type NavEntry = {
  */
 export const navEntries: NavEntry[] = [
   { to: '/', labelKey: 'nav.home', icon: House },
-  { to: '/news', labelKey: 'nav.news', icon: Newspaper, phase: '3' },
-  { to: '/guides', labelKey: 'nav.guides', icon: BookOpen, phase: '3' },
+  { to: '/news', labelKey: 'nav.news', icon: Newspaper },
+  { to: '/guides', labelKey: 'nav.guides', icon: BookOpen },
   { to: '/checklists', labelKey: 'nav.checklists', icon: ListChecks, phase: '4' },
   { to: '/daily-log', labelKey: 'nav.dailyLog', icon: NotebookPen, phase: '4' },
   { to: '/incidents', labelKey: 'nav.incidents', icon: TriangleAlert, phase: '4' },

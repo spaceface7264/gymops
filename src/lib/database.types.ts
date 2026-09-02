@@ -53,6 +53,165 @@ export type Database = {
           },
         ]
       }
+      guide_acks: {
+        Row: {
+          acknowledged_at: string
+          guide_id: string
+          user_id: string
+          version: number
+        }
+        Insert: {
+          acknowledged_at?: string
+          guide_id: string
+          user_id: string
+          version: number
+        }
+        Update: {
+          acknowledged_at?: string
+          guide_id?: string
+          user_id?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guide_acks_guide_id_fkey"
+            columns: ["guide_id"]
+            isOneToOne: false
+            referencedRelation: "guides"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guide_acks_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      guide_categories: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          gym_id: string | null
+          id: string
+          name: string
+          parent_id: string | null
+          position: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          gym_id?: string | null
+          id?: string
+          name: string
+          parent_id?: string | null
+          position?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          gym_id?: string | null
+          id?: string
+          name?: string
+          parent_id?: string | null
+          position?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guide_categories_gym_id_fkey"
+            columns: ["gym_id"]
+            isOneToOne: false
+            referencedRelation: "gyms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guide_categories_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "guide_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      guides: {
+        Row: {
+          body: Json
+          body_text: string | null
+          category_id: string | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          gym_id: string | null
+          id: string
+          published_at: string | null
+          requires_ack: boolean
+          search_vector: unknown
+          status: Database["public"]["Enums"]["content_status"]
+          title: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          body?: Json
+          body_text?: string | null
+          category_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          gym_id?: string | null
+          id?: string
+          published_at?: string | null
+          requires_ack?: boolean
+          search_vector?: unknown
+          status?: Database["public"]["Enums"]["content_status"]
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          body?: Json
+          body_text?: string | null
+          category_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          gym_id?: string | null
+          id?: string
+          published_at?: string | null
+          requires_ack?: boolean
+          search_vector?: unknown
+          status?: Database["public"]["Enums"]["content_status"]
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guides_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "guide_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guides_gym_id_fkey"
+            columns: ["gym_id"]
+            isOneToOne: false
+            referencedRelation: "gyms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gym_memberships: {
         Row: {
           created_at: string
@@ -203,6 +362,104 @@ export type Database = {
           },
         ]
       }
+      post_reads: {
+        Row: {
+          acknowledged_at: string | null
+          post_id: string
+          read_at: string
+          user_id: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          post_id: string
+          read_at?: string
+          user_id: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          post_id?: string
+          read_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_reads_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_reads_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      posts: {
+        Row: {
+          body: Json
+          body_text: string | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          gym_id: string | null
+          id: string
+          pinned: boolean
+          published_at: string | null
+          requires_ack: boolean
+          search_vector: unknown
+          status: Database["public"]["Enums"]["content_status"]
+          title: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          body?: Json
+          body_text?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          gym_id?: string | null
+          id?: string
+          pinned?: boolean
+          published_at?: string | null
+          requires_ack?: boolean
+          search_vector?: unknown
+          status?: Database["public"]["Enums"]["content_status"]
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          body?: Json
+          body_text?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          gym_id?: string | null
+          id?: string
+          pinned?: boolean
+          published_at?: string | null
+          requires_ack?: boolean
+          search_vector?: unknown
+          status?: Database["public"]["Enums"]["content_status"]
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "posts_gym_id_fkey"
+            columns: ["gym_id"]
+            isOneToOne: false
+            referencedRelation: "gyms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           active: boolean
@@ -250,12 +507,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_publish_content: { Args: { target_gym_id: string }; Returns: boolean }
+      can_read_content: { Args: { target_gym_id: string }; Returns: boolean }
+      content_search_vector: {
+        Args: { doc: Json; title: string }
+        Returns: unknown
+      }
       is_admin: { Args: never; Returns: boolean }
       is_superadmin: { Args: never; Returns: boolean }
       managed_gym_ids: { Args: never; Returns: string[] }
       member_gym_ids: { Args: never; Returns: string[] }
+      tiptap_text: { Args: { doc: Json }; Returns: string }
     }
     Enums: {
+      content_status: "draft" | "published"
       gym_role: "manager" | "staff"
       invite_status: "pending" | "accepted" | "revoked"
     }
@@ -385,6 +650,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      content_status: ["draft", "published"],
       gym_role: ["manager", "staff"],
       invite_status: ["pending", "accepted", "revoked"],
     },
