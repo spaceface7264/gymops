@@ -4,32 +4,36 @@ Last updated: 2026-09-02
 
 ## Currently working on
 
-**Phase 3 is done** and its audit fixes are on `phase-3-hardening`, branched off
-`phase-3-content`. An audit on 2026-09-02 found two holes worth stopping for —
-deactivation removed no access, and acknowledgements were whatever the client
-posted — plus a missing error boundary and admins missing from company-wide
-acknowledgement reports. All four are fixed and covered by
-`supabase/tests/060-content-integrity.test.sql` (18 assertions, 128 total).
-Three smaller findings are listed under "Known gaps" below and are not fixed.
+**Phases 1–3 are merged into `main`** (PRs #1–#4 on
+[spaceface7264/gymops](https://github.com/spaceface7264/gymops), private), and
+CI is green on `main` for the first time. Next up: **phase 4, daily ops**
+(P4-01 … P4-10). Branch it from `main`.
 
-Phase 3 itself is on branch `phase-3-content` (P3-01 … P3-07), branched off
-`phase-2-admin` because `main` does not yet carry phases 1 and 2. Nothing in it
-needed a hosted project. Next up: **phase 4, daily ops** (P4-01 … P4-10), whose
-P4-02 (pg_cron) is the first task after P2-03 that cannot be finished locally.
+The phase-3 audit (2026-09-02) is included as PR #4: deactivation removed no
+access and acknowledgements were whatever the client posted, both fixed and
+covered by `supabase/tests/060-content-integrity.test.sql`. Three smaller
+findings are in "Known gaps" below and are deliberately not fixed.
 
-The `invite` function (P2-03) has still never been deployed; doing so — with a
-Resend account behind it — is the first item of "Hosted project cutover".
+The first CI runs found two defects that only ever showed up off this machine:
+`package-lock.json` carried only macOS native bindings (npm/cli#4828), so
+`npm ci` on Linux installed no rolldown binding; and the test suite could not
+run without `.env.local`, because `src/lib/supabase.ts` throws when the env
+vars are missing. Both are fixed at the base of the history — the lockfile is
+now generated with npm 11, and `src/test/setup.ts` stubs the two variables.
+This is also why the phase-2 and phase-3 commit hashes changed on 2026-09-02.
 
-The repo is now on GitHub at **spaceface7264/gymops** (private), with `main` and the four phase branches pushed. The first CI run found a real problem: `package-lock.json` had been generated on macOS with npm 10.8.2, which records only the host platform's optional native bindings, so `npm ci` on the Linux runner installed no rolldown binding and vitest died at startup. The lockfile was regenerated with `npm install --package-lock-only` and the four branches were rebased onto that fix, which is why the phase-2 and phase-3 commit hashes changed on 2026-09-02.
+The `invite` function (P2-03) still has never been deployed; that is the first
+item of "Hosted project cutover", and P4-02's `pg_cron` pulls the cutover into
+phase 4.
 
 ## Phase status
 
 | Phase                    | Status         | Notes                                           |
 | ------------------------ | -------------- | ----------------------------------------------- |
 | Design                   | ✅ Complete    | Approved 2026-09-01. Spec in `PROJECT_SPEC.md`. |
-| P1 Scaffold and auth | ✅ Complete | P1-01 to P1-10 done on `phase-1-scaffold`. |
-| P2 Users and gyms admin  | ✅ Complete    | P2-01 to P2-06 done on `phase-2-admin`.         |
-| P3 News and guides       | ✅ Complete    | P3-01 to P3-07 done on `phase-3-content`.       |
+| P1 Scaffold and auth | ✅ Complete | P1-01 to P1-10, merged in PR #1. |
+| P2 Users and gyms admin  | ✅ Complete    | P2-01 to P2-06, merged in PR #2.                |
+| P3 News and guides       | ✅ Complete    | P3-01 to P3-07 (PR #3) and the audit fixes (#4). |
 | P4 Daily ops             | ⬜ Not started |                                                 |
 | P5 Notifications and PWA | ⬜ Not started |                                                 |
 | P6 Team chat             | ⬜ Not started |                                                 |
@@ -75,7 +79,7 @@ Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
 | Item                                                        | Needed for                           | Owner                      | Status               |
 | ----------------------------------------------------------- | ------------------------------------ | -------------------------- | -------------------- |
 | Supabase project (hosted) | deploying `invite` (P2-03, written and working locally) | Rami | **Resolved 2026-09-02: GymOps is `ngcqpftfqepvhpjikaqq`**, the ref already commented into `.env.local`; `ooikemajridlhceejgmo` is a legacy project and is not GymOps — ignore it, and repoint the Supabase MCP connection when convenient. `.env.local` still points at the local stack, which is correct until the cutover. Remaining steps in "Hosted project cutover" below. |
-| GitHub repository (remote) | P1-10 CI actually running | Rami | `.github/workflows/ci.yml` exists and its steps pass locally, but the repo has no remote, so no run has happened. Add the remote, push `phase-1-scaffold` and `phase-2-admin`, confirm both jobs go green. |
+| ~~GitHub repository (remote)~~ | ~~P1-10 CI actually running~~ | Rami | **Done 2026-09-02.** `spaceface7264/gymops` (private); both jobs green on `main` and on every PR. |
 | Resend account + API key | real invite mail (P2-03), P5-03 | Rami | not created. `[auth.rate_limit] email_sent = 2` per hour and hosted Supabase's built-in SMTP are both far below what inviting 200+ staff needs, so a provider must exist before invites go out for real. |
 | VAPID key pair                                              | P5-03                                | generated during P5-03     | —                    |
 | Code splitting for the editor bundle | a comfortable first load on a phone (P5-05, P7-04) | Rami | Tiptap took the built bundle to ~1.15 MB (345 kB gzip) and Vite now warns. Only publishers open the editor, so lazy-loading `RichTextEditor` is the obvious cut. Not urgent on desktop; decide before the PWA and installer work. |
