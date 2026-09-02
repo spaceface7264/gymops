@@ -4,11 +4,11 @@ Last updated: 2026-09-02
 
 ## Currently working on
 
-**Phase 2 is done** on branch `phase-2-admin` (P2-01 … P2-06). Everything runs
-against the local stack; the `invite` function (P2-03) has never been deployed,
-and doing so — with a Resend account behind it — is the first item of "Hosted
-project cutover". Next up: **phase 3, news and guides** (P3-01 … P3-07), which
-needs no hosted project.
+**Phase 3, news and guides** (P3-01 … P3-07) is in progress on branch
+`phase-3-content`, branched off `phase-2-admin` because `main` does not yet
+carry phases 1 and 2. It needs no hosted project. Phase 2 is done; the `invite`
+function (P2-03) has never been deployed, and doing so — with a Resend account
+behind it — is the first item of "Hosted project cutover".
 
 The repo has no git remote yet, so CI has never actually run on GitHub: the workflow is verified only by running the same commands locally. Push the branch and check the first run.
 
@@ -19,7 +19,7 @@ The repo has no git remote yet, so CI has never actually run on GitHub: the work
 | Design                   | ✅ Complete    | Approved 2026-09-01. Spec in `PROJECT_SPEC.md`. |
 | P1 Scaffold and auth | ✅ Complete | P1-01 to P1-10 done on `phase-1-scaffold`. |
 | P2 Users and gyms admin  | ✅ Complete    | P2-01 to P2-06 done on `phase-2-admin`.         |
-| P3 News and guides       | ⬜ Not started |                                                 |
+| P3 News and guides       | 🔄 In progress | `phase-3-content`. P3-02 done.                  |
 | P4 Daily ops             | ⬜ Not started |                                                 |
 | P5 Notifications and PWA | ⬜ Not started |                                                 |
 | P6 Team chat             | ⬜ Not started |                                                 |
@@ -48,7 +48,8 @@ Update this list as work begins:
 | P2-05 | ✅ done | 2026-09-01 | 2026-09-01 | `RolesDialog` from the user list (gym roles for admins, staff-in-own-gyms for managers, the admin flag for superadmins) and `AuditPanel` at `/admin/audit`, superadmin-only. Membership writes are upserts, so the P2-06 trigger records grant vs role change. 90 unit tests; role changes and the resulting log entries checked in Chrome as a superadmin. |
 | P2-03 | ✅ done | 2026-09-02 | 2026-09-02 | `supabase/functions/invite`: checks the caller against the §2.1 matrix, records the `invites` row, calls `inviteUserByEmail`, then applies the membership or admin flag with the service role. Migration `20260901220000_invite_acceptance.sql` closes the pending invite on first sign-in (4 pgTAP assertions, 55/55 pass). The accept screen now offers the name the inviter typed. Verified locally end to end: mail in Mailpit → link → password → session → membership → invite accepted, plus the whole permission matrix by HTTP (201/403/409/400/401). **Not deployed** — hosted cutover pending. |
 | P2-04 | ✅ done | 2026-09-02 | 2026-09-02 | `InviteDialog` on the user list: role and gym limited to what the inviter may hand out (staff-in-own-gyms for a manager, the company-wide admin only for a superadmin), defaulting to the gym in the switcher. The function's refusals are shown as translated messages. 96 unit tests; a manager invited two people in Chrome, and the "already a user" refusal was checked in the dialog. |
-| P3-01 … P8-06 | ⬜ not started | | | |
+| P3-02 | ✅ done | 2026-09-02 | 2026-09-02 | `20260902090000_content_schema.sql`: `posts`, `post_reads`, `guide_categories`, `guides`, `guide_acks`; generated `body_text` and weighted `search_vector` columns from `tiptap_text()`; `can_publish_content()`/`can_read_content()` carry the §2.1 content rows; publishing stamps `published_at`; no delete policy anywhere (soft delete). `supabase/tests/040-content-permissions.test.sql` — 44 assertions, 99/99 pass with the harness. |
+| P3-01, P3-03 … P8-06 | ⬜ not started | | | |
 
 Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
 
@@ -164,6 +165,12 @@ of truth; nothing in config.toml applies to a hosted project)
 | 2026-09-02 | P2-03: `supabase/functions` is excluded from ESLint — it is Deno, with its own imports — and type-checked by the Supabase CLI instead. |
 | 2026-09-02 | P2-04: the dialog offers only the choices the inviter may make, and the Edge Function checks the same rules again — the UI is a convenience, the function is the gate. Its refusal codes (`forbidden`, `already_a_user`) are translated; anything else is "try again". |
 | 2026-09-01 | P1-08: `profiles.locale` overrides the browser language once the profile loads (`useLocaleSync`), which is where P1-06 said this belonged. The signed-out screens keep detecting from the browser. |
+
+| 2026-09-02 | P3-02: content search is `to_tsvector('simple', …)`, not the Danish or English configuration. Authors write in whichever language they please (spec §2.2) and one stemmer applied to the other language matches worse than no stemmer at all. Title is weight A, body weight B. |
+| 2026-09-02 | P3-02: `body_text` and `search_vector` are generated columns over `tiptap_text(body)`, so no client and no trigger can let them drift from the document. `tiptap_text` uses a **strict** jsonpath with `silent` — lax `$.**.text` unwraps arrays and counted every text node twice, which the pgTAP test caught. |
+| 2026-09-02 | P3-02: guides carry a `version` counter and `guide_acks` stores the version confirmed, rather than a `guide_revisions` history table. §3.1 lists no history table, and re-acknowledgement only needs to know whether the reader is behind. |
+| 2026-09-02 | P3-02: neither `posts` nor `guides` has a delete policy — deleting is setting `deleted_at` (spec §2.5), so a client cannot destroy a row at all. |
+| 2026-09-02 | P3-02: an RLS `update` refusal shows up as zero rows changed, not as `42501`; only `with check` and `insert` raise. The pgTAP tests assert the row count for update denials and `throws_ok` only for inserts. |
 
 ## How to update this file
 
