@@ -913,6 +913,7 @@ export type Database = {
         Row: {
           body: string | null
           created_at: string
+          data: Json
           email_requested: boolean
           gym_id: string | null
           id: string
@@ -926,6 +927,7 @@ export type Database = {
         Insert: {
           body?: string | null
           created_at?: string
+          data?: Json
           email_requested?: boolean
           gym_id?: string | null
           id?: string
@@ -939,6 +941,7 @@ export type Database = {
         Update: {
           body?: string | null
           created_at?: string
+          data?: Json
           email_requested?: boolean
           gym_id?: string | null
           id?: string
@@ -1158,12 +1161,14 @@ export type Database = {
       can_publish_content: { Args: { target_gym_id: string }; Returns: boolean }
       can_read_content: { Args: { target_gym_id: string }; Returns: boolean }
       can_read_event: { Args: { target_event_id: string }; Returns: boolean }
+      content_audience: { Args: { target_gym: string }; Returns: string[] }
       content_object_gym: { Args: { object_name: string }; Returns: string }
       content_search_vector: {
         Args: { doc: Json; title: string }
         Returns: unknown
       }
       generate_checklist_runs: { Args: { as_of?: string }; Returns: number }
+      gym_overseers: { Args: { target_gym: string }; Returns: string[] }
       incident_object_gym: { Args: { object_name: string }; Returns: string }
       is_active_user: { Args: never; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
@@ -1181,6 +1186,22 @@ export type Database = {
           push: boolean
         }[]
       }
+      raise_notification: {
+        Args: {
+          body_text?: string
+          data_json?: Json
+          dedupe_within?: string
+          email_wanted?: boolean
+          link?: string
+          notification_type: Database["public"]["Enums"]["notification_type"]
+          recipients: string[]
+          subject?: string
+          target_gym?: string
+          title_text: string
+        }
+        Returns: number
+      }
+      send_ack_reminders: { Args: { as_of?: string }; Returns: number }
       shares_gym_with: { Args: { target_user: string }; Returns: boolean }
       tiptap_text: { Args: { doc: Json }; Returns: string }
     }

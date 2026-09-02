@@ -203,6 +203,10 @@ gymops/
 | Letting the recipient's preferences decide that something deserves an email | The grading belongs where the event is raised (`email_requested`, set for a high-severity incident and not for an ordinary one), because it is a property of what happened, not of who is reading. A preference can silence a channel; it cannot promote one. |
 | An admin-wide notification channel, the way `checklists:all` exists | An inbox is per person by definition. One channel carrying 200 users' notifications would hand every admin the whole company's fan-out and make RLS the only thing standing between them, on a stream that exists to update a badge. |
 
+| Notifying people of their own actions, and leaving it to a preference | The reporter of an incident and the manager who resolves it both already know. A switch that has to be found and turned off is not a fix for noise that should never have been sent. |
+| One notification at publish time for content that must be confirmed | It arrives when the feed is already showing the post, and it is useless the moment it is read and not acted on. The nightly pass chases only what is *still* unconfirmed, once a week per item, which is the state a manager actually cares about. |
+| Running the reminder job gym-locally like the checklist job (P4-02) | A checklist run is dated by its gym's own day; a reminder is not, and a company-wide guide has no gym whose clock to follow. One daily schedule at 07:00 UTC. |
+
 ## 5. Conventions
 
 - **Language:** TypeScript strict everywhere, including Edge Functions (Deno). No `any`.
