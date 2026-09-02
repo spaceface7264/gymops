@@ -19,7 +19,7 @@ The repo has no git remote yet, so CI has never actually run on GitHub: the work
 | Design                   | ✅ Complete    | Approved 2026-09-01. Spec in `PROJECT_SPEC.md`. |
 | P1 Scaffold and auth | ✅ Complete | P1-01 to P1-10 done on `phase-1-scaffold`. |
 | P2 Users and gyms admin  | ✅ Complete    | P2-01 to P2-06 done on `phase-2-admin`.         |
-| P3 News and guides       | 🔄 In progress | `phase-3-content`. P3-01, P3-02 done.           |
+| P3 News and guides       | 🔄 In progress | `phase-3-content`. P3-01 … P3-03 done.          |
 | P4 Daily ops             | ⬜ Not started |                                                 |
 | P5 Notifications and PWA | ⬜ Not started |                                                 |
 | P6 Team chat             | ⬜ Not started |                                                 |
@@ -50,7 +50,8 @@ Update this list as work begins:
 | P2-04 | ✅ done | 2026-09-02 | 2026-09-02 | `InviteDialog` on the user list: role and gym limited to what the inviter may hand out (staff-in-own-gyms for a manager, the company-wide admin only for a superadmin), defaulting to the gym in the switcher. The function's refusals are shown as translated messages. 96 unit tests; a manager invited two people in Chrome, and the "already a user" refusal was checked in the dialog. |
 | P3-02 | ✅ done | 2026-09-02 | 2026-09-02 | `20260902090000_content_schema.sql`: `posts`, `post_reads`, `guide_categories`, `guides`, `guide_acks`; generated `body_text` and weighted `search_vector` columns from `tiptap_text()`; `can_publish_content()`/`can_read_content()` carry the §2.1 content rows; publishing stamps `published_at`; no delete policy anywhere (soft delete). `supabase/tests/040-content-permissions.test.sql` — 44 assertions, 99/99 pass with the harness. |
 | P3-01 | ✅ done | 2026-09-02 | 2026-09-02 | `src/features/content`: `RichTextEditor` (bold, italic, H2, lists, link bar, image upload) and `RichText`, both on one Tiptap schema; `doc.ts` helpers (`toDoc`, `docText`, `excerpt`, `contentImagePath`). Images are uploaded to `content/<gym id or company>/<uuid>.<ext>` and the document keeps the **object path**, signed at render by `useSignedContentUrl`. Migration `20260902100000_content_storage.sql` mirrors the table rules onto `storage.objects` via `content_object_gym()`; `supabase/tests/050-content-storage.test.sql` — 11 assertions, 110/110 pass. 107 unit tests. |
-| P3-03 … P8-06 | ⬜ not started | | | |
+| P3-03 | ✅ done | 2026-09-02 | 2026-09-02 | `src/features/news`: feed (pinned first, drafts labelled, excerpt, pin from the list), post detail (edit, pin, publish/unpublish, delete behind a dialog) and the editor page at `/news/new` and `/news/:postId/edit`. `usePublishScope()` in `features/content` is the UI half of `can_publish_content()`. News lost its nav placeholder. 121 unit tests; driven in Chrome as a manager (draft → image upload → publish, image signed and rendered) and as staff (another gym's post invisible, no editing controls). |
+| P3-04 … P8-06 | ⬜ not started | | | |
 
 Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
 
@@ -177,6 +178,10 @@ of truth; nothing in config.toml applies to a hosted project)
 | 2026-09-02 | P3-01: an object's first path segment is its scope — a gym id, or `company` — so `storage.objects` policies reuse `can_read_content()`/`can_publish_content()` and an image inherits the permissions of the post it sits in. A segment that is neither resolves to the nil uuid, which belongs to nobody, so a hand-made path is refused rather than treated as company-wide. |
 | 2026-09-02 | P3-01: no delete policy on `content` objects either (spec §2.5). Images are orphaned, not destroyed, when a post stops referring to them. |
 | 2026-09-02 | P3-01: jsdom implements no `Range` measurement and no `elementFromPoint`, so `src/test/setup.ts` stubs them. Without that, typing into or clicking in a Tiptap editor throws inside ProseMirror instead of failing an assertion. |
+
+| 2026-09-02 | P3-03: a post's scope defaults from the gym switcher, but the default is resolved at render rather than captured in `useState`. The profile that says where an author may publish arrives a render later, and the captured version left the form posting `company/…` while the select showed a gym — found by uploading an image in Chrome, where storage RLS refused it. |
+| 2026-09-02 | P3-03: deleting a post asks in a translated dialog, not `window.confirm`, and writes `deleted_at`. Publishing and unpublishing are one-field updates, so the feed's pin control and the detail view share the same mutations. |
+| 2026-09-02 | P3-03: a query whose first attempt fails does not retry while the tab is hidden — TanStack pauses on `focusManager`. It looks like a hang when driving a background tab, but a real user's focused tab shows the error. Left alone; worth remembering the next time a screen sits on "Loading…" under automation. |
 
 ## How to update this file
 
