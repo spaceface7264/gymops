@@ -19,6 +19,7 @@ function builder(table: string) {
     eq: () => chain,
     gte: () => chain,
     lte: () => chain,
+    is: () => chain,
     order: () => chain,
     then: (resolve: (value: unknown) => unknown) =>
       Promise.resolve({ data: tableRows(table), error: null }).then(resolve),

@@ -1,6 +1,7 @@
 import { createBrowserRouter, Outlet } from 'react-router'
 import { AuditPanel, GymsPanel, UsersPanel } from '@/features/admin'
 import { RequireAuth } from '@/features/auth'
+import { DailyLogPage } from '@/features/daily-log'
 import {
   ChecklistRunsPage,
   ChecklistTemplateEditorPage,
@@ -59,6 +60,7 @@ export const router = createBrowserRouter([
             path: 'checklists/templates/:templateId/edit',
             element: <ChecklistTemplateEditorPage />,
           },
+          { path: 'daily-log', element: <DailyLogPage /> },
           { path: 'guides', element: <GuidesPage /> },
           { path: 'guides/new', element: <GuideEditorPage /> },
           { path: 'guides/:guideId', element: <GuideDetailPage /> },

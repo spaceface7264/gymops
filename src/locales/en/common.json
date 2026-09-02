@@ -215,6 +215,36 @@
     "searching": "Searching…",
     "uploadFailed": "The image could not be uploaded. Try again."
   },
+  "dailyLog": {
+    "add": "Add to the log",
+    "allKinds": "Everything",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "empty": "Nothing has been logged here yet.",
+    "entry": "What happened",
+    "filterByTag": "Tag",
+    "kind": {
+      "handover": "Handover",
+      "issue": "Issue",
+      "note": "Note"
+    },
+    "kindLabel": "Kind",
+    "loadFailed": "The daily log could not be loaded.",
+    "loading": "Loading…",
+    "needsBody": "Write what happened before adding it to the log.",
+    "noTag": "Any tag",
+    "pickGym": "Pick a gym to write in its log.",
+    "readOnly": "Only this gym's team can write in its log.",
+    "remove": "Remove",
+    "removed": "Removed from the timeline.",
+    "save": "Save",
+    "saveFailed": "The entry could not be saved. Try again.",
+    "someone": "Someone",
+    "tags": "Tags",
+    "tagsPlaceholder": "wall4, broken",
+    "title": "Daily log",
+    "writtenBy": "{{who}} · {{when}}"
+  },
   "guides": {
     "ack": {
       "changed": "This guide has changed since you confirmed it.",

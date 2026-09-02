@@ -12,6 +12,7 @@ const textSearch = vi.fn<(column: string, query: string, options: Row) => void>(
 function builder(table: string) {
   const chain = {
     select: () => chain,
+    is: () => chain,
     textSearch: (column: string, query: string, options: Row) => {
       textSearch(column, query, options)
       return chain

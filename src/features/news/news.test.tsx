@@ -19,6 +19,7 @@ const gymScope = vi.fn<() => { gymId: string | null }>()
 function builder(result: () => { data: unknown; error: null }) {
   const chain = {
     select: () => chain,
+    is: () => chain,
     order: () => chain,
     or: () => chain,
     eq: () => chain,

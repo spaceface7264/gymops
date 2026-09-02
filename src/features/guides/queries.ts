@@ -80,6 +80,9 @@ export function useGuides() {
       const { data, error } = await supabase
         .from('guides')
         .select(guideColumns)
+        // As with posts: a deleted guide stays visible to its publishers so
+        // that deleting it works (20260902171000), never to a reader.
+        .is('deleted_at', null)
         .order('title')
       if (error) throw error
       return data
@@ -96,6 +99,7 @@ export function useGuide(guideId: string | undefined) {
         .from('guides')
         .select(guideColumns)
         .eq('id', guideId ?? '')
+        .is('deleted_at', null)
         .single()
 
       if (error) throw error

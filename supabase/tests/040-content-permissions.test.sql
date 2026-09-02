@@ -4,7 +4,7 @@
 --
 -- Run `npm run db:reset` before `npm run db:test`.
 begin;
-select plan(44);
+select plan(45);
 
 -- ---------------------------------------------------------------- fixtures --
 select tests.create_user('super');
@@ -200,7 +200,20 @@ select is(
 );
 
 select tests.authenticate_as('admin');
-select is((select count(*)::int from public.posts), 4, 'an admin sees every gym''s posts and drafts');
+-- Five, not four: the deleted Gym B post is still there for the people who may
+-- publish in that gym. Postgres refuses an update that would hide the row from
+-- its writer, so keeping it visible to them is what makes soft delete work at
+-- all (20260902171000); the feed queries filter `deleted_at is null`.
+select is(
+  (select count(*)::int from public.posts),
+  5,
+  'an admin sees every gym''s posts and drafts, deleted ones included'
+);
+select lives_ok(
+  $$ update public.posts set deleted_at = now()
+     where id = 'aaaaaaaa-0000-0000-0000-000000000004' $$,
+  'and can actually delete one — the update that sets deleted_at goes through'
+);
 select lives_ok(
   $$ insert into public.posts (gym_id, title) values (null, 'Company-wide from an admin') $$,
   'an admin can publish company-wide news'

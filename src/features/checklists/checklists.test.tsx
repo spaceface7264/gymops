@@ -26,6 +26,7 @@ function builder(table: string) {
       removed(table, ids)
       return chain
     },
+    is: () => chain,
     order: () => chain,
     single: () => Promise.resolve({ data: tableRows(table)[0] ?? null, error: null }),
     then: (resolve: (value: unknown) => unknown) =>

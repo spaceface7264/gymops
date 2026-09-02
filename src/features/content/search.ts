@@ -59,11 +59,13 @@ export function useContentSearch(query: string) {
         supabase
           .from('posts')
           .select('id, title, body_text, status, gyms(name)')
+          .is('deleted_at', null)
           .textSearch('search_vector', text, { type: 'websearch', config: 'simple' })
           .limit(20),
         supabase
           .from('guides')
           .select('id, title, body_text, status, gyms(name)')
+          .is('deleted_at', null)
           .textSearch('search_vector', text, { type: 'websearch', config: 'simple' })
           .limit(20),
       ])

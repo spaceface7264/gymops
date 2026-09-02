@@ -56,6 +56,10 @@ export function useNewsFeed(gymId: string | null) {
       let query = supabase
         .from('posts')
         .select(postColumns)
+        // Deleted posts stay readable to the people who may publish there, so
+        // that deleting them is possible at all (20260902171000). Every list
+        // and detail query leaves them out.
+        .is('deleted_at', null)
         .order('pinned', { ascending: false })
         .order('published_at', { ascending: false, nullsFirst: true })
         .order('created_at', { ascending: false })
@@ -78,6 +82,7 @@ export function useNewsPost(postId: string | undefined) {
         .from('posts')
         .select(postColumns)
         .eq('id', postId ?? '')
+        .is('deleted_at', null)
         .single()
 
       if (error) throw error
@@ -334,6 +339,7 @@ export function useUnreadNews(gymId: string | null, userId: string | undefined) 
       let query = supabase
         .from('posts')
         .select(`${postColumns}, post_reads!left(read_at, acknowledged_at)`)
+        .is('deleted_at', null)
         .eq('status', 'published')
         .eq('post_reads.user_id', userId ?? '')
         .order('pinned', { ascending: false })

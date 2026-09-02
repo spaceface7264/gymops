@@ -241,6 +241,67 @@ export type Database = {
           },
         ]
       }
+      daily_log_entries: {
+        Row: {
+          body: string
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          gym_id: string
+          id: string
+          kind: Database["public"]["Enums"]["daily_log_kind"]
+          tags: string[]
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          gym_id: string
+          id?: string
+          kind?: Database["public"]["Enums"]["daily_log_kind"]
+          tags?: string[]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          gym_id?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["daily_log_kind"]
+          tags?: string[]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_log_entries_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "daily_log_entries_gym_id_fkey"
+            columns: ["gym_id"]
+            isOneToOne: false
+            referencedRelation: "gyms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "daily_log_entries_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       guide_acks: {
         Row: {
           acknowledged_at: string
@@ -696,6 +757,7 @@ export type Database = {
     }
     Functions: {
       can_complete_in: { Args: { target_gym_id: string }; Returns: boolean }
+      can_listen_to_checklists: { Args: { topic: string }; Returns: boolean }
       can_publish_content: { Args: { target_gym_id: string }; Returns: boolean }
       can_read_content: { Args: { target_gym_id: string }; Returns: boolean }
       content_object_gym: { Args: { object_name: string }; Returns: string }
@@ -709,11 +771,13 @@ export type Database = {
       is_superadmin: { Args: never; Returns: boolean }
       managed_gym_ids: { Args: never; Returns: string[] }
       member_gym_ids: { Args: never; Returns: string[] }
+      shares_gym_with: { Args: { target_user: string }; Returns: boolean }
       tiptap_text: { Args: { doc: Json }; Returns: string }
     }
     Enums: {
       checklist_kind: "opening" | "closing" | "custom"
       content_status: "draft" | "published"
+      daily_log_kind: "handover" | "note" | "issue"
       gym_role: "manager" | "staff"
       invite_status: "pending" | "accepted" | "revoked"
     }
@@ -845,6 +909,7 @@ export const Constants = {
     Enums: {
       checklist_kind: ["opening", "closing", "custom"],
       content_status: ["draft", "published"],
+      daily_log_kind: ["handover", "note", "issue"],
       gym_role: ["manager", "staff"],
       invite_status: ["pending", "accepted", "revoked"],
     },

@@ -94,10 +94,14 @@ select is((select count(*)::int from changed), 1, 'superadmin can deactivate a g
 
 -- ---------------------------------------------------------------- profiles --
 select tests.authenticate_as('staff_a');
+-- Colleagues, since P4-06: a name on a handover entry or a checklist tick has
+-- to come from somewhere. Manager A shares Gym A with them; the admin and the
+-- superadmin do not.
 select results_eq(
-  $$ select id from public.profiles $$,
-  $$ select tests.get_user_id('staff_a') $$,
-  'staff only sees their own profile'
+  $$ select id from public.profiles order by id $$,
+  $$ select id from (values (tests.get_user_id('staff_a')),
+                            (tests.get_user_id('manager_a'))) v(id) order by id $$,
+  'staff see themselves and the people they share a gym with'
 );
 with changed as (
   update public.profiles set full_name = 'Staff A' where id = tests.get_user_id('staff_a') returning 1

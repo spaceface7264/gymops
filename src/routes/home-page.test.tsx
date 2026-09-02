@@ -12,6 +12,7 @@ function builder() {
     select: () => chain,
     eq: () => chain,
     or: () => chain,
+    is: () => chain,
     order: () => chain,
     then: (resolve: (value: unknown) => unknown) =>
       Promise.resolve({ data: postRows(), error: null }).then(resolve),

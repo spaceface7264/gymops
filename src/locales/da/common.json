@@ -215,6 +215,36 @@
     "searching": "Søger…",
     "uploadFailed": "Billedet kunne ikke uploades. Prøv igen."
   },
+  "dailyLog": {
+    "add": "Tilføj til loggen",
+    "allKinds": "Alt",
+    "cancel": "Annuller",
+    "edit": "Rediger",
+    "empty": "Der er endnu ikke logget noget her.",
+    "entry": "Hvad skete der",
+    "filterByTag": "Tag",
+    "kind": {
+      "handover": "Overlevering",
+      "issue": "Problem",
+      "note": "Note"
+    },
+    "kindLabel": "Type",
+    "loadFailed": "Dagbogen kunne ikke hentes.",
+    "loading": "Henter…",
+    "needsBody": "Skriv hvad der skete, før du tilføjer det til loggen.",
+    "noTag": "Alle tags",
+    "pickGym": "Vælg en hal for at skrive i dens log.",
+    "readOnly": "Kun hallens eget team kan skrive i loggen.",
+    "remove": "Fjern",
+    "removed": "Fjernet fra tidslinjen.",
+    "save": "Gem",
+    "saveFailed": "Noten kunne ikke gemmes. Prøv igen.",
+    "someone": "Nogen",
+    "tags": "Tags",
+    "tagsPlaceholder": "vaeg4, i-stykker",
+    "title": "Dagbog",
+    "writtenBy": "{{who}} · {{when}}"
+  },
   "guides": {
     "ack": {
       "changed": "Vejledningen er ændret, siden du bekræftede den.",

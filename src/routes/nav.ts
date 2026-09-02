@@ -42,7 +42,7 @@ export const navEntries: NavEntry[] = [
   { to: '/news', labelKey: 'nav.news', icon: Newspaper },
   { to: '/guides', labelKey: 'nav.guides', icon: BookOpen },
   { to: '/checklists', labelKey: 'nav.checklists', icon: ListChecks },
-  { to: '/daily-log', labelKey: 'nav.dailyLog', icon: NotebookPen, phase: '4' },
+  { to: '/daily-log', labelKey: 'nav.dailyLog', icon: NotebookPen },
   { to: '/incidents', labelKey: 'nav.incidents', icon: TriangleAlert, phase: '4' },
   { to: '/chat', labelKey: 'nav.chat', icon: MessagesSquare, phase: '6' },
   { to: '/admin', labelKey: 'nav.admin', icon: Settings, adminOnly: true },
