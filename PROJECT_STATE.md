@@ -23,8 +23,12 @@ now generated with npm 11, and `src/test/setup.ts` stubs the two variables.
 This is also why the phase-2 and phase-3 commit hashes changed on 2026-09-02.
 
 The `invite` function (P2-03) still has never been deployed; that is the first
-item of "Hosted project cutover", and P4-02's `pg_cron` pulls the cutover into
-phase 4.
+item of "Hosted project cutover". P4-02 is done and did *not* need it — the
+local stack ships `pg_cron` — but the extension has to be enabled on the hosted
+project before the schema is pushed there.
+
+Next up: **P4-03**, the template editor, which is what finally puts templates in
+front of a manager; until then the generator only has whatever a test inserts.
 
 ## Phase status
 
@@ -34,7 +38,7 @@ phase 4.
 | P1 Scaffold and auth | ✅ Complete | P1-01 to P1-10, merged in PR #1. |
 | P2 Users and gyms admin  | ✅ Complete    | P2-01 to P2-06, merged in PR #2.                |
 | P3 News and guides       | ✅ Complete    | P3-01 to P3-07 (PR #3) and the audit fixes (#4). |
-| P4 Daily ops             | 🔄 In progress | `phase-4-daily-ops`. P4-01 done.                |
+| P4 Daily ops             | 🔄 In progress | `phase-4-daily-ops`. P4-01, P4-02 done.         |
 | P5 Notifications and PWA | ⬜ Not started |                                                 |
 | P6 Team chat             | ⬜ Not started |                                                 |
 | P7 Desktop and release   | ⬜ Not started |                                                 |
@@ -71,7 +75,8 @@ Update this list as work begins:
 | P3-07 | ✅ done | 2026-09-02 | 2026-09-02 | `UnreadNewsCard` replaces the placeholder home: published posts this person has not opened, plus the ones they have opened but not acknowledged, confirmations first. One query with `post_reads!left` filtered to the signed-in user. 146 unit tests; checked in Chrome as staff — acknowledging a post drops it off the home block, the unread one stays. |
 | Audit fixes | ✅ done | 2026-09-02 | 2026-09-02 | Branch `phase-3-hardening`. `20260902130000_content_integrity.sql`: `is_active_user()` plus active checks in `member_gym_ids()`, `managed_gym_ids()`, `can_read_content()` and `gyms_select`; a trigger banning the auth user when `active` flips; `post_reads`/`guide_acks` guards that stamp the timestamps and the guide version server-side and refuse content the writer cannot read. Client: the deactivated notice in the shell, the translated sign-in refusal, admins in the company-wide acknowledgement audience, and a `RouteError` boundary over every route. 18 new pgTAP assertions (128 total), 153 unit tests; all three original exploits re-run against the fixed API and refused. |
 | P4-01 | ✅ done | 2026-09-02 | 2026-09-02 | `20260902150000_checklist_schema.sql`: `checklist_templates` (+ `weekdays`, `active`), `checklist_template_items`, `checklist_runs` (unique per template/gym/day) and `checklist_run_items`, which snapshot the label so an edited template cannot rewrite history. `can_complete_in()` is the new "complete checklists" rule; `checklist_runs` has no insert policy at all, because the scheduled job (P4-02) creates them. Ticking records `done_by` from the session, never the request. `supabase/tests/070-checklist-permissions.test.sql` — 27 assertions written before the migration, 155 pgTAP total. |
-| P4-02 … P8-06 | ⬜ not started | | | |
+| P4-02 | ✅ done | 2026-09-02 | 2026-09-02 | `20260902160000_checklist_generation.sql`: `pg_cron` plus `generate_checklist_runs(as_of)`, a security-definer function that creates one run per due template per gym and snapshots the template's items into it. The job runs hourly at :00 and each gym generates when *its own* clock reads 03:xx, so one schedule serves every time zone, the 45-minute ones included. Idempotent on the P4-01 unique key; inactive gyms, inactive templates and templates with no items generate nothing. `supabase/tests/080-checklist-generation.test.sql` — 13 assertions, 168 pgTAP total. |
+| P4-03 … P8-06 | ⬜ not started | | | |
 
 Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
 
@@ -125,7 +130,10 @@ locally is P5-03 (`notify`, the database webhook, Resend, VAPID).
 - [ ] `supabase link --project-ref <ref>`, then `supabase db push`. Never `db reset` against
       hosted, and never let `supabase/seed.sql` or `supabase/seeds/` near it: they contain
       pgTAP helpers and four users with a published password.
-- [ ] Enable **pg_cron** (P4-02) and confirm `pg_graphql`/`pgcrypto` availability.
+- [ ] Enable **pg_cron** and confirm `pg_graphql`/`pgcrypto` availability. The P4-02
+      migration runs `create extension if not exists pg_cron`, which needs the
+      privilege the dashboard toggle grants; after `db push`, check `cron.job` holds
+      `generate-checklist-runs` and that `cron.database_name` points at this database.
 - [ ] Create the three private buckets — `content`, `incidents`, `chat`, all
       `public = false`, 50 MiB — and apply the storage RLS policies from migrations.
 - [ ] Regenerate `src/lib/database.types.ts` and check it matches; `db:types` is pinned to
@@ -239,6 +247,11 @@ of truth; nothing in config.toml applies to a hosted project)
 | 2026-09-02 | P4-01: `done_by` is stamped from the session by a trigger and `done_at` keeps the first tick, the same rule the acknowledgements got in the audit. Ticking is a record of who did the work. |
 | 2026-09-02 | P4-01: the schedule lives on the template as `weekdays` (ISO, 1 = Monday), evaluated by P4-02 against the gym's own date — a Sunday checklist must not fire on Saturday in one time zone and Sunday in another. |
 | 2026-09-02 | CI gained a `functions` job (`deno check`/`lint`/`fmt`) and a generated-types drift check. The functions directory needed its own `deno.json` to keep Deno away from the web app's `package.json`, and Prettier now ignores it: one formatter owns each file. |
+
+| 2026-09-02 | P4-02: one hourly job, not a schedule per time zone. `cron.schedule` fires at :00 UTC and the function selects the gyms whose local hour is 3, so opening a gym in a new zone is a row in `gyms`, not a migration. Every UTC offset passes through local hour 3 once a day, 30- and 45-minute ones included. |
+| 2026-09-02 | P4-02: a missed night stays missed. The job only ever generates for the gym's current local date; it does not backfill days when nothing ran. A run invented after the fact would claim work nobody was asked to do, and P4-05 already surfaces the gap to managers. |
+| 2026-09-02 | P4-02: a template with no items generates no run — a run whose every required item is ticked the moment it exists is noise on the home page. An empty template is a draft. |
+| 2026-09-02 | P4-02: `revoke ... from public` is not enough on Supabase. Default privileges grant execute on every new `public` function to `anon`, `authenticated` and `service_role`; the pgTAP assertion caught the generator still callable by a logged-in browser, and the revoke now names the three roles. P4-01's note that runs are created "as the service role" was loose: they are created by the job's owner, and `service_role` cannot call the generator either. |
 
 ## How to update this file
 

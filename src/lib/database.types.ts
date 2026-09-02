@@ -703,6 +703,7 @@ export type Database = {
         Args: { doc: Json; title: string }
         Returns: unknown
       }
+      generate_checklist_runs: { Args: { as_of?: string }; Returns: number }
       is_active_user: { Args: never; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
       is_superadmin: { Args: never; Returns: boolean }
