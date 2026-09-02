@@ -1,0 +1,50 @@
+import {
+  BookOpen,
+  House,
+  ListChecks,
+  MessagesSquare,
+  Newspaper,
+  NotebookPen,
+  Settings,
+  TriangleAlert,
+  type LucideIcon,
+} from 'lucide-react'
+
+export type NavEntry = {
+  to: string
+  /** Key under `nav.` in the common namespace. */
+  labelKey:
+    | 'nav.home'
+    | 'nav.news'
+    | 'nav.guides'
+    | 'nav.checklists'
+    | 'nav.dailyLog'
+    | 'nav.incidents'
+    | 'nav.chat'
+    | 'nav.admin'
+  icon: LucideIcon
+  /** Hidden from managers and staff; the database enforces the same rule. */
+  adminOnly?: boolean
+  /** Phase that replaces the placeholder with the real module. */
+  phase?: string
+}
+
+/**
+ * The V1 modules (PROJECT_SPEC.md §2.2) in the order staff move through a
+ * shift. Sections whose phase has not landed render a placeholder, so the
+ * shell is navigable now and each phase swaps in its own page.
+ */
+export const navEntries: NavEntry[] = [
+  { to: '/', labelKey: 'nav.home', icon: House },
+  { to: '/news', labelKey: 'nav.news', icon: Newspaper, phase: '3' },
+  { to: '/guides', labelKey: 'nav.guides', icon: BookOpen, phase: '3' },
+  { to: '/checklists', labelKey: 'nav.checklists', icon: ListChecks, phase: '4' },
+  { to: '/daily-log', labelKey: 'nav.dailyLog', icon: NotebookPen, phase: '4' },
+  { to: '/incidents', labelKey: 'nav.incidents', icon: TriangleAlert, phase: '4' },
+  { to: '/chat', labelKey: 'nav.chat', icon: MessagesSquare, phase: '6' },
+  { to: '/admin', labelKey: 'nav.admin', icon: Settings, adminOnly: true, phase: '2' },
+]
+
+export function visibleNavEntries(isAdmin: boolean): NavEntry[] {
+  return navEntries.filter((entry) => !entry.adminOnly || isAdmin)
+}

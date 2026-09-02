@@ -1,0 +1,84 @@
+{
+  "app": {
+    "name": "GymOps"
+  },
+  "auth": {
+    "acceptInvite": {
+      "confirm": "Gentag adgangskode",
+      "description": "Vælg en adgangskode, og fortæl os, hvad du hedder. Dine centre er allerede tildelt.",
+      "expired": "Invitationslinket er udløbet. Bed en administrator om et nyt.",
+      "failed": "Kontoen kunne ikke oprettes. Prøv linket igen.",
+      "fullName": "Fulde navn",
+      "password": "Adgangskode",
+      "submit": "Opret konto",
+      "submitting": "Opretter konto…",
+      "title": "Velkommen til GymOps"
+    },
+    "forgotPassword": {
+      "backToSignIn": "Tilbage til login",
+      "description": "Indtast din arbejdsmail, så sender vi dig et link til at vælge en ny adgangskode.",
+      "email": "E-mail",
+      "failed": "Linket kunne ikke sendes. Prøv igen om lidt.",
+      "sent": "Hvis adressen hører til en GymOps-konto, er et link på vej.",
+      "submit": "Send link",
+      "submitting": "Sender…",
+      "title": "Glemt adgangskode?"
+    },
+    "passwordHint": "Mindst 10 tegn med et stort bogstav, et lille bogstav og et tal.",
+    "passwordMismatch": "De to adgangskoder er ikke ens.",
+    "passwordPolicy": "Adgangskoden er for svag: brug mindst 10 tegn med et stort bogstav, et lille bogstav og et tal.",
+    "resetPassword": {
+      "confirm": "Gentag ny adgangskode",
+      "description": "Vælg en ny adgangskode til din GymOps-konto.",
+      "expired": "Linket er udløbet eller allerede brugt.",
+      "failed": "Adgangskoden kunne ikke gemmes. Bed om et nyt link, og prøv igen.",
+      "password": "Ny adgangskode",
+      "requestNew": "Bed om et nyt link",
+      "submit": "Gem adgangskode",
+      "submitting": "Gemmer…",
+      "title": "Vælg en ny adgangskode"
+    },
+    "signIn": {
+      "email": "E-mail",
+      "failed": "E-mail og adgangskode passer ikke. Prøv igen.",
+      "forgotPassword": "Glemt din adgangskode?",
+      "password": "Adgangskode",
+      "submit": "Log ind",
+      "submitting": "Logger ind…",
+      "title": "Log ind"
+    },
+    "signOut": "Log ud",
+    "signingOut": "Logger ud…"
+  },
+  "gym": {
+    "all": "Alle centre",
+    "label": "Center"
+  },
+  "home": {
+    "placeholder": "Skelettet er klar. Login og app-rammen kommer i fase 1."
+  },
+  "language": {
+    "da": "Dansk",
+    "en": "Engelsk",
+    "label": "Sprog"
+  },
+  "module": {
+    "comingIn": "Kommer i fase {{phase}}.",
+    "notYet": "Denne sektion er ikke bygget endnu."
+  },
+  "nav": {
+    "admin": "Administration",
+    "chat": "Chat",
+    "checklists": "Tjeklister",
+    "dailyLog": "Dagbog",
+    "guides": "Vejledninger",
+    "home": "Forside",
+    "incidents": "Hændelser",
+    "label": "Sektioner",
+    "news": "Nyheder"
+  },
+  "notFound": {
+    "body": "Siden, du leder efter, findes ikke.",
+    "title": "Siden blev ikke fundet"
+  }
+}
