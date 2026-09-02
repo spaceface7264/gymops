@@ -242,6 +242,27 @@ describe('the template editor', () => {
     ])
   })
 
+  it('says what is still missing instead of just greying the button out', async () => {
+    renderWithProviders(<ChecklistTemplateEditorPage />, {
+      path: '/checklists/templates/new',
+    })
+
+    // The one thing an author is most likely to leave for last.
+    await userEvent.type(screen.getByLabelText('Item 1'), 'Unlock the front door')
+    expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled()
+    expect(screen.getByText('Give the checklist a name.')).toBeInTheDocument()
+
+    await userEvent.type(screen.getByLabelText('Name'), 'Weekend opening')
+    expect(screen.queryByText('Give the checklist a name.')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Save' })).toBeEnabled()
+
+    for (const day of ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']) {
+      await userEvent.click(screen.getByLabelText(day))
+    }
+    expect(screen.getByText(/at least one day/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled()
+  })
+
   it('will not save a checklist with no items — it would generate nothing', async () => {
     renderWithProviders(<ChecklistTemplateEditorPage />, {
       path: '/checklists/templates/new',

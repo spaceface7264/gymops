@@ -17,6 +17,12 @@ import { isoWeekdays, weekdayNames } from './weekdays'
 
 const kinds: ChecklistKind[] = ['opening', 'closing', 'custom']
 
+type MissingKey =
+  | 'checklists.needsName'
+  | 'checklists.needsDay'
+  | 'checklists.needsItem'
+  | 'checklists.needsPermission'
+
 /** An item while it is being edited: `key` survives reordering, `id` is the saved row. */
 type DraftItem = { key: string; id?: string; label: string; required: boolean }
 
@@ -84,11 +90,14 @@ function TemplateEditor({ template }: { template?: ChecklistTemplate }) {
   const gymId = chosenGymId === undefined ? defaultGymId : chosenGymId
 
   const filledItems = items.filter((item) => item.label.trim() !== '')
-  const canSave =
-    name.trim() !== '' &&
-    filledItems.length > 0 &&
-    weekdays.length > 0 &&
-    scope.canPublishIn(gymId)
+  // What still stands between this form and a saved checklist. Saying it is
+  // the point: a greyed-out button with no reason is a dead end.
+  const missing: MissingKey[] = []
+  if (name.trim() === '') missing.push('checklists.needsName')
+  if (weekdays.length === 0) missing.push('checklists.needsDay')
+  if (filledItems.length === 0) missing.push('checklists.needsItem')
+  if (!scope.canPublishIn(gymId)) missing.push('checklists.needsPermission')
+  const canSave = missing.length === 0
 
   const updateItem = (key: string, change: Partial<DraftItem>) =>
     setItems((current) =>
@@ -275,9 +284,6 @@ function TemplateEditor({ template }: { template?: ChecklistTemplate }) {
           <Plus className="size-4" />
           {t('checklists.addItem')}
         </Button>
-        {filledItems.length === 0 && (
-          <p className="text-muted-foreground text-sm">{t('checklists.needsItem')}</p>
-        )}
       </fieldset>
 
       {template && (
@@ -291,6 +297,14 @@ function TemplateEditor({ template }: { template?: ChecklistTemplate }) {
           />
           <Label htmlFor={`${fieldId}-active`}>{t('checklists.active')}</Label>
         </div>
+      )}
+
+      {missing.length > 0 && (
+        <ul className="text-muted-foreground space-y-0.5 text-sm">
+          {missing.map((key) => (
+            <li key={key}>{t(key)}</li>
+          ))}
+        </ul>
       )}
 
       {save.isError && (
