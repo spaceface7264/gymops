@@ -27,7 +27,8 @@ item of "Hosted project cutover". P4-02 is done and did *not* need it — the
 local stack ships `pg_cron` — but the extension has to be enabled on the hosted
 project before the schema is pushed there.
 
-Next up: **P4-07**, the incidents schema and its storage bucket.
+Next up: **P4-08**, the incident UI — the form with camera capture, the list,
+the detail view with its status flow, comments and assignee.
 
 Testing Realtime locally needs the full stack: the run screen's live sync does
 not work under the CI-style `supabase start -x …`, which leaves the realtime
@@ -41,7 +42,7 @@ container out. `supabase stop && supabase start` brings it back.
 | P1 Scaffold and auth | ✅ Complete | P1-01 to P1-10, merged in PR #1. |
 | P2 Users and gyms admin  | ✅ Complete    | P2-01 to P2-06, merged in PR #2.                |
 | P3 News and guides       | ✅ Complete    | P3-01 to P3-07 (PR #3) and the audit fixes (#4). |
-| P4 Daily ops             | 🔄 In progress | `phase-4-daily-ops`. P4-01 … P4-06 done.        |
+| P4 Daily ops             | 🔄 In progress | `phase-4-daily-ops`. P4-01 … P4-07 done.        |
 | P5 Notifications and PWA | ⬜ Not started |                                                 |
 | P6 Team chat             | ⬜ Not started |                                                 |
 | P7 Desktop and release   | ⬜ Not started |                                                 |
@@ -84,7 +85,8 @@ Update this list as work begins:
 | P4-05 | ✅ done | 2026-09-02 | 2026-09-02 | `ChecklistHistoryCard` on the home page, for admins and managers only: how many of the last seven days' runs were completed, and every run nobody finished — name, date, gym when the scope is all of them, and how far it got. `runOutcome()` calls a run missed only once the gym's own day is over, so this evening's unfinished closing is not an accusation. Read-only, no migration. 8 new unit tests (179 total); the classification re-checked over REST as `manager@gymops.test` against generated runs for yesterday and today. |
 | P4-06 | ✅ done | 2026-09-02 | 2026-09-02 | `20260902180000_daily_log.sql`: `daily_log_entries` (handover/note/issue, plain-text body, `tags text[]` normalised by trigger), written by anyone `can_complete_in()` allows, edited only by its author — a trigger pins every other column when the editor is not — and removed by the author or the gym's managers. `profiles` widened to colleagues via `shares_gym_with()`, which also brings the names back on checklist ticks. `/daily-log` is the timeline: composer, kind and tag filters, entries grouped by the gym's own date, inline edit. 16 new pgTAP assertions (193 total), 9 unit tests (191 total); the rules re-checked over REST — tags normalised to `{broken,wall4}`, a manager's rewrite silently ignored while their removal went through, staff writing into another gym refused 403. |
 | Soft-delete fix | ✅ done | 2026-09-02 | 2026-09-02 | `20260902171000_soft_delete_visibility.sql`. Found while building P4-06: `posts_select` and `guides_select` required `deleted_at is null`, and Postgres refuses an update that hides the row from its own writer — so Delete on a news post or a guide failed for **every** user with "new row violates row-level security policy". The unit tests mock the client, so it only ever failed in a browser. Deleted rows now stay visible to the people who may publish there; every listing, detail and search query filters `deleted_at is null`. Re-checked over REST end to end. |
-| P4-07 … P8-06 | ⬜ not started | | | |
+| P4-07 | ✅ done | 2026-09-02 | 2026-09-02 | `20260902190000_incidents.sql`: `incidents` (kind, severity, status open → in_progress → resolved, assignee, `resolved_at` stamped by trigger), `incident_attachments`, `incident_comments`, and storage RLS for the `incidents` bucket via `incident_object_gym()`. Reporting is `can_complete_in()`, handling is `can_publish_content()`, and two triggers keep them apart on both insert and update — the reporter owns the words, the gym's managers own the status. No delete anywhere. `supabase/tests/110-incident-permissions.test.sql` — 32 assertions, 225 pgTAP total; re-checked over REST including a real upload into the bucket (own gym 200, another gym 400) and an incident filed as "resolved" coming back open. |
+| P4-08 … P8-06 | ⬜ not started | | | |
 
 Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
 
@@ -281,6 +283,11 @@ of truth; nothing in config.toml applies to a hosted project)
 | 2026-09-02 | P4-06: a manager can remove an entry but not rewrite it. Editing is the author's alone, enforced by a trigger that pins `body`, `kind` and `tags` to their old values for anybody else — the same shape as the acknowledgement and checklist-tick guards. |
 | 2026-09-02 | P4-06: `daily_log_entries.created_by` references `public.profiles`, not `auth.users` like the older content tables, so the timeline can ask for the author's name in the same query. Both FKs point at `profiles`, so the embed is named (`author:profiles!daily_log_entries_created_by_fkey`). |
 | 2026-09-02 | Soft delete never worked (found in P4-06). Postgres will not let an UPDATE leave the updated row invisible under the writer's own SELECT policy, and `posts_select`/`guides_select` both required `deleted_at is null` — so every Delete button failed in the browser while the mocked unit tests stayed green. A row now stays visible to whoever may publish there, and the queries filter it. Worth remembering when writing the next `deleted_at`: keep it out of the SELECT policy, or nothing can ever set it. |
+
+| 2026-09-02 | P4-07: the split in §2.1 between reporting an incident (anyone who works there) and changing its status (managers, admins) is enforced by two triggers rather than by two tables. On insert, anyone who cannot publish there gets `status = 'open'` and no assignee; on update, they cannot move status, severity or assignee, while anyone who is not the reporter cannot touch the title, body or kind. The REST check caught the insert half — a staff member filed one already resolved before the trigger existed. |
+| 2026-09-02 | P4-07: `resolved_at` follows the status rather than being posted — set on the way into `resolved`, cleared on the way out, the same rule `done_at` has on a checklist item. |
+| 2026-09-02 | P4-07: the `incidents` bucket gets its own path helper. `content_object_gym()` maps `company/…` to a null gym, which `can_read_content()` treats as company-wide; a photograph of an injury must never resolve that way, so `incident_object_gym()` returns the nil uuid for anything that is not a gym uuid. |
+| 2026-09-02 | P4-07: no delete policy on incidents, their attachments or their comments. An incident is a record of something that happened to somebody; a comment is somebody's own words, editable only by them. |
 
 ## How to update this file
 

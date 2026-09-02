@@ -548,6 +548,170 @@ export type Database = {
         }
         Relationships: []
       }
+      incident_attachments: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          incident_id: string
+          mime_type: string | null
+          path: string
+          size_bytes: number | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          incident_id: string
+          mime_type?: string | null
+          path: string
+          size_bytes?: number | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          incident_id?: string
+          mime_type?: string | null
+          path?: string
+          size_bytes?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incident_attachments_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incident_attachments_incident_id_fkey"
+            columns: ["incident_id"]
+            isOneToOne: false
+            referencedRelation: "incidents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      incident_comments: {
+        Row: {
+          body: string
+          created_at: string
+          created_by: string | null
+          id: string
+          incident_id: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          incident_id: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          incident_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incident_comments_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incident_comments_incident_id_fkey"
+            columns: ["incident_id"]
+            isOneToOne: false
+            referencedRelation: "incidents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      incidents: {
+        Row: {
+          assignee_id: string | null
+          body: string
+          created_at: string
+          created_by: string | null
+          gym_id: string
+          id: string
+          kind: Database["public"]["Enums"]["incident_kind"]
+          resolved_at: string | null
+          severity: Database["public"]["Enums"]["incident_severity"]
+          status: Database["public"]["Enums"]["incident_status"]
+          title: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          assignee_id?: string | null
+          body: string
+          created_at?: string
+          created_by?: string | null
+          gym_id: string
+          id?: string
+          kind?: Database["public"]["Enums"]["incident_kind"]
+          resolved_at?: string | null
+          severity?: Database["public"]["Enums"]["incident_severity"]
+          status?: Database["public"]["Enums"]["incident_status"]
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          assignee_id?: string | null
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          gym_id?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["incident_kind"]
+          resolved_at?: string | null
+          severity?: Database["public"]["Enums"]["incident_severity"]
+          status?: Database["public"]["Enums"]["incident_status"]
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incidents_assignee_id_fkey"
+            columns: ["assignee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incidents_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incidents_gym_id_fkey"
+            columns: ["gym_id"]
+            isOneToOne: false
+            referencedRelation: "gyms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incidents_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invites: {
         Row: {
           accepted_at: string | null
@@ -766,6 +930,7 @@ export type Database = {
         Returns: unknown
       }
       generate_checklist_runs: { Args: { as_of?: string }; Returns: number }
+      incident_object_gym: { Args: { object_name: string }; Returns: string }
       is_active_user: { Args: never; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
       is_superadmin: { Args: never; Returns: boolean }
@@ -779,6 +944,9 @@ export type Database = {
       content_status: "draft" | "published"
       daily_log_kind: "handover" | "note" | "issue"
       gym_role: "manager" | "staff"
+      incident_kind: "injury" | "equipment" | "cleaning" | "other"
+      incident_severity: "low" | "medium" | "high"
+      incident_status: "open" | "in_progress" | "resolved"
       invite_status: "pending" | "accepted" | "revoked"
     }
     CompositeTypes: {
@@ -911,6 +1079,9 @@ export const Constants = {
       content_status: ["draft", "published"],
       daily_log_kind: ["handover", "note", "issue"],
       gym_role: ["manager", "staff"],
+      incident_kind: ["injury", "equipment", "cleaning", "other"],
+      incident_severity: ["low", "medium", "high"],
+      incident_status: ["open", "in_progress", "resolved"],
       invite_status: ["pending", "accepted", "revoked"],
     },
   },
