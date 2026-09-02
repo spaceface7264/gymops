@@ -525,5 +525,34 @@
   "notFound": {
     "body": "Siden, du leder efter, findes ikke.",
     "title": "Siden blev ikke fundet"
+  },
+  "notifications": {
+    "backToInbox": "Tilbage til indbakken",
+    "bell": "Notifikationer",
+    "bellUnread": "Notifikationer, {{count}} ulæste",
+    "channel": {
+      "email": "E-mail",
+      "in_app": "Indbakke",
+      "push": "Push"
+    },
+    "channelFor": "{{channel}} for {{type}}",
+    "empty": "Der er ikke sket noget endnu.",
+    "loadFailed": "Notifikationerne kunne ikke hentes.",
+    "loading": "Henter notifikationer…",
+    "markAllRead": "Markér alle som læst",
+    "markRead": "Markér som læst",
+    "markUnread": "Markér som ulæst",
+    "open": "Åbn {{title}}",
+    "preferences": "Indstillinger",
+    "preferencesHint": "Slår du indbakken fra for en type, bliver den slet ikke gemt. E-mail sendes kun ved de alvorlige — en hændelse med høj alvorlighed — og aldrig fordi du beder om det her.",
+    "saveFailed": "Ændringen kunne ikke gemmes. Prøv igen.",
+    "title": "Notifikationer",
+    "type": {
+      "ack_reminder": "Mangler bekræftelse",
+      "incident_reported": "Ny hændelse",
+      "incident_status_changed": "Hændelse opdateret",
+      "invite": "Invitation accepteret"
+    },
+    "typeColumn": "Type"
   }
 }

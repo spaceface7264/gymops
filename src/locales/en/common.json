@@ -525,5 +525,34 @@
   "notFound": {
     "body": "The page you are looking for does not exist.",
     "title": "Page not found"
+  },
+  "notifications": {
+    "backToInbox": "Back to the inbox",
+    "bell": "Notifications",
+    "bellUnread": "Notifications, {{count}} unread",
+    "channel": {
+      "email": "Email",
+      "in_app": "Inbox",
+      "push": "Push"
+    },
+    "channelFor": "{{channel}} for {{type}}",
+    "empty": "Nothing has happened yet.",
+    "loadFailed": "The notifications could not be loaded.",
+    "loading": "Loading notifications…",
+    "markAllRead": "Mark all read",
+    "markRead": "Mark read",
+    "markUnread": "Mark unread",
+    "open": "Open {{title}}",
+    "preferences": "Preferences",
+    "preferencesHint": "Turning the inbox off for a kind stops it being recorded at all. Email arrives only for the serious ones — a high-severity incident — and never because you asked for it here.",
+    "saveFailed": "The change could not be saved. Try again.",
+    "title": "Notifications",
+    "type": {
+      "ack_reminder": "Still to confirm",
+      "incident_reported": "New incident",
+      "incident_status_changed": "Incident updated",
+      "invite": "Invitation accepted"
+    },
+    "typeColumn": "Kind"
   }
 }

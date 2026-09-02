@@ -211,6 +211,8 @@ gymops/
 | Making `notify` re-read the notification it was handed | The webhook fires inside the transaction that wrote the row; a re-read is a race with its own trigger. The payload is the message, and only what it cannot carry — the recipient's address, locale and preferences — is looked up. |
 | Hand-rolling RFC 8291 payload encryption instead of `npm:web-push` | It works under the edge runtime's node compatibility, and push encryption is not a thing to implement twice for the sake of one fewer dependency. |
 
+| A Notifications entry in the left nav | The nav lists the modules a shift moves through. An inbox is about the person, not the gym's work, so it sits in the header with the gym switcher and the account — where every app that has one puts it, and where it can carry a badge without competing with the modules. |
+
 ## 5. Conventions
 
 - **Language:** TypeScript strict everywhere, including Edge Functions (Deno). No `any`.

@@ -18,6 +18,7 @@ import { HomePage } from '@/routes/home-page'
 import { LoginPage } from '@/routes/login-page'
 import { GuideDetailPage, GuideEditorPage, GuidesPage } from '@/features/guides'
 import { NewsFeed, PostDetailPage, PostEditorPage } from '@/features/news'
+import { InboxPage, NotificationPreferencesPage } from '@/features/notifications'
 import { ModulePlaceholder } from '@/routes/module-placeholder'
 import { navEntries } from '@/routes/nav'
 import { NotFoundPage } from '@/routes/not-found-page'
@@ -64,6 +65,11 @@ export const router = createBrowserRouter([
             element: <ChecklistTemplateEditorPage />,
           },
           { path: 'daily-log', element: <DailyLogPage /> },
+          { path: 'notifications', element: <InboxPage /> },
+          {
+            path: 'notifications/preferences',
+            element: <NotificationPreferencesPage />,
+          },
           { path: 'incidents', element: <IncidentsPage /> },
           { path: 'incidents/new', element: <IncidentFormPage /> },
           { path: 'incidents/:incidentId', element: <IncidentDetailPage /> },
