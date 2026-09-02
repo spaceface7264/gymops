@@ -35,6 +35,9 @@ export const newsKeys = {
   all: ['news'] as const,
   list: (gymId: string | null) => ['news', 'list', gymId] as const,
   detail: (postId: string) => ['news', 'detail', postId] as const,
+  myRead: (postId: string, userId: string) => ['news', 'read', postId, userId] as const,
+  ackReport: (postId: string, gymId: string | null) =>
+    ['news', 'ack-report', postId, gymId] as const,
 }
 
 /**
@@ -158,5 +161,120 @@ export function useDeletePost() {
       .eq('id', id)
 
     if (error) throw error
+  })
+}
+
+/**
+ * Opening a post records that this person has seen it. `ignoreDuplicates` keeps
+ * the first read rather than the latest, and leaves an acknowledgement that is
+ * already there alone.
+ */
+export function useMarkPostRead() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ postId, userId }: { postId: string; userId: string }) => {
+      const { error } = await supabase
+        .from('post_reads')
+        .upsert({ post_id: postId, user_id: userId }, { ignoreDuplicates: true })
+
+      if (error) throw error
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: newsKeys.all }),
+  })
+}
+
+/** The acknowledgement button (P3-04): "I have read this". */
+export function useAcknowledgePost() {
+  return useNewsWrite(async ({ postId, userId }: { postId: string; userId: string }) => {
+    const { error } = await supabase.from('post_reads').upsert(
+      {
+        post_id: postId,
+        user_id: userId,
+        acknowledged_at: new Date().toISOString(),
+      },
+      { onConflict: 'post_id,user_id' },
+    )
+
+    if (error) throw error
+  })
+}
+
+/** Whether the signed-in person has read and acknowledged one post. */
+export function useMyPostRead(postId: string | undefined, userId: string | undefined) {
+  return useQuery({
+    queryKey: newsKeys.myRead(postId ?? '', userId ?? ''),
+    enabled: Boolean(postId && userId),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('post_reads')
+        .select('read_at, acknowledged_at')
+        .eq('post_id', postId ?? '')
+        .eq('user_id', userId ?? '')
+        .maybeSingle()
+
+      if (error) throw error
+      return data
+    },
+  })
+}
+
+export type AckReportRow = {
+  userId: string
+  name: string
+  gymName: string
+  acknowledgedAt: string | null
+}
+
+/**
+ * Who still has to confirm a post (spec §2.2). The audience is the gym's
+ * members for a gym post, and everyone the viewer may report on for a
+ * company-wide one — which `gym_memberships` RLS already narrows to their own
+ * gyms for a manager, so the report is per gym without asking for a gym.
+ */
+export function useAckReport(
+  postId: string | undefined,
+  gymId: string | null | undefined,
+  requiresAck: boolean,
+) {
+  return useQuery({
+    queryKey: newsKeys.ackReport(postId ?? '', gymId ?? null),
+    enabled: Boolean(postId && requiresAck),
+    queryFn: async (): Promise<AckReportRow[]> => {
+      let audience = supabase
+        .from('gym_memberships')
+        .select('user_id, gyms(name), profiles(id, full_name, email, active)')
+      if (gymId) audience = audience.eq('gym_id', gymId)
+
+      const [members, reads] = await Promise.all([
+        audience,
+        supabase
+          .from('post_reads')
+          .select('user_id, acknowledged_at')
+          .eq('post_id', postId ?? ''),
+      ])
+
+      if (members.error) throw members.error
+      if (reads.error) throw reads.error
+
+      const acknowledged = new Map(
+        reads.data.map((read) => [read.user_id, read.acknowledged_at]),
+      )
+
+      return members.data
+        .filter((member) => member.profiles?.active)
+        .map((member) => ({
+          userId: member.user_id,
+          name: member.profiles?.full_name ?? member.profiles?.email ?? member.user_id,
+          gymName: member.gyms?.name ?? '',
+          acknowledgedAt: acknowledged.get(member.user_id) ?? null,
+        }))
+        .sort(
+          (a, b) =>
+            Number(Boolean(a.acknowledgedAt)) - Number(Boolean(b.acknowledgedAt)) ||
+            a.gymName.localeCompare(b.gymName) ||
+            a.name.localeCompare(b.name),
+        )
+    },
   })
 }

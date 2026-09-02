@@ -162,6 +162,16 @@
     "news": "Nyheder"
   },
   "news": {
+    "ack": {
+      "confirm": "Jeg har læst den",
+      "confirmedAt": "Bekræftet {{when}}",
+      "outstanding": "Mangler",
+      "prompt": "Denne nyhed skal bekræftes.",
+      "reminderNote": "Påmindelser sendes, når notifikationer er på plads (P5).",
+      "reportFailed": "Oversigten over bekræftelser kunne ikke hentes.",
+      "reportSummary": "{{confirmed}} ud af {{total}} har bekræftet.",
+      "reportTitle": "Bekræftelser"
+    },
     "acknowledgementRequired": "Skal bekræftes",
     "backToFeed": "Tilbage til nyheder",
     "body": "Indhold",

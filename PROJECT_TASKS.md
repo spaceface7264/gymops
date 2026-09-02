@@ -37,7 +37,7 @@ Legend: P1 = Phase 1 etc. Effort: S (< half day), M (1–2 days), L (3+ days).
 | P3-01 | Tiptap editor component with image upload to `content` bucket + storage RLS                                       | P1-08        | M      |
 | P3-02 | Migration: `posts`, `post_reads`, `guide_categories`, `guides`, `guide_acks`, `body_text` + tsvector, RLS + pgTAP | P1-04        | M      |
 | P3-03 | News feed, post detail, editor, pin, draft/publish                                                                | P3-01, P3-02 | M      |
-| P3-04 | Acknowledgement button, per-gym ack report, reminder trigger                                                      | P3-03        | M      |
+| P3-04 | Acknowledgement button, per-gym ack report (the reminder itself is P5-02's `ack reminder` trigger — `notifications` does not exist before P5-01) | P3-03        | M      |
 | P3-05 | Guide categories tree, guide viewer, editor, versions, re-ack flag                                                | P3-01, P3-02 | L      |
 | P3-06 | Guide/news full-text search UI                                                                                    | P3-05        | S      |
 | P3-07 | Home page: unread/ack-required news block                                                                         | P3-04        | S      |

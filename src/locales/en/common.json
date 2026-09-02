@@ -162,6 +162,16 @@
     "news": "News"
   },
   "news": {
+    "ack": {
+      "confirm": "I have read this",
+      "confirmedAt": "Confirmed {{when}}",
+      "outstanding": "Not yet",
+      "prompt": "This post must be acknowledged.",
+      "reminderNote": "Reminders are sent once notifications ship (P5).",
+      "reportFailed": "The acknowledgement report could not be loaded.",
+      "reportSummary": "{{confirmed}} of {{total}} have confirmed.",
+      "reportTitle": "Acknowledgements"
+    },
     "acknowledgementRequired": "Must be acknowledged",
     "backToFeed": "Back to news",
     "body": "Body",

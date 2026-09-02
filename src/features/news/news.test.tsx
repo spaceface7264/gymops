@@ -41,12 +41,17 @@ vi.mock('@/lib/supabase', () => ({
         update(values)
         return builder(() => ({ data: [], error: null }))
       },
+      // The detail view records that the post was opened (P3-04).
+      upsert: () => Promise.resolve({ error: null }),
     }),
     storage: { from: () => ({ upload: vi.fn(), createSignedUrl: vi.fn() }) },
   },
 }))
 
-vi.mock('@/features/auth', () => ({ useProfile: () => ({ data: profile() }) }))
+vi.mock('@/features/auth', () => ({
+  useProfile: () => ({ data: profile() }),
+  useAuth: () => ({ user: { id: 'user-1' } }),
+}))
 vi.mock('@/features/gyms', () => ({
   useGymScope: () => gymScope(),
   useGyms: () => ({ data: [{ id: 'gym-nord', name: 'Copenhagen Nord', slug: 'nord' }] }),

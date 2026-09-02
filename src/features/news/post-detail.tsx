@@ -12,6 +12,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { RichText, toDoc, usePublishScope } from '@/features/content'
+import { AcknowledgeButton, AckReport } from './acknowledgement'
+import { useTrackPostRead } from './use-track-post-read'
 import { postDate } from './post-date'
 import { PostBadges } from './post-badges'
 import { useDeletePost, useNewsPost, useSetPostPinned, useSetPostStatus } from './queries'
@@ -27,6 +29,7 @@ export function PostDetailPage() {
   const setStatus = useSetPostStatus()
   const remove = useDeletePost()
   const [confirmingDelete, setConfirmingDelete] = useState(false)
+  useTrackPostRead(post.data)
 
   if (post.isPending)
     return <p className="text-muted-foreground text-sm">{t('news.loading')}</p>
@@ -100,6 +103,9 @@ export function PostDetailPage() {
       )}
 
       <RichText doc={toDoc(post.data.body)} />
+
+      <AcknowledgeButton post={post.data} />
+      {canEdit && <AckReport post={post.data} />}
 
       {/* A dialog rather than window.confirm: it is translated, and a browser
           modal would block the app. */}
