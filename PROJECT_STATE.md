@@ -27,11 +27,12 @@ item of "Hosted project cutover". P4-02 is done and did *not* need it — the
 local stack ships `pg_cron` — but the extension has to be enabled on the hosted
 project before the schema is pushed there.
 
-**Phase 4 is complete** (P4-01 … P4-11) on `phase-4-daily-ops`, which has
-not been pushed or opened as a PR yet — phases 1–3 each went to `main`
-through one. Next up: **phase 5, notifications and the PWA** (P5-01 …
-P5-06), which is where the `notify` function, the VAPID keys and Resend
-finally have to exist, and where P2-03's `invite` gets deployed.
+**Phase 4 is complete.** P4-01 … P4-10 are on `main` through PR #5; the
+events module (P4-11), the shadcn select swap and the deactivated-publisher
+tests follow in PR #6 from the same branch. Next up: **phase 5, notifications
+and the PWA** (P5-01 … P5-06), which is where the `notify` function, the VAPID
+keys and Resend finally have to exist, and where P2-03's `invite` gets
+deployed.
 
 Testing Realtime locally needs the full stack: the run screen's live sync does
 not work under the CI-style `supabase start -x …`, which leaves the realtime
@@ -45,7 +46,7 @@ container out. `supabase stop && supabase start` brings it back.
 | P1 Scaffold and auth | ✅ Complete | P1-01 to P1-10, merged in PR #1. |
 | P2 Users and gyms admin  | ✅ Complete    | P2-01 to P2-06, merged in PR #2.                |
 | P3 News and guides       | ✅ Complete    | P3-01 to P3-07 (PR #3) and the audit fixes (#4). |
-| P4 Daily ops             | ✅ Complete    | P4-01 to P4-11 on `phase-4-daily-ops`; no PR yet. |
+| P4 Daily ops             | ✅ Complete    | P4-01 to P4-10 merged in PR #5; P4-11 in PR #6.   |
 | P5 Notifications and PWA | ⬜ Not started |                                                 |
 | P6 Team chat             | ⬜ Not started |                                                 |
 | P7 Desktop and release   | ⬜ Not started |                                                 |
