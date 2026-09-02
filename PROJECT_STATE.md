@@ -1,14 +1,14 @@
 # GymOps — Project State
 
-Last updated: 2026-09-01
+Last updated: 2026-09-02
 
 ## Currently working on
 
-**Phase 2 is under way** on branch `phase-2-admin`: **Phase 2 is done** on branch `phase-2-admin` (P2-01 … P2-06). Everything runs
-against the local stack; the `invite` function has never been deployed, and
-doing so — with a Resend account behind it — is the first item of "Hosted
-project cutover". Next up: **phase 3**. P2-03 is
-where the hosted project is needed; see "Hosted project cutover".
+**Phase 2 is done** on branch `phase-2-admin` (P2-01 … P2-06). Everything runs
+against the local stack; the `invite` function (P2-03) has never been deployed,
+and doing so — with a Resend account behind it — is the first item of "Hosted
+project cutover". Next up: **phase 3, news and guides** (P3-01 … P3-07), which
+needs no hosted project.
 
 The repo has no git remote yet, so CI has never actually run on GitHub: the workflow is verified only by running the same commands locally. Push the branch and check the first run.
 
@@ -56,9 +56,9 @@ Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
 
 | Item                                                        | Needed for                           | Owner                      | Status               |
 | ----------------------------------------------------------- | ------------------------------------ | -------------------------- | -------------------- |
-| Supabase project (hosted) | P2-03 (`invite` Edge Function) | Rami | `.env.local` points at the local stack since P1-02; the hosted `ngcqpftfqepvhpjikaqq` values sit commented out beneath it. Confirm that ref is the GymOps project — the Supabase MCP connection currently points at a different project (`ooikemajridlhceejgmo`), which times out. Steps in "Hosted project cutover" below. |
-| GitHub repository (remote) | P1-10 CI actually running | Rami | `.github/workflows/ci.yml` exists and its steps pass locally, but the repo has no remote, so no run has happened. Add the remote, push `phase-1-scaffold`, confirm both jobs go green. |
-| Resend account + API key | P2-03 (real invite mail), P5-03 | Rami | not created. `[auth.rate_limit] email_sent = 2` per hour and hosted Supabase's built-in SMTP are both far below what inviting 200+ staff needs, so a provider must exist before invites go out for real. |
+| Supabase project (hosted) | deploying `invite` (P2-03, written and working locally) | Rami | `.env.local` points at the local stack since P1-02; the hosted `ngcqpftfqepvhpjikaqq` values sit commented out beneath it. Confirm that ref is the GymOps project — the Supabase MCP connection currently points at a different project (`ooikemajridlhceejgmo`), which times out. Steps in "Hosted project cutover" below. |
+| GitHub repository (remote) | P1-10 CI actually running | Rami | `.github/workflows/ci.yml` exists and its steps pass locally, but the repo has no remote, so no run has happened. Add the remote, push `phase-1-scaffold` and `phase-2-admin`, confirm both jobs go green. |
+| Resend account + API key | real invite mail (P2-03), P5-03 | Rami | not created. `[auth.rate_limit] email_sent = 2` per hour and hosted Supabase's built-in SMTP are both far below what inviting 200+ staff needs, so a provider must exist before invites go out for real. |
 | VAPID key pair                                              | P5-03                                | generated during P5-03     | —                    |
 | Anthropic API key                                           | P8-03                                | Rami                       | not created          |
 | Apple Developer ID + Windows signing cert                   | first public desktop release (P7-04) | Rami                       | not started          |
