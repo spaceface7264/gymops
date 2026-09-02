@@ -14,6 +14,7 @@ function builder(table: string) {
   const chain = {
     select: () => chain,
     eq: () => chain,
+    or: () => chain,
     maybeSingle: () =>
       Promise.resolve({ data: tableRows(table)[0] ?? null, error: null }),
     then: (resolve: (value: unknown) => unknown) =>
@@ -112,52 +113,79 @@ describe('useTrackPostRead', () => {
 describe('AckReport', () => {
   beforeEach(() => {
     tableRows.mockImplementation((table) =>
-      table === 'gym_memberships'
+      table === 'profiles'
         ? [
             {
-              user_id: 'user-2',
-              gyms: { name: 'Copenhagen Nord' },
-              profiles: {
-                id: 'user-2',
-                full_name: 'Sam Staff',
-                email: 's@x.test',
-                active: true,
-              },
-            },
-            {
-              user_id: 'user-3',
-              gyms: { name: 'Aarhus C' },
-              profiles: {
-                id: 'user-3',
-                full_name: 'Mette Manager',
-                email: 'm@x.test',
-                active: true,
-              },
-            },
-            {
-              user_id: 'user-4',
-              gyms: { name: 'Aarhus C' },
-              profiles: {
-                id: 'user-4',
-                full_name: 'Gone Away',
-                email: 'g@x.test',
-                active: false,
-              },
+              id: 'user-5',
+              full_name: 'Anders Admin',
+              email: 'a@x.test',
+              active: true,
+              is_admin: true,
             },
           ]
-        : [{ user_id: 'user-3', acknowledged_at: '2026-09-02T09:30:00Z' }],
+        : table === 'gym_memberships'
+          ? [
+              {
+                user_id: 'user-2',
+                gyms: { name: 'Copenhagen Nord' },
+                profiles: {
+                  id: 'user-2',
+                  full_name: 'Sam Staff',
+                  email: 's@x.test',
+                  active: true,
+                },
+              },
+              {
+                user_id: 'user-3',
+                gyms: { name: 'Aarhus C' },
+                profiles: {
+                  id: 'user-3',
+                  full_name: 'Mette Manager',
+                  email: 'm@x.test',
+                  active: true,
+                },
+              },
+              {
+                user_id: 'user-4',
+                gyms: { name: 'Aarhus C' },
+                profiles: {
+                  id: 'user-4',
+                  full_name: 'Gone Away',
+                  email: 'g@x.test',
+                  active: false,
+                },
+              },
+            ]
+          : [{ user_id: 'user-3', acknowledged_at: '2026-09-02T09:30:00Z' }],
     )
+  })
+
+  it('counts the admins too — they hold no membership but must confirm', async () => {
+    renderWithProviders(<AckReport post={post} />)
+
+    expect(await screen.findByText('Anders Admin')).toBeInTheDocument()
+    expect(screen.getByText('1 of 3 have confirmed.')).toBeInTheDocument()
+  })
+
+  it("leaves the admins out of one gym's report", async () => {
+    renderWithProviders(<AckReport post={{ ...post, gym_id: 'gym-nord' }} />)
+
+    expect(await screen.findByText('Sam Staff')).toBeInTheDocument()
+    expect(screen.queryByText('Anders Admin')).not.toBeInTheDocument()
   })
 
   it('puts the people who have not confirmed first, and counts them', async () => {
     renderWithProviders(<AckReport post={post} />)
 
-    expect(await screen.findByText('1 of 2 have confirmed.')).toBeInTheDocument()
+    expect(await screen.findByText('1 of 3 have confirmed.')).toBeInTheDocument()
 
-    const [first, second] = screen.getAllByRole('listitem')
-    expect(first).toHaveTextContent('Sam Staff')
+    // Outstanding first; among those, the company row before the gyms.
+    const [first, second, third] = screen.getAllByRole('listitem')
+    expect(first).toHaveTextContent('Anders Admin')
     expect(first).toHaveTextContent('Not yet')
-    expect(second).toHaveTextContent('Mette Manager')
+    expect(second).toHaveTextContent('Sam Staff')
+    expect(second).toHaveTextContent('Not yet')
+    expect(third).toHaveTextContent('Mette Manager')
   })
 
   it('leaves deactivated people out of the audience', async () => {

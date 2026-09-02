@@ -4,7 +4,7 @@ import { Link, Navigate, useLocation } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { useAuth, useSignIn } from '@/features/auth'
+import { isDeactivatedError, useAuth, useSignIn } from '@/features/auth'
 import { AuthLayout } from '@/routes/auth-layout'
 
 /**
@@ -57,7 +57,9 @@ export function LoginPage() {
         </div>
         {signIn.isError && (
           <p role="alert" className="text-destructive text-sm">
-            {t('auth.signIn.failed')}
+            {isDeactivatedError(signIn.error)
+              ? t('auth.signIn.deactivated')
+              : t('auth.signIn.failed')}
           </p>
         )}
         <Button type="submit" className="w-full" disabled={signIn.isPending}>

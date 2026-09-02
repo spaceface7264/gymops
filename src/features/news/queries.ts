@@ -186,7 +186,11 @@ export function useMarkPostRead() {
   })
 }
 
-/** The acknowledgement button (P3-04): "I have read this". */
+/**
+ * The acknowledgement button (P3-04): "I have read this". The timestamp sent
+ * here only says *that* this is a confirmation — `post_reads_guard` replaces it
+ * with the database's own clock, so the record cannot be backdated.
+ */
 export function useAcknowledgePost() {
   return useNewsWrite(async ({ postId, userId }: { postId: string; userId: string }) => {
     const { error } = await supabase.from('post_reads').upsert(
@@ -224,7 +228,8 @@ export function useMyPostRead(postId: string | undefined, userId: string | undef
 export type AckReportRow = {
   userId: string
   name: string
-  gymName: string
+  /** Null for an admin, who belongs to the company rather than to a gym. */
+  gymName: string | null
   acknowledgedAt: string | null
 }
 
@@ -233,6 +238,11 @@ export type AckReportRow = {
  * members for a gym post, and everyone the viewer may report on for a
  * company-wide one — which `gym_memberships` RLS already narrows to their own
  * gyms for a manager, so the report is per gym without asking for a gym.
+ *
+ * Admins and superadmins hold no membership anywhere, so a company-wide post
+ * has to ask `profiles` for them too; without that they were quietly missing
+ * from a report that claims to cover everyone. A manager cannot read those
+ * profiles, which is right: their report is their own gyms.
  */
 export function useAckReport(
   postId: string | undefined,
@@ -259,24 +269,49 @@ export function useAckReport(
       if (members.error) throw members.error
       if (reads.error) throw reads.error
 
+      // Only for a company-wide post, and only an admin can read these rows.
+      const admins = gymId
+        ? null
+        : await supabase
+            .from('profiles')
+            .select('id, full_name, email, active')
+            .or('is_admin.eq.true,is_superadmin.eq.true')
+
+      if (admins?.error) throw admins.error
+
       const acknowledged = new Map(
         reads.data.map((read) => [read.user_id, read.acknowledged_at]),
       )
 
-      return members.data
-        .filter((member) => member.profiles?.active)
-        .map((member) => ({
+      const rows = new Map<string, AckReportRow>()
+
+      for (const member of members.data) {
+        if (!member.profiles?.active) continue
+        rows.set(member.user_id, {
           userId: member.user_id,
-          name: member.profiles?.full_name ?? member.profiles?.email ?? member.user_id,
-          gymName: member.gyms?.name ?? '',
+          name: member.profiles.full_name ?? member.profiles.email,
+          gymName: member.gyms?.name ?? null,
           acknowledgedAt: acknowledged.get(member.user_id) ?? null,
-        }))
-        .sort(
-          (a, b) =>
-            Number(Boolean(a.acknowledgedAt)) - Number(Boolean(b.acknowledgedAt)) ||
-            a.gymName.localeCompare(b.gymName) ||
-            a.name.localeCompare(b.name),
-        )
+        })
+      }
+
+      for (const admin of admins?.data ?? []) {
+        // No gym name: an admin belongs to the company, not to a gym.
+        if (!admin.active || rows.has(admin.id)) continue
+        rows.set(admin.id, {
+          userId: admin.id,
+          name: admin.full_name ?? admin.email,
+          gymName: null,
+          acknowledgedAt: acknowledged.get(admin.id) ?? null,
+        })
+      }
+
+      return [...rows.values()].sort(
+        (a, b) =>
+          Number(Boolean(a.acknowledgedAt)) - Number(Boolean(b.acknowledgedAt)) ||
+          (a.gymName ?? '').localeCompare(b.gymName ?? '') ||
+          a.name.localeCompare(b.name),
+      )
     },
   })
 }

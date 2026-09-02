@@ -1,7 +1,13 @@
 import { useTranslation } from 'react-i18next'
 import { NavLink, Outlet } from 'react-router'
 import { Button } from '@/components/ui/button'
-import { useAuth, useLocaleSync, useProfile, useSignOut } from '@/features/auth'
+import {
+  DeactivatedNotice,
+  useAuth,
+  useLocaleSync,
+  useProfile,
+  useSignOut,
+} from '@/features/auth'
 import { GymSwitcher } from '@/features/gyms'
 import { cn } from '@/lib/utils'
 import { visibleNavEntries, type NavEntry } from '@/routes/nav'
@@ -26,6 +32,10 @@ export function AppShell() {
     profile?.gym_memberships.some((membership) => membership.role === 'manager'),
   )
   const entries = visibleNavEntries(canAdminister)
+
+  // Deactivation happens mid-shift on a shared machine: RLS empties every
+  // screen at once, so say so rather than showing an app with nothing in it.
+  if (profile?.active === false) return <DeactivatedNotice />
 
   return (
     <div className="bg-background text-foreground min-h-dvh md:flex">

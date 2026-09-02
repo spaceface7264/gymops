@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router'
+import { createBrowserRouter, Outlet } from 'react-router'
 import { AuditPanel, GymsPanel, UsersPanel } from '@/features/admin'
 import { RequireAuth } from '@/features/auth'
 import { GymProvider } from '@/features/gyms'
@@ -13,6 +13,7 @@ import { NewsFeed, PostDetailPage, PostEditorPage } from '@/features/news'
 import { ModulePlaceholder } from '@/routes/module-placeholder'
 import { navEntries } from '@/routes/nav'
 import { NotFoundPage } from '@/routes/not-found-page'
+import { RouteError } from '@/routes/route-error'
 import { ResetPasswordPage } from '@/routes/reset-password-page'
 
 /**
@@ -21,59 +22,67 @@ import { ResetPasswordPage } from '@/routes/reset-password-page'
  * placeholder, so a nav entry without a `phase` must have a route here.
  */
 export const router = createBrowserRouter([
-  { path: '/login', element: <LoginPage /> },
-  { path: '/forgot-password', element: <ForgotPasswordPage /> },
-  { path: '/reset-password', element: <ResetPasswordPage /> },
-  { path: '/accept-invite', element: <AcceptInvitePage /> },
   {
-    path: '/',
-    element: (
-      <RequireAuth>
-        <GymProvider>
-          <AppShell />
-        </GymProvider>
-      </RequireAuth>
-    ),
+    // A pathless layout route, so anything thrown while rendering any screen
+    // below renders `RouteError` instead of an empty document.
+    element: <Outlet />,
+    errorElement: <RouteError />,
     children: [
-      { index: true, element: <HomePage /> },
-      { path: 'news', element: <NewsFeed /> },
-      { path: 'news/new', element: <PostEditorPage /> },
-      { path: 'news/:postId', element: <PostDetailPage /> },
-      { path: 'news/:postId/edit', element: <PostEditorPage /> },
-      { path: 'guides', element: <GuidesPage /> },
-      { path: 'guides/new', element: <GuideEditorPage /> },
-      { path: 'guides/:guideId', element: <GuideDetailPage /> },
-      { path: 'guides/:guideId/edit', element: <GuideEditorPage /> },
+      { path: '/login', element: <LoginPage /> },
+      { path: '/forgot-password', element: <ForgotPasswordPage /> },
+      { path: '/reset-password', element: <ResetPasswordPage /> },
+      { path: '/accept-invite', element: <AcceptInvitePage /> },
       {
-        path: 'admin',
-        element: <AdminPage />,
+        path: '/',
+        element: (
+          <RequireAuth>
+            <GymProvider>
+              <AppShell />
+            </GymProvider>
+          </RequireAuth>
+        ),
         children: [
-          { path: 'users', element: <UsersPanel /> },
+          { index: true, element: <HomePage /> },
+          { path: 'news', element: <NewsFeed /> },
+          { path: 'news/new', element: <PostEditorPage /> },
+          { path: 'news/:postId', element: <PostDetailPage /> },
+          { path: 'news/:postId/edit', element: <PostEditorPage /> },
+          { path: 'guides', element: <GuidesPage /> },
+          { path: 'guides/new', element: <GuideEditorPage /> },
+          { path: 'guides/:guideId', element: <GuideDetailPage /> },
+          { path: 'guides/:guideId/edit', element: <GuideEditorPage /> },
           {
-            path: 'gyms',
-            element: (
-              <RequireSuperadmin>
-                <GymsPanel />
-              </RequireSuperadmin>
-            ),
+            path: 'admin',
+            element: <AdminPage />,
+            children: [
+              { path: 'users', element: <UsersPanel /> },
+              {
+                path: 'gyms',
+                element: (
+                  <RequireSuperadmin>
+                    <GymsPanel />
+                  </RequireSuperadmin>
+                ),
+              },
+              {
+                path: 'audit',
+                element: (
+                  <RequireSuperadmin>
+                    <AuditPanel />
+                  </RequireSuperadmin>
+                ),
+              },
+            ],
           },
-          {
-            path: 'audit',
-            element: (
-              <RequireSuperadmin>
-                <AuditPanel />
-              </RequireSuperadmin>
-            ),
-          },
+          ...navEntries
+            .filter((entry) => entry.phase)
+            .map((entry) => ({
+              path: entry.to.slice(1),
+              element: <ModulePlaceholder entry={entry} />,
+            })),
+          { path: '*', element: <NotFoundPage /> },
         ],
       },
-      ...navEntries
-        .filter((entry) => entry.phase)
-        .map((entry) => ({
-          path: entry.to.slice(1),
-          element: <ModulePlaceholder entry={entry} />,
-        })),
-      { path: '*', element: <NotFoundPage /> },
     ],
   },
 ])

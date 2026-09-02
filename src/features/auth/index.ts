@@ -13,6 +13,8 @@ export {
   type Profile,
 } from './queries'
 export { PasswordFields } from './password-fields'
+export { DeactivatedNotice } from './deactivated-notice'
+export { isDeactivatedError } from './errors'
 export { checkPassword, minPasswordLength, type PasswordProblem } from './password'
 export { parseAuthCallback, type AuthCallback } from './url-callback'
 export { useUrlSession, type UrlSessionStatus } from './use-url-session'

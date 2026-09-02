@@ -4,7 +4,15 @@ Last updated: 2026-09-02
 
 ## Currently working on
 
-**Phase 3 is done** on branch `phase-3-content` (P3-01 … P3-07), branched off
+**Phase 3 is done** and its audit fixes are on `phase-3-hardening`, branched off
+`phase-3-content`. An audit on 2026-09-02 found two holes worth stopping for —
+deactivation removed no access, and acknowledgements were whatever the client
+posted — plus a missing error boundary and admins missing from company-wide
+acknowledgement reports. All four are fixed and covered by
+`supabase/tests/060-content-integrity.test.sql` (18 assertions, 128 total).
+Three smaller findings are listed under "Known gaps" below and are not fixed.
+
+Phase 3 itself is on branch `phase-3-content` (P3-01 … P3-07), branched off
 `phase-2-admin` because `main` does not yet carry phases 1 and 2. Nothing in it
 needed a hosted project. Next up: **phase 4, daily ops** (P4-01 … P4-10), whose
 P4-02 (pg_cron) is the first task after P2-03 that cannot be finished locally.
@@ -57,6 +65,7 @@ Update this list as work begins:
 | P3-05 | ✅ done | 2026-09-02 | 2026-09-02 | `src/features/guides`: `/guides` (one tree mixing company and gym categories, guides filtered by the selected branch), the viewer, the editor at `/guides/new` and `/guides/:guideId/edit`, and category create/rename/delete. `guides.version` is bumped only when the author ticks "significant change", and `guide_acks` stores the confirmed version, so a reader who is behind is asked again. Guides lost their nav placeholder. 140 unit tests; the tree, the confirmation and the re-confirmation after a version bump driven in Chrome as staff. |
 | P3-06 | ✅ done | 2026-09-02 | 2026-09-02 | `features/content/search.ts` + `ContentSearch`: one debounced search over both `posts` and `guides` using `websearch_to_tsquery` on the `simple` configuration, with a snippet cut around the first matching word and hits labelled news/guide, scope and draft. The box sits on `/news` and `/guides`. 145 unit tests; a Danish word matched through RLS by HTTP, and another gym's post did not. |
 | P3-07 | ✅ done | 2026-09-02 | 2026-09-02 | `UnreadNewsCard` replaces the placeholder home: published posts this person has not opened, plus the ones they have opened but not acknowledged, confirmations first. One query with `post_reads!left` filtered to the signed-in user. 146 unit tests; checked in Chrome as staff — acknowledging a post drops it off the home block, the unread one stays. |
+| Audit fixes | ✅ done | 2026-09-02 | 2026-09-02 | Branch `phase-3-hardening`. `20260902130000_content_integrity.sql`: `is_active_user()` plus active checks in `member_gym_ids()`, `managed_gym_ids()`, `can_read_content()` and `gyms_select`; a trigger banning the auth user when `active` flips; `post_reads`/`guide_acks` guards that stamp the timestamps and the guide version server-side and refuse content the writer cannot read. Client: the deactivated notice in the shell, the translated sign-in refusal, admins in the company-wide acknowledgement audience, and a `RouteError` boundary over every route. 18 new pgTAP assertions (128 total), 153 unit tests; all three original exploits re-run against the fixed API and refused. |
 | P4-01 … P8-06 | ⬜ not started | | | |
 
 Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
@@ -74,6 +83,14 @@ Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
 | Apple Developer ID + Windows signing cert                   | first public desktop release (P7-04) | Rami                       | not started          |
 | BRP Systems API key, service account, rate limits, webhooks | V3                                   | Rami → BRP account manager | not requested        |
 | Final product name                                          | before public release                | Rami                       | placeholder `gymops` |
+
+## Known gaps (audit, 2026-09-02, not fixed)
+
+| Gap | Why it matters | Suggested home |
+| --- | --- | --- |
+| `supabase/functions/invite` is outside every gate — excluded from ESLint by decision, no test, and CI never type-checks it | The one piece of server code with its own permission logic is the one nothing checks | A `deno check` step in the CI database job, plus a test when P5-03 adds `notify` |
+| Nothing catches `database.types.ts` drift | A migration merged without `npm run db:types` leaves the client types silently wrong | One CI step: `db:types` then `git diff --exit-code` |
+| Search has no ranking; the feed sorts drafts above published news; signed image URLs expire at 1h against a 55min stale time; the vendored `dialog.tsx` carries two untranslated "Close" strings; guides have no acknowledgement report | Each is small and none is a correctness bug | Fold into P3 polish or take them with P5-06 (Playwright) |
 
 ## Hosted project cutover
 
@@ -199,6 +216,12 @@ of truth; nothing in config.toml applies to a hosted project)
 | 2026-09-02 | P3-05: the whole guide list is fetched once and filtered by branch in the client. A chain of this size has a few hundred guides at most, and the tree then filters without a round trip per click. |
 
 | 2026-09-02 | P3-06: search is `websearch_to_tsquery` against the generated `search_vector` columns — quoted phrases and `-word` work without a parser of our own — and it runs as two queries rather than a view or an RPC, so RLS on each table is what limits the hits. There is no Search nav entry: the box sits on the two modules it covers. |
+
+| 2026-09-02 | Audit: deactivation is now a real revocation. `member_gym_ids()`/`managed_gym_ids()` only count a membership while the profile is active, `can_read_content()` requires an active profile even for company-wide content, and `gyms_select` follows. A live access token therefore stops reading at once rather than at expiry. Own-profile reads stay open so the app can say why. |
+| 2026-09-02 | Audit: deactivating also bans the auth user, so GoTrue refuses sign-in and refresh. The ban is `9999-12-31` and not `infinity` — GoTrue cannot parse an infinite timestamp and answered sign-in with a 500 "Database error querying schema" until it was a real date. |
+| 2026-09-02 | Audit: acknowledgements are stamped by the database. `post_reads.read_at` keeps the first read, `acknowledged_at` the first confirmation, and `guide_acks.version` is read from the guide — a client had been free to claim version 9999 and a date years back, which made the ack report unusable as evidence. The guards also refuse content the writer cannot read, using the caller's own RLS rather than a second copy of the rules. |
+| 2026-09-02 | Audit: the company-wide acknowledgement report unions `gym_memberships` with the admin profiles. Admins hold no membership, so a report claiming to cover everyone quietly left them out. A manager cannot read those profiles, which is right: their report is their own gyms. |
+| 2026-09-02 | Audit: one pathless layout route carries `errorElement`, so a throw anywhere renders `RouteError` with a way out. These screens run unattended on a front desk; a blank document is the worst possible failure there. |
 
 ## How to update this file
 

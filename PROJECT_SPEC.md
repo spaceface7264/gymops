@@ -15,6 +15,8 @@ A single internal system for a chain of 10+ bouldering gyms in Denmark (200+ use
 - Invite-only email + password login. No public signup. Admins invite; managers may invite staff to their own gyms.
 - Superadmin differs from admin only in: managing gyms, promoting/demoting admins, and viewing the audit log.
 - Every content record is either gym-scoped (`gym_id`) or company-wide (`gym_id = null`, visible to all).
+- A deactivated account (`profiles.active = false`) is a revocation, not a label: every content read goes through `is_active_user()`, and the auth user is banned so sign-in and token refresh both fail. Only their own profile stays readable, so the app can tell them why.
+- An acknowledgement is the database's record, not the client's claim: timestamps and the acknowledged guide version are stamped server-side, and you can only confirm content you are allowed to read.
 
 Permission matrix (also the RLS test spec):
 
@@ -157,6 +159,8 @@ gymops/
 | Starting the whole Supabase stack in CI | pgTAP needs Postgres, plus gotrue (the seed inserts `auth.users` rows) and storage-api (`db reset` creates the three buckets). `supabase start -x` drops realtime, imgproxy, studio, postgres-meta, edge-runtime, logflare, vector and supavisor. |
 | `supabase/setup-cli` with `version: latest` | A CLI release would then break CI on an unrelated commit. The version is pinned to 2.116.0, the one used locally, and bumped deliberately. |
 | Running CI on the newest Node LTS | CI runs Node 20, the version this project is developed on, so a green build means the same toolchain that runs locally. |
+| Trusting the client for `acknowledged_at`, `read_at` and the acknowledged guide version | The audit showed a reader could confirm a guide as version 9999 and backdate it by years, so the "who has confirmed" report — the thing you reach for after an injury — could be made to say anything. Triggers stamp all three. |
+| Treating `profiles.active` as a UI flag | It was one: a deactivated member kept reading their gym and could sign in again, because only `is_admin()`/`is_superadmin()` consulted the column and GoTrue never saw it. Revocation has to live in the RLS helpers *and* in Auth. |
 | A `guide_revisions` table keeping every published body                    | The data model (§3.1) carries no history table, and the requirement is re-confirmation, not archaeology: `guides.version` plus the version stored in `guide_acks` answers "is this reader behind?". History would double the write path and the RLS surface for no V1 screen. |
 | `to_tsvector('danish')` (or `'english'`) for guide and news search        | Authors write in whichever language they please (§2.2), and one stemmer applied to the other language matches worse than no stemmer. Search uses `'simple'` with `websearch_to_tsquery`, title weighted above body. |
 | Staff seeing every profile in their own gyms | Not needed by any V1 screen before chat. `profiles` is readable by yourself, admins and the managers of your gyms; widen it in P6 if the chat member list needs it. |
