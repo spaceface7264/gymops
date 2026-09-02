@@ -60,7 +60,7 @@ jobs:
       # them (spec §5, P2-03). This is the only thing that type-checks them.
       - name: Type-check
         working-directory: supabase/functions
-        run: deno check invite/index.ts
+        run: deno check invite/index.ts notify/index.ts
       - name: Lint
         working-directory: supabase/functions
         run: deno lint

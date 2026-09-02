@@ -52,7 +52,7 @@ container out. `supabase stop && supabase start` brings it back.
 | P2 Users and gyms admin  | ✅ Complete    | P2-01 to P2-06, merged in PR #2.                |
 | P3 News and guides       | ✅ Complete    | P3-01 to P3-07 (PR #3) and the audit fixes (#4). |
 | P4 Daily ops             | ✅ Complete    | P4-01 to P4-10 merged in PR #5; P4-11 in PR #6.   |
-| P5 Notifications and PWA | 🔄 In progress | P5-01, P5-02 done on `phase-5-notifications`.   |
+| P5 Notifications and PWA | 🔄 In progress | P5-01 … P5-03 done on `phase-5-notifications`.  |
 | P6 Team chat             | ⬜ Not started |                                                 |
 | P7 Desktop and release   | ⬜ Not started |                                                 |
 | P8 AI assistant (V1.5)   | ⬜ Not started | Needs Anthropic API key in Supabase secrets.    |
@@ -101,6 +101,7 @@ Update this list as work begins:
 | P4-11 | ✅ done | 2026-09-02 | 2026-09-02 | Events, the calendar, pulled forward from V2 (spec §2.4). `20260902200000_events.sql`: `event_type` enum (community/campaign/groups/offer/other), `events` with `starts_on`/`start_time`/`ends_on`/`end_time` and a generated `last_on`, four CHECK constraints (title, http(s) link, range order, time order) and soft delete, plus `event_gyms` — an event runs at any number of gyms and one with no rows there is company-wide. Reads go through `can_read_event()` (security definer, or its policy and `event_gyms`' would evaluate each other); writes are `is_admin()`, **not** `can_publish_content()` — a manager reads the calendar and cannot write it. 38 new pgTAP assertions (279 total). Client: `src/features/events/` with a list view (upcoming / earlier), a hand-rolled Monday-first month grid over `month-grid.ts` (no date dependency), a create/edit dialog whose scope is a row of gym toggles, and view/month/type in the URL. The gym filter is client-side now that the scope is a second table. 27 new unit tests (244 total). Checked against the local stack over PostgREST: an event scoped to Odense was invisible to Copenhagen Nord staff until Nord was added, and then both gyms read the same row; a manager's insert was refused 42501 and their delete of a scope row removed nothing. |
 | P5-01 | ✅ done | 2026-09-02 | 2026-09-02 | `20260902212850_notifications.sql`: `notification_type` enum (incident reported / status changed / ack reminder / invite — P6-08 extends it), `notifications` (rendered `title`/`body`/`url`, `gym_id`, `subject_id`, `email_requested`, `read_at`), `notification_prefs` (`in_app`/`email`/`push` per type, absent row = defaults) and `push_subscriptions` (one per browser, `endpoint` unique). **No insert policy anywhere on `notifications`** — spec §5 says triggers create them — and `guard_notification_edit()` pins every column but `read_at`, so a recipient marks one read and cannot rewrite what they were told or hand it to somebody else. `notification_pref()` returns the effective switches with the defaults applied. `notifications` is published to Realtime behind `can_listen_to_notifications('notifications:<own uid>')`, which is the unread badge (P5-04) and P7-03's native notifications. 26 new pgTAP assertions (305 total). |
 | P5-02 | ✅ done | 2026-09-02 | 2026-09-02 | `20260902213344_notification_triggers.sql`: `notifications.data jsonb` (the status a move went to, the severity, whether a reminder is about a guide or a post — the translatable half, next to the entity's own untranslated words), `gym_overseers()` and `content_audience()` for the two recipient sets, and `raise_notification()` — the only writer, security definer, revoked from every client role, applying the `in_app` preference and an optional per-subject dedupe window. Triggers: an incident reaches its gym's managers and the admins but never its reporter, and asks for an email only when severity is high (spec §2.2); a status move reaches the overseers, the reporter and the assignee but not whoever made it; an accepted invitation tells whoever sent it, once. `send_ack_reminders()` is the reminder half of P3-04 — a nightly `send-ack-reminders` cron at 07:00 UTC over published content with `requires_ack`, skipping anything published inside the last day and anyone told about the same item in the last 7 days. 23 new pgTAP assertions (328 total). |
+| P5-03 | ✅ done | 2026-09-02 | 2026-09-02 | `supabase/functions/notify`: reads the recipient's profile and `notification_pref()`, pushes with `npm:web-push` (VAPID) and emails through Resend's HTTP API, and reports each channel as a count, `skipped` or `failed`. The heading ("Ny hændelse", "Still to confirm") is rendered per type in the recipient's `profiles.locale`; the row's own `title`/`body` are never translated. A 404/410 from a push service deletes that subscription, a successful send stamps `last_used_at`, and a channel that is down is caught rather than 500-ing the call. `20260902214153_notification_dispatch.sql` is the webhook: `pg_net` posts every new row to the function with the service role key, reading the URL and the key from **Vault** (`notify_functions_url`, `notify_service_key`) so neither is in git — both absent means no fan-out and an inbox that still works, which is the state CI runs in. `supabase/seeds/local-webhook.sql` sets the local pair. 8 new pgTAP assertions (336 total). Verified end to end against the running stack: a high-severity incident queued three posts, each answered 200, and the Danish email for the manager reached a local stub with the right subject, body and link; the admin's `email = false` preference showed as `skipped`; the encrypted push was built and dispatched but the stub is plain HTTP and web-push insists on TLS, so **a real browser push is still unverified — that is P5-05's job**. |
 | P5-02 … P8-06 | ⬜ not started | | | |
 
 Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
@@ -183,8 +184,18 @@ of truth; nothing in config.toml applies to a hosted project)
 **Secrets** (Supabase secrets and GitHub Actions secrets only, per spec §5)
 
 - [ ] Service-role key for the `invite` function (P2-03).
-- [ ] `RESEND_API_KEY` and the VAPID key pair (P5-03), plus the database webhook on
-      `notifications` insert → `notify`.
+- [ ] `RESEND_API_KEY`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`,
+      `SITE_URL` and `NOTIFY_FROM` as function secrets (P5-03). Generate the VAPID pair
+      with `npx web-push generate-vapid-keys`; the local pair in
+      `supabase/functions/.env` is a development pair and must not be reused. The
+      public key also goes to the web build as `VITE_VAPID_PUBLIC_KEY` (P5-05) — the
+      two must be the same pair, or every subscription is refused.
+- [ ] The webhook is **not** configured in the dashboard: `dispatch_notification()`
+      reads Vault, so run `select vault.create_secret('https://<ref>.supabase.co/functions/v1',
+      'notify_functions_url')` and the same for `notify_service_key` with the hosted
+      service role key. Until both exist the inbox fills and nothing is pushed or emailed.
+- [ ] Verify the Resend sending domain before the first high-severity incident: an
+      unverified domain answers 403 and `notify` records the email as `failed`.
 - [ ] `ANTHROPIC_API_KEY` (P8-03).
 
 **First user**
@@ -325,6 +336,13 @@ of truth; nothing in config.toml applies to a hosted project)
 | 2026-09-02 | P5-02: acknowledgement reminders are a nightly pass with a 7-day per-item dedupe window and a one-day grace after publication, rather than one notification at publish time. A reminder is only useful while the thing is still unconfirmed, and the feed already shows what was published today. |
 | 2026-09-02 | P5-02: the reminder job runs on a single daily schedule (07:00 UTC), unlike the checklist job's hourly gym-local pass (P4-02). A guide can be company-wide, so it has no gym whose clock to follow, and a reminder is not dated by the gym's own day the way a checklist run is. |
 | 2026-09-02 | P5-02: the `invite` notification fires on acceptance and goes to the inviter, not to the invited person at invite time. GoTrue has already emailed the invitee, and at the moment the `invites` row is written the account may not exist yet (P2-03 records the row, then calls `inviteUserByEmail`). |
+
+| 2026-09-02 | P5-03: the webhook is a migration and a trigger of our own over `pg_net`, not the dashboard's webhook UI or `supabase_functions.http_request`. The trigger is then in git and arrives with the schema, and it can read its URL and key from Vault — a dashboard webhook stores the service key in a trigger definition that `pg_dump` will happily print. |
+| 2026-09-02 | P5-03: `dispatch_notification()` does nothing when either Vault secret is missing, rather than raising. It runs inside the transaction that reported the incident, so a missing key must not roll that back — and it makes "no fan-out configured" the safe default for CI and for every fresh checkout. |
+| 2026-09-02 | P5-03: `notify` takes the whole notification row from the webhook payload rather than re-reading it, and only looks up what the payload cannot carry (the recipient's address, locale and preferences). One row in, at most two sends out; a re-read would race the very insert that triggered it. |
+| 2026-09-02 | P5-03: web push is `npm:web-push` in the edge runtime rather than a hand-rolled RFC 8291 implementation. It works under Deno's node compatibility (checked against the local runtime, 1.74.3), and the encryption is the part nobody should be writing twice. |
+| 2026-09-02 | P5-03: a channel that fails is reported (`failed`) and never throws. The inbox row already exists and the other channel may have gone out; a 500 to pg_net would only turn one dead provider into a retry-less error in a table nobody reads. |
+| 2026-09-02 | P5-03: the *heading* of a notification is translated by the sender, in the recipient's `profiles.locale`, and lives in `notify` and in the client's locale files — two small tables of four strings rather than a notification the reader cannot understand. The title and body stay the author's own words in whatever language they wrote them (P5-02). |
 
 ## How to update this file
 

@@ -207,6 +207,10 @@ gymops/
 | One notification at publish time for content that must be confirmed | It arrives when the feed is already showing the post, and it is useless the moment it is read and not acted on. The nightly pass chases only what is *still* unconfirmed, once a week per item, which is the state a manager actually cares about. |
 | Running the reminder job gym-locally like the checklist job (P4-02) | A checklist run is dated by its gym's own day; a reminder is not, and a company-wide guide has no gym whose clock to follow. One daily schedule at 07:00 UTC. |
 
+| The dashboard's Database Webhooks UI for `notifications` → `notify` | It writes the service role key into a trigger definition that lives only in the hosted project — outside git, invisible to review, and printed by `pg_dump`. The trigger here ships as a migration and reads its URL and key from Vault at call time, so the same schema works locally, in CI and hosted with no fan-out configured. |
+| Making `notify` re-read the notification it was handed | The webhook fires inside the transaction that wrote the row; a re-read is a race with its own trigger. The payload is the message, and only what it cannot carry — the recipient's address, locale and preferences — is looked up. |
+| Hand-rolling RFC 8291 payload encryption instead of `npm:web-push` | It works under the edge runtime's node compatibility, and push encryption is not a thing to implement twice for the sake of one fewer dependency. |
+
 ## 5. Conventions
 
 - **Language:** TypeScript strict everywhere, including Edge Functions (Deno). No `any`.
