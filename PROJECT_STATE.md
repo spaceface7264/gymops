@@ -74,7 +74,7 @@ Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
 
 | Item                                                        | Needed for                           | Owner                      | Status               |
 | ----------------------------------------------------------- | ------------------------------------ | -------------------------- | -------------------- |
-| Supabase project (hosted) | deploying `invite` (P2-03, written and working locally) | Rami | `.env.local` points at the local stack since P1-02; the hosted `ngcqpftfqepvhpjikaqq` values sit commented out beneath it. Confirm that ref is the GymOps project — the Supabase MCP connection currently points at a different project (`ooikemajridlhceejgmo`), which times out. Steps in "Hosted project cutover" below. |
+| Supabase project (hosted) | deploying `invite` (P2-03, written and working locally) | Rami | **Resolved 2026-09-02: GymOps is `ngcqpftfqepvhpjikaqq`**, the ref already commented into `.env.local`; `ooikemajridlhceejgmo` is a legacy project and is not GymOps — ignore it, and repoint the Supabase MCP connection when convenient. `.env.local` still points at the local stack, which is correct until the cutover. Remaining steps in "Hosted project cutover" below. |
 | GitHub repository (remote) | P1-10 CI actually running | Rami | `.github/workflows/ci.yml` exists and its steps pass locally, but the repo has no remote, so no run has happened. Add the remote, push `phase-1-scaffold` and `phase-2-admin`, confirm both jobs go green. |
 | Resend account + API key | real invite mail (P2-03), P5-03 | Rami | not created. `[auth.rate_limit] email_sent = 2` per hour and hosted Supabase's built-in SMTP are both far below what inviting 200+ staff needs, so a provider must exist before invites go out for real. |
 | VAPID key pair                                              | P5-03                                | generated during P5-03     | —                    |
@@ -99,13 +99,13 @@ Everything through P1-10 runs on the local stack: CI is `supabase db reset` + pg
 locally is **P2-03** (the `invite` Edge Function needs to be deployed and to send real mail);
 after that come P4-02 (pg_cron), P5-03 (`notify`, database webhook, Resend, VAPID), P5-05
 (web push needs HTTPS and a real origin), P7-02 (`gymops://` plus a web fallback page) and
-P8-03 (assistant, `ANTHROPIC_API_KEY`). Work through this list once, at P2-03.
+P8-03 (assistant, `ANTHROPIC_API_KEY`). Work through this list once, at P2-03 — and note
+that P4-02 needs `pg_cron`, so the cutover now lands *inside* phase 4 rather than after it.
 
 **Before touching anything**
 
-- [ ] Confirm which hosted project is GymOps. `.env.local` carries `ngcqpftfqepvhpjikaqq`
-      commented out; the Supabase MCP connection points at `ooikemajridlhceejgmo` and times
-      out. One of them is right, possibly neither.
+- [x] ~~Confirm which hosted project is GymOps.~~ **`ngcqpftfqepvhpjikaqq`** (2026-09-02).
+      `ooikemajridlhceejgmo` is a legacy project — not GymOps.
 - [ ] Confirm the project runs Postgres 17 (`db.major_version = 17` locally). A mismatch
       changes what migrations are allowed to assume.
 - [ ] Create the Resend account and get the API key.
