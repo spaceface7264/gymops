@@ -16,6 +16,7 @@ A single internal system for a chain of 10+ bouldering gyms in Denmark (200+ use
 - Superadmin differs from admin only in: managing gyms, promoting/demoting admins, and viewing the audit log.
 - Every content record is either gym-scoped (`gym_id`) or company-wide (`gym_id = null`, visible to all).
 - A deactivated account (`profiles.active = false`) is a revocation, not a label: every content read goes through `is_active_user()`, and the auth user is banned so sign-in and token refresh both fail. Only their own profile stays readable, so the app can tell them why.
+- "Complete checklists, write daily log, report incidents" means the gyms you are a member of, for managers as well as staff; only the company-wide roles reach every gym. `can_complete_in()` is the policy that says so.
 - An acknowledgement is the database's record, not the client's claim: timestamps and the acknowledged guide version are stamped server-side, and you can only confirm content you are allowed to read.
 
 Permission matrix (also the RLS test spec):
@@ -26,7 +27,7 @@ Permission matrix (also the RLS test spec):
 | Invite users, assign to gyms                           | yes        | yes     | own gyms, staff only | no       |
 | Publish company-wide news/guides                       | yes        | yes     | no                   | no       |
 | Publish gym news/guides, edit checklist templates      | yes        | yes     | own gyms             | no       |
-| Complete checklists, write daily log, report incidents | yes        | yes     | yes                  | own gyms |
+| Complete checklists, write daily log, report incidents | yes        | yes     | own gyms             | own gyms |
 | Change incident status                                 | yes        | yes     | own gyms             | no       |
 | See acknowledgement reports                            | yes        | yes     | own gyms             | no       |
 | Create custom chat channels                            | company    | company | own gyms             | no       |
@@ -159,6 +160,7 @@ gymops/
 | Starting the whole Supabase stack in CI | pgTAP needs Postgres, plus gotrue (the seed inserts `auth.users` rows) and storage-api (`db reset` creates the three buckets). `supabase start -x` drops realtime, imgproxy, studio, postgres-meta, edge-runtime, logflare, vector and supavisor. |
 | `supabase/setup-cli` with `version: latest` | A CLI release would then break CI on an unrelated commit. The version is pinned to 2.116.0, the one used locally, and bumped deliberately. |
 | Running CI on the newest Node LTS | CI runs Node 20, the version this project is developed on, so a green build means the same toolchain that runs locally. |
+| A run item pointing at its template item for the text it shows | Editing a checklist would then rewrite every run it had ever generated, including the ones staff signed off months ago. The run snapshots `label` and `required`; the template item id is kept only for reporting. |
 | Trusting the client for `acknowledged_at`, `read_at` and the acknowledged guide version | The audit showed a reader could confirm a guide as version 9999 and backdate it by years, so the "who has confirmed" report — the thing you reach for after an injury — could be made to say anything. Triggers stamp all three. |
 | Treating `profiles.active` as a UI flag | It was one: a deactivated member kept reading their gym and could sign in again, because only `is_admin()`/`is_superadmin()` consulted the column and GoTrue never saw it. Revocation has to live in the RLS helpers *and* in Auth. |
 | A `guide_revisions` table keeping every published body                    | The data model (§3.1) carries no history table, and the requirement is re-confirmation, not archaeology: `guides.version` plus the version stored in `guide_acks` answers "is this reader behind?". History would double the write path and the RLS surface for no V1 screen. |

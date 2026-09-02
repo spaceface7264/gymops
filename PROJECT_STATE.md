@@ -34,7 +34,7 @@ phase 4.
 | P1 Scaffold and auth | ✅ Complete | P1-01 to P1-10, merged in PR #1. |
 | P2 Users and gyms admin  | ✅ Complete    | P2-01 to P2-06, merged in PR #2.                |
 | P3 News and guides       | ✅ Complete    | P3-01 to P3-07 (PR #3) and the audit fixes (#4). |
-| P4 Daily ops             | ⬜ Not started |                                                 |
+| P4 Daily ops             | 🔄 In progress | `phase-4-daily-ops`. P4-01 done.                |
 | P5 Notifications and PWA | ⬜ Not started |                                                 |
 | P6 Team chat             | ⬜ Not started |                                                 |
 | P7 Desktop and release   | ⬜ Not started |                                                 |
@@ -70,7 +70,8 @@ Update this list as work begins:
 | P3-06 | ✅ done | 2026-09-02 | 2026-09-02 | `features/content/search.ts` + `ContentSearch`: one debounced search over both `posts` and `guides` using `websearch_to_tsquery` on the `simple` configuration, with a snippet cut around the first matching word and hits labelled news/guide, scope and draft. The box sits on `/news` and `/guides`. 145 unit tests; a Danish word matched through RLS by HTTP, and another gym's post did not. |
 | P3-07 | ✅ done | 2026-09-02 | 2026-09-02 | `UnreadNewsCard` replaces the placeholder home: published posts this person has not opened, plus the ones they have opened but not acknowledged, confirmations first. One query with `post_reads!left` filtered to the signed-in user. 146 unit tests; checked in Chrome as staff — acknowledging a post drops it off the home block, the unread one stays. |
 | Audit fixes | ✅ done | 2026-09-02 | 2026-09-02 | Branch `phase-3-hardening`. `20260902130000_content_integrity.sql`: `is_active_user()` plus active checks in `member_gym_ids()`, `managed_gym_ids()`, `can_read_content()` and `gyms_select`; a trigger banning the auth user when `active` flips; `post_reads`/`guide_acks` guards that stamp the timestamps and the guide version server-side and refuse content the writer cannot read. Client: the deactivated notice in the shell, the translated sign-in refusal, admins in the company-wide acknowledgement audience, and a `RouteError` boundary over every route. 18 new pgTAP assertions (128 total), 153 unit tests; all three original exploits re-run against the fixed API and refused. |
-| P4-01 … P8-06 | ⬜ not started | | | |
+| P4-01 | ✅ done | 2026-09-02 | 2026-09-02 | `20260902150000_checklist_schema.sql`: `checklist_templates` (+ `weekdays`, `active`), `checklist_template_items`, `checklist_runs` (unique per template/gym/day) and `checklist_run_items`, which snapshot the label so an edited template cannot rewrite history. `can_complete_in()` is the new "complete checklists" rule; `checklist_runs` has no insert policy at all, because the scheduled job (P4-02) creates them. Ticking records `done_by` from the session, never the request. `supabase/tests/070-checklist-permissions.test.sql` — 27 assertions written before the migration, 155 pgTAP total. |
+| P4-02 … P8-06 | ⬜ not started | | | |
 
 Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
 
@@ -92,8 +93,8 @@ Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
 
 | Gap | Why it matters | Suggested home |
 | --- | --- | --- |
-| `supabase/functions/invite` is outside every gate — excluded from ESLint by decision, no test, and CI never type-checks it | The one piece of server code with its own permission logic is the one nothing checks | A `deno check` step in the CI database job, plus a test when P5-03 adds `notify` |
-| Nothing catches `database.types.ts` drift | A migration merged without `npm run db:types` leaves the client types silently wrong | One CI step: `db:types` then `git diff --exit-code` |
+| ~~`supabase/functions/invite` is outside every gate~~ | — | **Fixed 2026-09-02**: a `functions` CI job runs `deno check`, `deno lint` and `deno fmt --check`. A behavioural test still waits for P5-03. |
+| ~~Nothing catches `database.types.ts` drift~~ | — | **Fixed 2026-09-02**: the database job regenerates the types and fails on a diff. It caught drift on its first run. |
 | Search has no ranking; the feed sorts drafts above published news; signed image URLs expire at 1h against a 55min stale time; the vendored `dialog.tsx` carries two untranslated "Close" strings; guides have no acknowledgement report | Each is small and none is a correctness bug | Fold into P3 polish or take them with P5-06 (Playwright) |
 
 ## Hosted project cutover
@@ -103,8 +104,13 @@ Everything through P1-10 runs on the local stack: CI is `supabase db reset` + pg
 locally is **P2-03** (the `invite` Edge Function needs to be deployed and to send real mail);
 after that come P4-02 (pg_cron), P5-03 (`notify`, database webhook, Resend, VAPID), P5-05
 (web push needs HTTPS and a real origin), P7-02 (`gymops://` plus a web fallback page) and
-P8-03 (assistant, `ANTHROPIC_API_KEY`). Work through this list once, at P2-03 — and note
-that P4-02 needs `pg_cron`, so the cutover now lands *inside* phase 4 rather than after it.
+P8-03 (assistant, `ANTHROPIC_API_KEY`). Work through this list once, at P2-03.
+
+**Correction (2026-09-02):** P4-02 does *not* force the cutover. The local stack
+already carries `pg_cron` 1.6.4 in `shared_preload_libraries`, so the scheduled job can
+be built and tested locally like everything else; the extension still has to be enabled
+on the hosted project before deploying. The first task that genuinely cannot be finished
+locally is P5-03 (`notify`, the database webhook, Resend, VAPID).
 
 **Before touching anything**
 
@@ -226,6 +232,13 @@ of truth; nothing in config.toml applies to a hosted project)
 | 2026-09-02 | Audit: acknowledgements are stamped by the database. `post_reads.read_at` keeps the first read, `acknowledged_at` the first confirmation, and `guide_acks.version` is read from the guide — a client had been free to claim version 9999 and a date years back, which made the ack report unusable as evidence. The guards also refuse content the writer cannot read, using the caller's own RLS rather than a second copy of the rules. |
 | 2026-09-02 | Audit: the company-wide acknowledgement report unions `gym_memberships` with the admin profiles. Admins hold no membership, so a report claiming to cover everyone quietly left them out. A manager cannot read those profiles, which is right: their report is their own gyms. |
 | 2026-09-02 | Audit: one pathless layout route carries `errorElement`, so a throw anywhere renders `RouteError` with a way out. These screens run unattended on a front desk; a blank document is the worst possible failure there. |
+
+| 2026-09-02 | P4-01: a run item snapshots its `label` and `required` from the template. A template edited in March must not rewrite what somebody ticked in February, which is what following `template_item_id` for the text would have done; the id is kept for reporting and goes null if the item is removed. |
+| 2026-09-02 | P4-01: `checklist_runs` has no insert policy for clients — the scheduled job (P4-02) creates every run as the service role. A gym that needs an unscheduled checklist gets a template, not a hand-made run. |
+| 2026-09-02 | P4-01: §2.1 reads "Complete checklists" as plain "yes" for a manager, which taken literally would let a manager tick a checklist in a gym they have never set foot in. `can_complete_in()` requires membership of the run's gym (any role) or the admin flag — the reading that has operational meaning. Recorded in §2.1 so the matrix and the policies say the same thing. |
+| 2026-09-02 | P4-01: `done_by` is stamped from the session by a trigger and `done_at` keeps the first tick, the same rule the acknowledgements got in the audit. Ticking is a record of who did the work. |
+| 2026-09-02 | P4-01: the schedule lives on the template as `weekdays` (ISO, 1 = Monday), evaluated by P4-02 against the gym's own date — a Sunday checklist must not fire on Saturday in one time zone and Sunday in another. |
+| 2026-09-02 | CI gained a `functions` job (`deno check`/`lint`/`fmt`) and a generated-types drift check. The functions directory needed its own `deno.json` to keep Deno away from the web app's `package.json`, and Prettier now ignores it: one formatter owns each file. |
 
 ## How to update this file
 

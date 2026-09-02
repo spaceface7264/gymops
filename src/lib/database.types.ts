@@ -53,6 +53,194 @@ export type Database = {
           },
         ]
       }
+      checklist_run_items: {
+        Row: {
+          done_at: string | null
+          done_by: string | null
+          id: string
+          label: string
+          note: string | null
+          position: number
+          required: boolean
+          run_id: string
+          template_item_id: string | null
+        }
+        Insert: {
+          done_at?: string | null
+          done_by?: string | null
+          id?: string
+          label: string
+          note?: string | null
+          position: number
+          required?: boolean
+          run_id: string
+          template_item_id?: string | null
+        }
+        Update: {
+          done_at?: string | null
+          done_by?: string | null
+          id?: string
+          label?: string
+          note?: string | null
+          position?: number
+          required?: boolean
+          run_id?: string
+          template_item_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checklist_run_items_done_by_fkey"
+            columns: ["done_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checklist_run_items_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "checklist_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checklist_run_items_template_item_id_fkey"
+            columns: ["template_item_id"]
+            isOneToOne: false
+            referencedRelation: "checklist_template_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      checklist_runs: {
+        Row: {
+          created_at: string
+          gym_id: string
+          id: string
+          run_date: string
+          template_id: string
+        }
+        Insert: {
+          created_at?: string
+          gym_id: string
+          id?: string
+          run_date: string
+          template_id: string
+        }
+        Update: {
+          created_at?: string
+          gym_id?: string
+          id?: string
+          run_date?: string
+          template_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checklist_runs_gym_id_fkey"
+            columns: ["gym_id"]
+            isOneToOne: false
+            referencedRelation: "gyms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checklist_runs_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "checklist_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      checklist_template_items: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          label: string
+          position: number
+          required: boolean
+          template_id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          label: string
+          position: number
+          required?: boolean
+          template_id: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          label?: string
+          position?: number
+          required?: boolean
+          template_id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checklist_template_items_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "checklist_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      checklist_templates: {
+        Row: {
+          active: boolean
+          created_at: string
+          created_by: string | null
+          gym_id: string | null
+          id: string
+          kind: Database["public"]["Enums"]["checklist_kind"]
+          name: string
+          updated_at: string
+          updated_by: string | null
+          weekdays: number[]
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          gym_id?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["checklist_kind"]
+          name: string
+          updated_at?: string
+          updated_by?: string | null
+          weekdays?: number[]
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          gym_id?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["checklist_kind"]
+          name?: string
+          updated_at?: string
+          updated_by?: string | null
+          weekdays?: number[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checklist_templates_gym_id_fkey"
+            columns: ["gym_id"]
+            isOneToOne: false
+            referencedRelation: "gyms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       guide_acks: {
         Row: {
           acknowledged_at: string
@@ -507,6 +695,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_complete_in: { Args: { target_gym_id: string }; Returns: boolean }
       can_publish_content: { Args: { target_gym_id: string }; Returns: boolean }
       can_read_content: { Args: { target_gym_id: string }; Returns: boolean }
       content_object_gym: { Args: { object_name: string }; Returns: string }
@@ -522,6 +711,7 @@ export type Database = {
       tiptap_text: { Args: { doc: Json }; Returns: string }
     }
     Enums: {
+      checklist_kind: "opening" | "closing" | "custom"
       content_status: "draft" | "published"
       gym_role: "manager" | "staff"
       invite_status: "pending" | "accepted" | "revoked"
@@ -652,6 +842,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      checklist_kind: ["opening", "closing", "custom"],
       content_status: ["draft", "published"],
       gym_role: ["manager", "staff"],
       invite_status: ["pending", "accepted", "revoked"],
