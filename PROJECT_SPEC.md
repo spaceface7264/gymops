@@ -186,6 +186,7 @@ gymops/
 | A `tags` table with a join | Tags here are labels for filtering one gym's timeline, not a taxonomy: `text[]` with a GIN index answers "everything tagged wall4" in one query and needs no second screen to manage. A trigger lower-cases, trims and de-duplicates them so "#Broken" and "broken" are one tag. |
 | Letting a manager edit an entry somebody else wrote | The log is a record of shifts; a manager rewriting what staff reported would make it worthless as one. A manager can take an entry off the timeline, and a trigger holds every other column to its old value when the editor is not the author. |
 | `deleted_at is null` inside a SELECT policy | It reads well and it breaks soft delete: Postgres refuses an UPDATE that would leave the row invisible to its own writer, so "delete" failed for every user on posts and guides (found in P4-06, fixed in `20260902171000`). The row stays visible to the people who may publish there — the ones deleting it — and the listing queries filter it out. |
+| Repeating the active check inside `can_publish_content()` | Proposed after misreading the publish gate as unguarded. The check belongs in `managed_gym_ids()`/`member_gym_ids()` where `20260902130000` put it — one place, every caller, gates included. A second copy in the gate would be dead code that reads like a real rule, and the next person would have to prove to themselves which of the two is load-bearing. A test pins it instead (`supabase/tests/120-deactivated-publisher.test.sql`). |
 
 ## 5. Conventions
 

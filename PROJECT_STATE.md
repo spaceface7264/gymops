@@ -295,6 +295,7 @@ of truth; nothing in config.toml applies to a hosted project)
 | 2026-09-02 | P4-07: `resolved_at` follows the status rather than being posted — set on the way into `resolved`, cleared on the way out, the same rule `done_at` has on a checklist item. |
 | 2026-09-02 | P4-07: the `incidents` bucket gets its own path helper. `content_object_gym()` maps `company/…` to a null gym, which `can_read_content()` treats as company-wide; a photograph of an injury must never resolve that way, so `incident_object_gym()` returns the nil uuid for anything that is not a gym uuid. |
 | 2026-09-02 | P4-07: no delete policy on incidents, their attachments or their comments. An incident is a record of something that happened to somebody; a comment is somebody's own words, editable only by them. |
+| 2026-09-02 | A deactivated manager keeps their `role = 'manager'` membership rows, so it looks at first reading as though `can_publish_content()` is missing the active check that `can_read_content()` grew in `20260902130000`. It is not: the check sits one level down, in `managed_gym_ids()` and `member_gym_ids()`, which covers every caller of both instead of each gate repeating it. `supabase/tests/120-deactivated-publisher.test.sql` now pins the outcome — 16 assertions that a deactivated manager cannot write posts, guides, guide categories or checklist templates, cannot see their own gyms' drafts, and gets it all back on reactivation. Verified by reverting the `p.active` join in the live database: 9 of the 16 fail, so the test is not vacuous. |
 
 ## How to update this file
 
