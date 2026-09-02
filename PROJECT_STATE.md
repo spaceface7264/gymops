@@ -27,8 +27,9 @@ item of "Hosted project cutover". P4-02 is done and did *not* need it — the
 local stack ships `pg_cron` — but the extension has to be enabled on the hosted
 project before the schema is pushed there.
 
-Next up: **P4-08**, the incident UI — the form with camera capture, the list,
-the detail view with its status flow, comments and assignee.
+Next up: **P4-09**, turning a daily-log "issue" into a pre-filled incident, and
+then **P4-10**, the home page block. P4-08's report form already accepts
+`?title=` and `?body=`, which is the hand-off P4-09 needs.
 
 Testing Realtime locally needs the full stack: the run screen's live sync does
 not work under the CI-style `supabase start -x …`, which leaves the realtime
@@ -42,7 +43,7 @@ container out. `supabase stop && supabase start` brings it back.
 | P1 Scaffold and auth | ✅ Complete | P1-01 to P1-10, merged in PR #1. |
 | P2 Users and gyms admin  | ✅ Complete    | P2-01 to P2-06, merged in PR #2.                |
 | P3 News and guides       | ✅ Complete    | P3-01 to P3-07 (PR #3) and the audit fixes (#4). |
-| P4 Daily ops             | 🔄 In progress | `phase-4-daily-ops`. P4-01 … P4-07 done.        |
+| P4 Daily ops             | 🔄 In progress | `phase-4-daily-ops`. P4-01 … P4-08 done.        |
 | P5 Notifications and PWA | ⬜ Not started |                                                 |
 | P6 Team chat             | ⬜ Not started |                                                 |
 | P7 Desktop and release   | ⬜ Not started |                                                 |
@@ -86,7 +87,8 @@ Update this list as work begins:
 | P4-06 | ✅ done | 2026-09-02 | 2026-09-02 | `20260902180000_daily_log.sql`: `daily_log_entries` (handover/note/issue, plain-text body, `tags text[]` normalised by trigger), written by anyone `can_complete_in()` allows, edited only by its author — a trigger pins every other column when the editor is not — and removed by the author or the gym's managers. `profiles` widened to colleagues via `shares_gym_with()`, which also brings the names back on checklist ticks. `/daily-log` is the timeline: composer, kind and tag filters, entries grouped by the gym's own date, inline edit. 16 new pgTAP assertions (193 total), 9 unit tests (191 total); the rules re-checked over REST — tags normalised to `{broken,wall4}`, a manager's rewrite silently ignored while their removal went through, staff writing into another gym refused 403. |
 | Soft-delete fix | ✅ done | 2026-09-02 | 2026-09-02 | `20260902171000_soft_delete_visibility.sql`. Found while building P4-06: `posts_select` and `guides_select` required `deleted_at is null`, and Postgres refuses an update that hides the row from its own writer — so Delete on a news post or a guide failed for **every** user with "new row violates row-level security policy". The unit tests mock the client, so it only ever failed in a browser. Deleted rows now stay visible to the people who may publish there; every listing, detail and search query filters `deleted_at is null`. Re-checked over REST end to end. |
 | P4-07 | ✅ done | 2026-09-02 | 2026-09-02 | `20260902190000_incidents.sql`: `incidents` (kind, severity, status open → in_progress → resolved, assignee, `resolved_at` stamped by trigger), `incident_attachments`, `incident_comments`, and storage RLS for the `incidents` bucket via `incident_object_gym()`. Reporting is `can_complete_in()`, handling is `can_publish_content()`, and two triggers keep them apart on both insert and update — the reporter owns the words, the gym's managers own the status. No delete anywhere. `supabase/tests/110-incident-permissions.test.sql` — 32 assertions, 225 pgTAP total; re-checked over REST including a real upload into the bucket (own gym 200, another gym 400) and an incident filed as "resolved" coming back open. |
-| P4-08 … P8-06 | ⬜ not started | | | |
+| P4-08 | ✅ done | 2026-09-02 | 2026-09-02 | `features/incidents`: `/incidents` (open by default, status and kind filters), `/incidents/new` (title, kind, severity, what happened, and photographs from the camera or the library) and `/incidents/:incidentId` (the report, its photographs, the thread, and — only for `can_publish_content()` — status, severity and assignee). Photographs are held in the form and uploaded once the insert returns the id, because the storage path and `incident_attachments.incident_id` both need it; they are signed for display like `content` images. The form reads `?title=`/`?body=`, which is P4-09's hand-off. No migration and no Realtime (spec §4). Incidents lost their nav placeholder. 15 new unit tests (206 total); the whole flow driven in Chrome against the local stack as staff (report with a photo → signed and rendered, no status controls) and as a manager (in progress, assigned, commented, in Danish), plus 16 REST checks of the §2.1 split — another gym refused 403, a reporter's own "resolved" ignored, an upload into another gym's folder 400. |
+| P4-09 … P8-06 | ⬜ not started | | | |
 
 Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
 

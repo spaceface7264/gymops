@@ -322,6 +322,70 @@
       "unread": "Unread"
     }
   },
+  "incidents": {
+    "addComment": "Add comment",
+    "addPhoto": "Add a photo",
+    "allKinds": "Every kind",
+    "assignedTo": "Assigned to {{who}}",
+    "assigneeLabel": "Assignee",
+    "backToList": "Back to incidents",
+    "bodyLabel": "What happened",
+    "comment": "Comment",
+    "commentBy": "{{who}} · {{when}}",
+    "commentFailed": "The comment could not be added. Try again.",
+    "comments": "Comments",
+    "empty": "Nothing is open here.",
+    "filter": {
+      "all": "Everything",
+      "open_only": "Still open",
+      "resolved": "Resolved"
+    },
+    "kind": {
+      "cleaning": "Cleaning",
+      "equipment": "Equipment",
+      "injury": "Injury",
+      "other": "Other"
+    },
+    "kindLabel": "Kind",
+    "loadFailed": "The incidents could not be loaded.",
+    "loading": "Loading…",
+    "needsBody": "Describe what happened before reporting it.",
+    "needsTitle": "Give the incident a short title.",
+    "nobody": "Nobody yet",
+    "noComments": "No comments yet.",
+    "noPhotos": "No photos.",
+    "notFound": "This incident could not be found.",
+    "notYourGym": "Only this gym's team can report here.",
+    "photoAlt": "Incident photo",
+    "photoFailed": "Photo unavailable",
+    "photoLoading": "Loading…",
+    "photos": "Photos",
+    "pickGym": "Pick a gym to report in.",
+    "removePhoto": "Remove {{name}}",
+    "report": "Report an incident",
+    "reportedBy": "Reported by {{who}} · {{when}}",
+    "saveFailed": "The change could not be saved. Try again.",
+    "severity": {
+      "high": "High",
+      "low": "Low",
+      "medium": "Medium"
+    },
+    "severityLabel": "Severity",
+    "someone": "Someone",
+    "status": {
+      "in_progress": "In progress",
+      "open": "Open",
+      "resolved": "Resolved"
+    },
+    "statusLabel": "Status",
+    "submit": "Report it",
+    "takePhoto": "Take a photo",
+    "title": "Incidents",
+    "titleLabel": "Title",
+    "titlePlaceholder": "Hold broke on wall 4",
+    "unassigned": "Nobody is on this yet.",
+    "uploadFailed": "The photo could not be uploaded. Try again."
+  },
   "language": {
     "da": "Danish",
     "en": "English",

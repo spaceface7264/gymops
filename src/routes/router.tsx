@@ -8,6 +8,7 @@ import {
   ChecklistTemplatesPage,
 } from '@/features/checklists'
 import { GymProvider } from '@/features/gyms'
+import { IncidentDetailPage, IncidentFormPage, IncidentsPage } from '@/features/incidents'
 import { AcceptInvitePage } from '@/routes/accept-invite-page'
 import { AdminPage, RequireSuperadmin } from '@/routes/admin-page'
 import { AppShell } from '@/routes/app-shell'
@@ -61,6 +62,9 @@ export const router = createBrowserRouter([
             element: <ChecklistTemplateEditorPage />,
           },
           { path: 'daily-log', element: <DailyLogPage /> },
+          { path: 'incidents', element: <IncidentsPage /> },
+          { path: 'incidents/new', element: <IncidentFormPage /> },
+          { path: 'incidents/:incidentId', element: <IncidentDetailPage /> },
           { path: 'guides', element: <GuidesPage /> },
           { path: 'guides/new', element: <GuideEditorPage /> },
           { path: 'guides/:guideId', element: <GuideDetailPage /> },

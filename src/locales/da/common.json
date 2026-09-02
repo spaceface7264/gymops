@@ -322,6 +322,70 @@
       "unread": "Ulæst"
     }
   },
+  "incidents": {
+    "addComment": "Tilføj kommentar",
+    "addPhoto": "Tilføj et billede",
+    "allKinds": "Alle typer",
+    "assignedTo": "Tildelt {{who}}",
+    "assigneeLabel": "Ansvarlig",
+    "backToList": "Tilbage til hændelser",
+    "bodyLabel": "Hvad skete der",
+    "comment": "Kommentar",
+    "commentBy": "{{who}} · {{when}}",
+    "commentFailed": "Kommentaren kunne ikke tilføjes. Prøv igen.",
+    "comments": "Kommentarer",
+    "empty": "Der er ikke noget åbent her.",
+    "filter": {
+      "all": "Alt",
+      "open_only": "Stadig åben",
+      "resolved": "Løst"
+    },
+    "kind": {
+      "cleaning": "Rengøring",
+      "equipment": "Udstyr",
+      "injury": "Skade",
+      "other": "Andet"
+    },
+    "kindLabel": "Type",
+    "loadFailed": "Hændelserne kunne ikke hentes.",
+    "loading": "Henter…",
+    "needsBody": "Beskriv hvad der skete, før du melder det.",
+    "needsTitle": "Giv hændelsen en kort titel.",
+    "nobody": "Ingen endnu",
+    "noComments": "Ingen kommentarer endnu.",
+    "noPhotos": "Ingen billeder.",
+    "notFound": "Hændelsen blev ikke fundet.",
+    "notYourGym": "Kun dette centers team kan melde hændelser her.",
+    "photoAlt": "Billede af hændelsen",
+    "photoFailed": "Billedet kan ikke vises",
+    "photoLoading": "Henter…",
+    "photos": "Billeder",
+    "pickGym": "Vælg et center at melde i.",
+    "removePhoto": "Fjern {{name}}",
+    "report": "Meld en hændelse",
+    "reportedBy": "Meldt af {{who}} · {{when}}",
+    "saveFailed": "Ændringen kunne ikke gemmes. Prøv igen.",
+    "severity": {
+      "high": "Høj",
+      "low": "Lav",
+      "medium": "Mellem"
+    },
+    "severityLabel": "Alvorlighed",
+    "someone": "Nogen",
+    "status": {
+      "in_progress": "I gang",
+      "open": "Åben",
+      "resolved": "Løst"
+    },
+    "statusLabel": "Status",
+    "submit": "Meld hændelsen",
+    "takePhoto": "Tag et billede",
+    "title": "Hændelser",
+    "titleLabel": "Titel",
+    "titlePlaceholder": "Greb knækkede på væg 4",
+    "unassigned": "Ingen er på den endnu.",
+    "uploadFailed": "Billedet kunne ikke uploades. Prøv igen."
+  },
   "language": {
     "da": "Dansk",
     "en": "Engelsk",
