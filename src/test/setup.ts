@@ -12,6 +12,42 @@ import { afterEach, vi } from 'vitest'
 vi.stubEnv('VITE_SUPABASE_URL', 'http://127.0.0.1:54321')
 vi.stubEnv('VITE_SUPABASE_PUBLISHABLE_KEY', 'test-publishable-key')
 
+/**
+ * ProseMirror (the editor behind Tiptap, P3-01) measures the selection after
+ * every transaction, and jsdom implements no `Range` measurement at all: without
+ * these stubs, typing into an editor throws instead of failing an assertion.
+ * Layout is not what these tests check.
+ */
+const emptyRect = {
+  x: 0,
+  y: 0,
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  width: 0,
+  height: 0,
+  toJSON: () => ({}),
+} as DOMRect
+
+const noRects = () => Object.assign([], { item: () => null }) as unknown as DOMRectList
+
+Object.defineProperty(Range.prototype, 'getClientRects', {
+  configurable: true,
+  value: noRects,
+})
+Object.defineProperty(Range.prototype, 'getBoundingClientRect', {
+  configurable: true,
+  value: () => emptyRect,
+})
+
+// Clicking inside an editor makes ProseMirror map the pointer to a document
+// position, which jsdom cannot answer either.
+Object.defineProperty(Document.prototype, 'elementFromPoint', {
+  configurable: true,
+  value: () => null,
+})
+
 afterEach(() => {
   cleanup()
 })

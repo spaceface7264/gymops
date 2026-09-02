@@ -121,6 +121,19 @@
     "signOut": "Sign out",
     "signingOut": "Signing out…"
   },
+  "content": {
+    "bold": "Bold",
+    "bulletList": "Bullet list",
+    "heading": "Heading",
+    "image": "Image",
+    "imageUnavailable": "This image cannot be shown.",
+    "italic": "Italic",
+    "link": "Link",
+    "linkApply": "Apply",
+    "linkUrl": "Link address",
+    "orderedList": "Numbered list",
+    "uploadFailed": "The image could not be uploaded. Try again."
+  },
   "gym": {
     "all": "All gyms",
     "label": "Gym"

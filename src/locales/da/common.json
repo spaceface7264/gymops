@@ -121,6 +121,19 @@
     "signOut": "Log ud",
     "signingOut": "Logger ud…"
   },
+  "content": {
+    "bold": "Fed",
+    "bulletList": "Punktliste",
+    "heading": "Overskrift",
+    "image": "Billede",
+    "imageUnavailable": "Billedet kan ikke vises.",
+    "italic": "Kursiv",
+    "link": "Link",
+    "linkApply": "Anvend",
+    "linkUrl": "Linkadresse",
+    "orderedList": "Nummereret liste",
+    "uploadFailed": "Billedet kunne ikke uploades. Prøv igen."
+  },
   "gym": {
     "all": "Alle centre",
     "label": "Center"

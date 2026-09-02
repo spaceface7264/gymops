@@ -26,6 +26,10 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.109.0",
     "@tanstack/react-query": "^5.102.8",
+    "@tiptap/extension-image": "^3.31.0",
+    "@tiptap/pm": "^3.31.0",
+    "@tiptap/react": "^3.31.0",
+    "@tiptap/starter-kit": "^3.31.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "i18next": "^26.4.1",
