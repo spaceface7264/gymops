@@ -4,7 +4,15 @@ Last updated: 2026-09-02
 
 ## Currently working on
 
-**Phase 3 is done** on branch `phase-3-content` (P3-01 … P3-07), branched off
+**Phase 3 is done** and its audit fixes are on `phase-3-hardening`, branched off
+`phase-3-content`. An audit on 2026-09-02 found two holes worth stopping for —
+deactivation removed no access, and acknowledgements were whatever the client
+posted — plus a missing error boundary and admins missing from company-wide
+acknowledgement reports. All four are fixed and covered by
+`supabase/tests/060-content-integrity.test.sql` (18 assertions, 128 total).
+Three smaller findings are listed under "Known gaps" below and are not fixed.
+
+Phase 3 itself is on branch `phase-3-content` (P3-01 … P3-07), branched off
 `phase-2-admin` because `main` does not yet carry phases 1 and 2. Nothing in it
 needed a hosted project. Next up: **phase 4, daily ops** (P4-01 … P4-10), whose
 P4-02 (pg_cron) is the first task after P2-03 that cannot be finished locally.
@@ -12,7 +20,7 @@ P4-02 (pg_cron) is the first task after P2-03 that cannot be finished locally.
 The `invite` function (P2-03) has still never been deployed; doing so — with a
 Resend account behind it — is the first item of "Hosted project cutover".
 
-The repo has no git remote yet, so CI has never actually run on GitHub: the workflow is verified only by running the same commands locally. Push the branch and check the first run.
+The repo is now on GitHub at **spaceface7264/gymops** (private), with `main` and the four phase branches pushed. The first CI run found a real problem: `package-lock.json` had been generated on macOS with npm 10.8.2, which records only the host platform's optional native bindings, so `npm ci` on the Linux runner installed no rolldown binding and vitest died at startup. The lockfile was regenerated with `npm install --package-lock-only` and the four branches were rebased onto that fix, which is why the phase-2 and phase-3 commit hashes changed on 2026-09-02.
 
 ## Phase status
 
@@ -44,8 +52,8 @@ Update this list as work begins:
 | P1-09 | ✅ done | 2026-09-01 | 2026-09-01 | `supabase/seed.sql`: 3 gyms, one user per role (`<role>@gymops.test` / `Password123`, raised from `password123` in P1-07 to satisfy the password policy), memberships. Password sign-in and per-role RLS verified through the local API. |
 | P1-08 | ✅ done | 2026-09-01 | 2026-09-01 | `AppShell` (sidebar from `md`, bottom tab bar on phones), nav from `src/routes/nav.ts` with placeholders for unbuilt modules, `src/features/gyms` (provider, `useGymScope`, switcher, `useGyms`), `useLocaleSync`, sign out. 15 tests; checked in Chrome as manager and admin, desktop and phone width. |
 | P1-10 | ✅ done | 2026-09-01 | 2026-09-01 | `.github/workflows/ci.yml`: job `web` (typecheck, lint, format:check, test, build on Node 20) and job `database` (pinned Supabase CLI, `supabase start -x` the services the tests do not need, `db reset`, `test db`). Both sequences verified locally; never run on GitHub — the repo has no remote. |
-| P2-06 | ✅ done | 2026-09-01 | 2026-09-01 | `20260901210000_audit_role_changes.sql`: security-definer triggers writing `profile.privileges_changed` and `membership.granted`/`role_changed`/`revoked` to `audit_log`. `supabase/tests/020-audit-role-changes.test.sql` — 13 assertions; 51/51 pass with the harness. Commit `fe453af`. |
-| P2-01 | ✅ done | 2026-09-01 | 2026-09-01 | `src/features/admin` (queries, `GymsPanel`, `GymDialog`, `toSlug`) and `src/routes/admin-page.tsx` (`AdminPage` layout + `RequireSuperadmin`); `/admin` redirects to the first section the user may see. shadcn `table`, `badge`, `dialog` added. 75 unit tests; create/edit/deactivate driven in Chrome as a superadmin. Commit `a3d78a1`. |
+| P2-06 | ✅ done | 2026-09-01 | 2026-09-01 | `20260901210000_audit_role_changes.sql`: security-definer triggers writing `profile.privileges_changed` and `membership.granted`/`role_changed`/`revoked` to `audit_log`. `supabase/tests/020-audit-role-changes.test.sql` — 13 assertions; 51/51 pass with the harness. Commit `3c2c8a6`. |
+| P2-01 | ✅ done | 2026-09-01 | 2026-09-01 | `src/features/admin` (queries, `GymsPanel`, `GymDialog`, `toSlug`) and `src/routes/admin-page.tsx` (`AdminPage` layout + `RequireSuperadmin`); `/admin` redirects to the first section the user may see. shadcn `table`, `badge`, `dialog` added. 75 unit tests; create/edit/deactivate driven in Chrome as a superadmin. Commit `e686657`. |
 | P2-02 | ✅ done | 2026-09-01 | 2026-09-01 | `UsersPanel` at `/admin/users` (now the section `/admin` redirects to): role badges, active/inactive, deactivate for admins only, filtered by the shell's gym switcher. The nav's Admin entry is now shown to managers too — they administer their own gyms' staff. 83 unit tests; checked in Chrome as a superadmin (all gyms and one gym) and as a manager (own gyms only, no deactivate, `/admin/gyms` bounces home). |
 | P2-05 | ✅ done | 2026-09-01 | 2026-09-01 | `RolesDialog` from the user list (gym roles for admins, staff-in-own-gyms for managers, the admin flag for superadmins) and `AuditPanel` at `/admin/audit`, superadmin-only. Membership writes are upserts, so the P2-06 trigger records grant vs role change. 90 unit tests; role changes and the resulting log entries checked in Chrome as a superadmin. |
 | P2-03 | ✅ done | 2026-09-02 | 2026-09-02 | `supabase/functions/invite`: checks the caller against the §2.1 matrix, records the `invites` row, calls `inviteUserByEmail`, then applies the membership or admin flag with the service role. Migration `20260901220000_invite_acceptance.sql` closes the pending invite on first sign-in (4 pgTAP assertions, 55/55 pass). The accept screen now offers the name the inviter typed. Verified locally end to end: mail in Mailpit → link → password → session → membership → invite accepted, plus the whole permission matrix by HTTP (201/403/409/400/401). **Not deployed** — hosted cutover pending. |
@@ -57,6 +65,7 @@ Update this list as work begins:
 | P3-05 | ✅ done | 2026-09-02 | 2026-09-02 | `src/features/guides`: `/guides` (one tree mixing company and gym categories, guides filtered by the selected branch), the viewer, the editor at `/guides/new` and `/guides/:guideId/edit`, and category create/rename/delete. `guides.version` is bumped only when the author ticks "significant change", and `guide_acks` stores the confirmed version, so a reader who is behind is asked again. Guides lost their nav placeholder. 140 unit tests; the tree, the confirmation and the re-confirmation after a version bump driven in Chrome as staff. |
 | P3-06 | ✅ done | 2026-09-02 | 2026-09-02 | `features/content/search.ts` + `ContentSearch`: one debounced search over both `posts` and `guides` using `websearch_to_tsquery` on the `simple` configuration, with a snippet cut around the first matching word and hits labelled news/guide, scope and draft. The box sits on `/news` and `/guides`. 145 unit tests; a Danish word matched through RLS by HTTP, and another gym's post did not. |
 | P3-07 | ✅ done | 2026-09-02 | 2026-09-02 | `UnreadNewsCard` replaces the placeholder home: published posts this person has not opened, plus the ones they have opened but not acknowledged, confirmations first. One query with `post_reads!left` filtered to the signed-in user. 146 unit tests; checked in Chrome as staff — acknowledging a post drops it off the home block, the unread one stays. |
+| Audit fixes | ✅ done | 2026-09-02 | 2026-09-02 | Branch `phase-3-hardening`. `20260902130000_content_integrity.sql`: `is_active_user()` plus active checks in `member_gym_ids()`, `managed_gym_ids()`, `can_read_content()` and `gyms_select`; a trigger banning the auth user when `active` flips; `post_reads`/`guide_acks` guards that stamp the timestamps and the guide version server-side and refuse content the writer cannot read. Client: the deactivated notice in the shell, the translated sign-in refusal, admins in the company-wide acknowledgement audience, and a `RouteError` boundary over every route. 18 new pgTAP assertions (128 total), 153 unit tests; all three original exploits re-run against the fixed API and refused. |
 | P4-01 … P8-06 | ⬜ not started | | | |
 
 Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
@@ -65,7 +74,7 @@ Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
 
 | Item                                                        | Needed for                           | Owner                      | Status               |
 | ----------------------------------------------------------- | ------------------------------------ | -------------------------- | -------------------- |
-| Supabase project (hosted) | deploying `invite` (P2-03, written and working locally) | Rami | `.env.local` points at the local stack since P1-02; the hosted `ngcqpftfqepvhpjikaqq` values sit commented out beneath it. Confirm that ref is the GymOps project — the Supabase MCP connection currently points at a different project (`ooikemajridlhceejgmo`), which times out. Steps in "Hosted project cutover" below. |
+| Supabase project (hosted) | deploying `invite` (P2-03, written and working locally) | Rami | **Resolved 2026-09-02: GymOps is `ngcqpftfqepvhpjikaqq`**, the ref already commented into `.env.local`; `ooikemajridlhceejgmo` is a legacy project and is not GymOps — ignore it, and repoint the Supabase MCP connection when convenient. `.env.local` still points at the local stack, which is correct until the cutover. Remaining steps in "Hosted project cutover" below. |
 | GitHub repository (remote) | P1-10 CI actually running | Rami | `.github/workflows/ci.yml` exists and its steps pass locally, but the repo has no remote, so no run has happened. Add the remote, push `phase-1-scaffold` and `phase-2-admin`, confirm both jobs go green. |
 | Resend account + API key | real invite mail (P2-03), P5-03 | Rami | not created. `[auth.rate_limit] email_sent = 2` per hour and hosted Supabase's built-in SMTP are both far below what inviting 200+ staff needs, so a provider must exist before invites go out for real. |
 | VAPID key pair                                              | P5-03                                | generated during P5-03     | —                    |
@@ -75,6 +84,14 @@ Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
 | BRP Systems API key, service account, rate limits, webhooks | V3                                   | Rami → BRP account manager | not requested        |
 | Final product name                                          | before public release                | Rami                       | placeholder `gymops` |
 
+## Known gaps (audit, 2026-09-02, not fixed)
+
+| Gap | Why it matters | Suggested home |
+| --- | --- | --- |
+| `supabase/functions/invite` is outside every gate — excluded from ESLint by decision, no test, and CI never type-checks it | The one piece of server code with its own permission logic is the one nothing checks | A `deno check` step in the CI database job, plus a test when P5-03 adds `notify` |
+| Nothing catches `database.types.ts` drift | A migration merged without `npm run db:types` leaves the client types silently wrong | One CI step: `db:types` then `git diff --exit-code` |
+| Search has no ranking; the feed sorts drafts above published news; signed image URLs expire at 1h against a 55min stale time; the vendored `dialog.tsx` carries two untranslated "Close" strings; guides have no acknowledgement report | Each is small and none is a correctness bug | Fold into P3 polish or take them with P5-06 (Playwright) |
+
 ## Hosted project cutover
 
 Everything through P1-10 runs on the local stack: CI is `supabase db reset` + pgTAP, and
@@ -82,13 +99,13 @@ Everything through P1-10 runs on the local stack: CI is `supabase db reset` + pg
 locally is **P2-03** (the `invite` Edge Function needs to be deployed and to send real mail);
 after that come P4-02 (pg_cron), P5-03 (`notify`, database webhook, Resend, VAPID), P5-05
 (web push needs HTTPS and a real origin), P7-02 (`gymops://` plus a web fallback page) and
-P8-03 (assistant, `ANTHROPIC_API_KEY`). Work through this list once, at P2-03.
+P8-03 (assistant, `ANTHROPIC_API_KEY`). Work through this list once, at P2-03 — and note
+that P4-02 needs `pg_cron`, so the cutover now lands *inside* phase 4 rather than after it.
 
 **Before touching anything**
 
-- [ ] Confirm which hosted project is GymOps. `.env.local` carries `ngcqpftfqepvhpjikaqq`
-      commented out; the Supabase MCP connection points at `ooikemajridlhceejgmo` and times
-      out. One of them is right, possibly neither.
+- [x] ~~Confirm which hosted project is GymOps.~~ **`ngcqpftfqepvhpjikaqq`** (2026-09-02).
+      `ooikemajridlhceejgmo` is a legacy project — not GymOps.
 - [ ] Confirm the project runs Postgres 17 (`db.major_version = 17` locally). A mismatch
       changes what migrations are allowed to assume.
 - [ ] Create the Resend account and get the API key.
@@ -199,6 +216,12 @@ of truth; nothing in config.toml applies to a hosted project)
 | 2026-09-02 | P3-05: the whole guide list is fetched once and filtered by branch in the client. A chain of this size has a few hundred guides at most, and the tree then filters without a round trip per click. |
 
 | 2026-09-02 | P3-06: search is `websearch_to_tsquery` against the generated `search_vector` columns — quoted phrases and `-word` work without a parser of our own — and it runs as two queries rather than a view or an RPC, so RLS on each table is what limits the hits. There is no Search nav entry: the box sits on the two modules it covers. |
+
+| 2026-09-02 | Audit: deactivation is now a real revocation. `member_gym_ids()`/`managed_gym_ids()` only count a membership while the profile is active, `can_read_content()` requires an active profile even for company-wide content, and `gyms_select` follows. A live access token therefore stops reading at once rather than at expiry. Own-profile reads stay open so the app can say why. |
+| 2026-09-02 | Audit: deactivating also bans the auth user, so GoTrue refuses sign-in and refresh. The ban is `9999-12-31` and not `infinity` — GoTrue cannot parse an infinite timestamp and answered sign-in with a 500 "Database error querying schema" until it was a real date. |
+| 2026-09-02 | Audit: acknowledgements are stamped by the database. `post_reads.read_at` keeps the first read, `acknowledged_at` the first confirmation, and `guide_acks.version` is read from the guide — a client had been free to claim version 9999 and a date years back, which made the ack report unusable as evidence. The guards also refuse content the writer cannot read, using the caller's own RLS rather than a second copy of the rules. |
+| 2026-09-02 | Audit: the company-wide acknowledgement report unions `gym_memberships` with the admin profiles. Admins hold no membership, so a report claiming to cover everyone quietly left them out. A manager cannot read those profiles, which is right: their report is their own gyms. |
+| 2026-09-02 | Audit: one pathless layout route carries `errorElement`, so a throw anywhere renders `RouteError` with a way out. These screens run unattended on a front desk; a blank document is the worst possible failure there. |
 
 ## How to update this file
 

@@ -71,6 +71,12 @@
     }
   },
   "app": {
+    "error": {
+      "body": "This screen could not be shown. Reloading usually helps; if it keeps happening, tell whoever looks after the app.",
+      "home": "Go to the home page",
+      "reload": "Reload",
+      "title": "Something went wrong"
+    },
     "name": "GymOps"
   },
   "auth": {
@@ -84,6 +90,10 @@
       "submit": "Create account",
       "submitting": "Creating account…",
       "title": "Welcome to GymOps"
+    },
+    "deactivated": {
+      "body": "You can no longer see the gym's news, guides or other work. If this is a mistake, ask a manager or an administrator to activate you again.",
+      "title": "This account has been deactivated"
     },
     "forgotPassword": {
       "backToSignIn": "Back to sign in",
@@ -110,6 +120,7 @@
       "title": "Choose a new password"
     },
     "signIn": {
+      "deactivated": "This account has been deactivated. Ask a manager or an administrator.",
       "email": "Email",
       "failed": "That email and password did not match. Try again.",
       "forgotPassword": "Forgot your password?",

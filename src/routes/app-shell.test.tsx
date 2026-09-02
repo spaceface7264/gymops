@@ -87,6 +87,28 @@ afterEach(async () => {
   await i18next.changeLanguage('en')
 })
 
+describe('a deactivated account', () => {
+  it('is shown the door rather than an app with nothing in it', async () => {
+    single.mockResolvedValue({ data: profile({ active: false }), error: null })
+    renderShell()
+
+    expect(
+      await screen.findByText('This account has been deactivated'),
+    ).toBeInTheDocument()
+    expect(screen.queryByRole('navigation')).not.toBeInTheDocument()
+  })
+
+  it('keeps the app open while the profile has not loaded', async () => {
+    single.mockResolvedValue({ data: profile(), error: null })
+    renderShell()
+
+    expect(await screen.findByRole('navigation')).toBeInTheDocument()
+    expect(
+      screen.queryByText('This account has been deactivated'),
+    ).not.toBeInTheDocument()
+  })
+})
+
 describe('AppShell navigation', () => {
   it('reaches every V1 module a staff member may use', async () => {
     renderShell()

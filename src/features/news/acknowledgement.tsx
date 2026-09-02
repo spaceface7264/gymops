@@ -92,9 +92,10 @@ export function AckReport({
           >
             <span className="text-sm">
               {row.name}
-              {row.gymName && (
-                <span className="text-muted-foreground"> · {row.gymName}</span>
-              )}
+              <span className="text-muted-foreground">
+                {' · '}
+                {row.gymName ?? t('news.companyWide')}
+              </span>
             </span>
             <span
               className={

@@ -71,6 +71,12 @@
     }
   },
   "app": {
+    "error": {
+      "body": "Skærmen kunne ikke vises. Prøv at genindlæse; sker det igen, så sig det til den, der passer appen.",
+      "home": "Gå til forsiden",
+      "reload": "Genindlæs",
+      "title": "Noget gik galt"
+    },
     "name": "GymOps"
   },
   "auth": {
@@ -84,6 +90,10 @@
       "submit": "Opret konto",
       "submitting": "Opretter konto…",
       "title": "Velkommen til GymOps"
+    },
+    "deactivated": {
+      "body": "Du kan ikke længere se hallens nyheder, vejledninger og øvrige arbejde. Er det en fejl, så bed en leder eller administrator om at aktivere dig igen.",
+      "title": "Kontoen er deaktiveret"
     },
     "forgotPassword": {
       "backToSignIn": "Tilbage til login",
@@ -110,6 +120,7 @@
       "title": "Vælg en ny adgangskode"
     },
     "signIn": {
+      "deactivated": "Kontoen er deaktiveret. Kontakt en leder eller administrator.",
       "email": "E-mail",
       "failed": "E-mail og adgangskode passer ikke. Prøv igen.",
       "forgotPassword": "Glemt din adgangskode?",
