@@ -27,8 +27,8 @@ item of "Hosted project cutover". P4-02 is done and did *not* need it — the
 local stack ships `pg_cron` — but the extension has to be enabled on the hosted
 project before the schema is pushed there.
 
-Next up: **P4-03**, the template editor, which is what finally puts templates in
-front of a manager; until then the generator only has whatever a test inserts.
+Next up: **P4-04**, the run UI — the screen staff actually tick. It takes over
+the `/checklists` index from the redirect P4-03 left there.
 
 ## Phase status
 
@@ -38,7 +38,7 @@ front of a manager; until then the generator only has whatever a test inserts.
 | P1 Scaffold and auth | ✅ Complete | P1-01 to P1-10, merged in PR #1. |
 | P2 Users and gyms admin  | ✅ Complete    | P2-01 to P2-06, merged in PR #2.                |
 | P3 News and guides       | ✅ Complete    | P3-01 to P3-07 (PR #3) and the audit fixes (#4). |
-| P4 Daily ops             | 🔄 In progress | `phase-4-daily-ops`. P4-01, P4-02 done.         |
+| P4 Daily ops             | 🔄 In progress | `phase-4-daily-ops`. P4-01 … P4-03 done.        |
 | P5 Notifications and PWA | ⬜ Not started |                                                 |
 | P6 Team chat             | ⬜ Not started |                                                 |
 | P7 Desktop and release   | ⬜ Not started |                                                 |
@@ -76,7 +76,8 @@ Update this list as work begins:
 | Audit fixes | ✅ done | 2026-09-02 | 2026-09-02 | Branch `phase-3-hardening`. `20260902130000_content_integrity.sql`: `is_active_user()` plus active checks in `member_gym_ids()`, `managed_gym_ids()`, `can_read_content()` and `gyms_select`; a trigger banning the auth user when `active` flips; `post_reads`/`guide_acks` guards that stamp the timestamps and the guide version server-side and refuse content the writer cannot read. Client: the deactivated notice in the shell, the translated sign-in refusal, admins in the company-wide acknowledgement audience, and a `RouteError` boundary over every route. 18 new pgTAP assertions (128 total), 153 unit tests; all three original exploits re-run against the fixed API and refused. |
 | P4-01 | ✅ done | 2026-09-02 | 2026-09-02 | `20260902150000_checklist_schema.sql`: `checklist_templates` (+ `weekdays`, `active`), `checklist_template_items`, `checklist_runs` (unique per template/gym/day) and `checklist_run_items`, which snapshot the label so an edited template cannot rewrite history. `can_complete_in()` is the new "complete checklists" rule; `checklist_runs` has no insert policy at all, because the scheduled job (P4-02) creates them. Ticking records `done_by` from the session, never the request. `supabase/tests/070-checklist-permissions.test.sql` — 27 assertions written before the migration, 155 pgTAP total. |
 | P4-02 | ✅ done | 2026-09-02 | 2026-09-02 | `20260902160000_checklist_generation.sql`: `pg_cron` plus `generate_checklist_runs(as_of)`, a security-definer function that creates one run per due template per gym and snapshots the template's items into it. The job runs hourly at :00 and each gym generates when *its own* clock reads 03:xx, so one schedule serves every time zone, the 45-minute ones included. Idempotent on the P4-01 unique key; inactive gyms, inactive templates and templates with no items generate nothing. `supabase/tests/080-checklist-generation.test.sql` — 13 assertions, 168 pgTAP total. |
-| P4-03 … P8-06 | ⬜ not started | | | |
+| P4-03 | ✅ done | 2026-09-02 | 2026-09-02 | `features/checklists`: `/checklists/templates` lists every template the viewer may see with its scope, kind, schedule and size, and `…/new` and `…/:templateId/edit` edit one — name, kind, scope, the seven weekday toggles, and the items with up/down reordering and a required flag. Items are diffed on save (ids kept, positions renumbered, dropped rows deleted) so a run item does not lose the template item it came from. Deactivation replaces deletion. `/checklists` redirects to the templates page until P4-04 puts the runs at the index. 9 new unit tests (162 total); checked against the real API as `manager@gymops.test` — the template saved, company-wide and another gym's were refused with 403, and P4-02 generated a run with both items from it. |
+| P4-04 … P8-06 | ⬜ not started | | | |
 
 Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
 
@@ -252,6 +253,11 @@ of truth; nothing in config.toml applies to a hosted project)
 | 2026-09-02 | P4-02: a missed night stays missed. The job only ever generates for the gym's current local date; it does not backfill days when nothing ran. A run invented after the fact would claim work nobody was asked to do, and P4-05 already surfaces the gap to managers. |
 | 2026-09-02 | P4-02: a template with no items generates no run — a run whose every required item is ticked the moment it exists is noise on the home page. An empty template is a draft. |
 | 2026-09-02 | P4-02: `revoke ... from public` is not enough on Supabase. Default privileges grant execute on every new `public` function to `anon`, `authenticated` and `service_role`; the pgTAP assertion caught the generator still callable by a logged-in browser, and the revoke now names the three roles. P4-01's note that runs are created "as the service role" was loose: they are created by the job's owner, and `service_role` cannot call the generator either. |
+
+| 2026-09-02 | P4-03: the template editor lives in the checklists module at `/checklists/templates`, not under `/admin`. Managers edit their own gyms' checklists (spec §2.1), and `/admin` is where company-wide administration lives; the editor sits next to the runs it produces, the way the guide editor sits next to the guides. |
+| 2026-09-02 | P4-03: items are reordered with up/down buttons rather than dragged. Reordering happens on a front-desk touch screen as often as a mouse, and drag-and-drop would add a dependency and a keyboard story for a list that is rarely longer than ten rows. |
+| 2026-09-02 | P4-03: saving diffs the items instead of replacing them. Deleting and re-inserting every row on each save would null the `template_item_id` of every run item ever generated (`on delete set null`), so a typo fix would cut the reporting link on months of history. |
+| 2026-09-02 | P4-03: the editor refuses to save a template with no items, which matches P4-02 refusing to generate from one. The rule is stated once in the UI as a hint rather than discovered as a checklist that never appears. |
 
 ## How to update this file
 

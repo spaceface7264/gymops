@@ -41,7 +41,7 @@ export const navEntries: NavEntry[] = [
   { to: '/', labelKey: 'nav.home', icon: House },
   { to: '/news', labelKey: 'nav.news', icon: Newspaper },
   { to: '/guides', labelKey: 'nav.guides', icon: BookOpen },
-  { to: '/checklists', labelKey: 'nav.checklists', icon: ListChecks, phase: '4' },
+  { to: '/checklists', labelKey: 'nav.checklists', icon: ListChecks },
   { to: '/daily-log', labelKey: 'nav.dailyLog', icon: NotebookPen, phase: '4' },
   { to: '/incidents', labelKey: 'nav.incidents', icon: TriangleAlert, phase: '4' },
   { to: '/chat', labelKey: 'nav.chat', icon: MessagesSquare, phase: '6' },

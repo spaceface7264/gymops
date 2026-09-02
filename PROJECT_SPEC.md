@@ -168,6 +168,9 @@ gymops/
 | A cron schedule per time zone, or one job at 03:00 UTC | 03:00 UTC is 04:00 or 05:00 in Copenhagen, i.e. inside opening hours in summer, and a job per zone makes opening a gym abroad a migration. One hourly job whose function picks the gyms currently reading 03:xx locally covers every offset, including the 30- and 45-minute ones, and a new gym is a row in `gyms`. |
 | Backfilling checklist runs for nights the job did not run | A run conjured up days later claims work nobody was asked to do, and the completion history is the record a manager relies on. The generator only ever writes the gym's current local date; a gap is a gap, and P4-05 shows it. |
 | Generating a run from a template that has no items | Every required item is ticked the moment it exists, so it lands on the home page already complete. A template without items is an unfinished draft and generates nothing. |
+| The checklist template editor under `/admin` | `/admin` is company administration — users, gyms, the audit log. Editing a checklist is managers' daily work in their own gyms (§2.1), so the editor lives in the checklists module at `/checklists/templates`, beside the runs it generates. |
+| Drag-and-drop reordering of checklist items | The lists are short and half the editing happens on a front-desk touch screen. Up/down buttons are keyboard- and screen-reader-usable as they stand and cost no dependency. |
+| Replacing a template's items on every save | Run items point back at the template item they came from with `on delete set null`, so delete-and-reinsert would cut the reporting link on every run ever generated. Saving diffs the items: ids are kept, positions renumbered, and only items the editor actually dropped are deleted. |
 | Staff seeing every profile in their own gyms | Not needed by any V1 screen before chat. `profiles` is readable by yourself, admins and the managers of your gyms; widen it in P6 if the chat member list needs it. |
 
 ## 5. Conventions
