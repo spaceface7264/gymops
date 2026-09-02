@@ -4,6 +4,14 @@ import { Link, useParams } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { useCompletionScope } from '@/features/checklists'
 import { usePublishScope } from '@/features/content'
 import { useGymScope } from '@/features/gyms'
@@ -53,24 +61,29 @@ function HandlingControls({ incident }: { incident: Incident }) {
       <div className="flex flex-wrap gap-3">
         <div className="space-y-1">
           <Label htmlFor="incident-severity">{t('incidents.severityLabel')}</Label>
-          <select
-            id="incident-severity"
-            className="border-input bg-background h-9 rounded-md border px-2 text-sm"
+          <Select
             value={incident.severity}
             disabled={update.isPending}
-            onChange={(event) =>
+            onValueChange={(value) =>
               update.mutate({
                 id: incident.id,
-                severity: event.target.value as IncidentSeverity,
+                severity: value as IncidentSeverity,
               })
             }
           >
-            {incidentSeverities.map((option) => (
-              <option key={option} value={option}>
-                {t(`incidents.severity.${option}`)}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger id="incident-severity">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent position="popper">
+              <SelectGroup>
+                {incidentSeverities.map((option) => (
+                  <SelectItem key={option} value={option}>
+                    {t(`incidents.severity.${option}`)}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="space-y-1">

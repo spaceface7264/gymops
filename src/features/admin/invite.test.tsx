@@ -55,8 +55,10 @@ describe('InviteDialog', () => {
 
     await user.type(screen.getByLabelText('Work email'), 'ny@gymops.test')
     await user.type(screen.getByLabelText('Full name'), 'Ny Person')
-    await user.selectOptions(screen.getByLabelText('Role'), 'manager')
-    await user.selectOptions(screen.getByLabelText('Gym'), 'gym-odense')
+    await user.click(screen.getByLabelText('Role'))
+    await user.click(await screen.findByRole('option', { name: 'Manager' }))
+    await user.click(screen.getByLabelText('Gym'))
+    await user.click(await screen.findByRole('option', { name: 'Odense' }))
     await user.click(screen.getByRole('button', { name: 'Send invite' }))
 
     await waitFor(() =>
@@ -76,17 +78,20 @@ describe('InviteDialog', () => {
     gymScope.mockReturnValue('gym-odense')
     open()
 
-    expect(screen.getByLabelText('Gym')).toHaveValue('gym-odense')
+    expect(screen.getByLabelText('Gym')).toHaveTextContent('Odense')
   })
 
-  it('offers a manager staff only, and no company-wide admin', () => {
+  it('offers a manager staff only, and no company-wide admin', async () => {
+    const user = userEvent.setup()
     open({ canMakeManagers: false })
 
     const role = screen.getByLabelText('Role')
-    expect(role).toHaveValue('staff')
     expect(role).toHaveTextContent('Staff')
-    expect(role).not.toHaveTextContent('Manager')
-    expect(role).not.toHaveTextContent('Admin')
+
+    await user.click(role)
+    expect(await screen.findByRole('option', { name: 'Staff' })).toBeInTheDocument()
+    expect(screen.queryByRole('option', { name: 'Manager' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('option', { name: 'Admin' })).not.toBeInTheDocument()
   })
 
   it('drops the gym when a superadmin invites a company-wide admin', async () => {
@@ -94,7 +99,8 @@ describe('InviteDialog', () => {
     open({ canMakeAdmins: true })
 
     await user.type(screen.getByLabelText('Work email'), 'chef@gymops.test')
-    await user.selectOptions(screen.getByLabelText('Role'), 'admin')
+    await user.click(screen.getByLabelText('Role'))
+    await user.click(await screen.findByRole('option', { name: 'Admin' }))
     expect(screen.queryByLabelText('Gym')).not.toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Send invite' }))

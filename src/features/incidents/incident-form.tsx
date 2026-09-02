@@ -6,6 +6,14 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { useCompletionScope } from '@/features/checklists'
 import { MissingRequirements } from '@/features/content'
 import { useGymScope } from '@/features/gyms'
@@ -96,36 +104,46 @@ export function IncidentFormPage() {
           <div className="flex flex-wrap gap-3">
             <div className="space-y-1">
               <Label htmlFor={`${fieldId}-kind`}>{t('incidents.kindLabel')}</Label>
-              <select
-                id={`${fieldId}-kind`}
-                className="border-input bg-background h-9 rounded-md border px-2 text-sm"
+              <Select
                 value={kind}
-                onChange={(event) => setKind(event.target.value as IncidentKind)}
+                onValueChange={(value) => setKind(value as IncidentKind)}
               >
-                {incidentKinds.map((option) => (
-                  <option key={option} value={option}>
-                    {t(`incidents.kind.${option}`)}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger id={`${fieldId}-kind`}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {incidentKinds.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {t(`incidents.kind.${option}`)}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-1">
               <Label htmlFor={`${fieldId}-severity`}>
                 {t('incidents.severityLabel')}
               </Label>
-              <select
-                id={`${fieldId}-severity`}
-                className="border-input bg-background h-9 rounded-md border px-2 text-sm"
+              <Select
                 value={severity}
-                onChange={(event) => setSeverity(event.target.value as IncidentSeverity)}
+                onValueChange={(value) => setSeverity(value as IncidentSeverity)}
               >
-                {incidentSeverities.map((option) => (
-                  <option key={option} value={option}>
-                    {t(`incidents.severity.${option}`)}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger id={`${fieldId}-severity`}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {incidentSeverities.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {t(`incidents.severity.${option}`)}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

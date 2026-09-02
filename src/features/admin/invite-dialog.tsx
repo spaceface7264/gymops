@@ -11,6 +11,14 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { useGymScope } from '@/features/gyms'
 import type { Database } from '@/lib/database.types'
 import { useInviteUser, type AdminGym, type InviteInput } from './queries'
@@ -123,34 +131,55 @@ function InviteForm({
 
       <div className="space-y-2">
         <Label htmlFor={`${fieldId}-role`}>{t('admin.invite.role')}</Label>
-        <select
-          id={`${fieldId}-role`}
-          className="border-input bg-background h-9 w-full rounded-md border px-2 text-sm"
+        <Select
           value={role}
-          onChange={(event) => setRole(event.target.value as GymRole | typeof adminValue)}
+          onValueChange={(value) => setRole(value as GymRole | typeof adminValue)}
         >
-          <option value="staff">{t('admin.users.staff')}</option>
-          {canMakeManagers && <option value="manager">{t('admin.users.manager')}</option>}
-          {canMakeAdmins && <option value={adminValue}>{t('admin.users.admin')}</option>}
-        </select>
+          <SelectTrigger id={`${fieldId}-role`} className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent position="popper">
+            <SelectGroup>
+              <SelectItem value="staff">{t('admin.users.staff')}</SelectItem>
+              {canMakeManagers && (
+                <SelectItem value="manager">{t('admin.users.manager')}</SelectItem>
+              )}
+              {canMakeAdmins && (
+                <SelectItem value={adminValue}>{t('admin.users.admin')}</SelectItem>
+              )}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
       </div>
 
       {!asAdmin && (
         <div className="space-y-2">
           <Label htmlFor={`${fieldId}-gym`}>{t('admin.invite.gym')}</Label>
-          <select
-            id={`${fieldId}-gym`}
-            className="border-input bg-background h-9 w-full rounded-md border px-2 text-sm"
-            required
+          <Select
             value={gymId}
-            onChange={(event) => setGymId(event.target.value)}
+            required
+            onValueChange={(value) => {
+              // Radix keeps a hidden native select for form submission, and it
+              // fires an empty value whenever the current one matches no option
+              // — here, the render before the profile that decides the scope
+              // arrives. Taking it would scope the post to nobody.
+              if (value === '') return
+              setGymId(value)
+            }}
           >
-            {gyms.map((gym) => (
-              <option key={gym.id} value={gym.id}>
-                {gym.name}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger id={`${fieldId}-gym`} className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent position="popper">
+              <SelectGroup>
+                {gyms.map((gym) => (
+                  <SelectItem key={gym.id} value={gym.id}>
+                    {gym.name}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
         </div>
       )}
 

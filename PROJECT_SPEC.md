@@ -17,6 +17,8 @@ A single internal system for a chain of 10+ bouldering gyms in Denmark (200+ use
 - Every content record is either gym-scoped (`gym_id`) or company-wide (`gym_id = null`, visible to all).
 - A deactivated account (`profiles.active = false`) is a revocation, not a label: every content read goes through `is_active_user()`, and the auth user is banned so sign-in and token refresh both fail. Only their own profile stays readable, so the app can tell them why.
 - "Complete checklists, write daily log, report incidents" means the gyms you are a member of, for managers as well as staff; only the company-wide roles reach every gym. `can_complete_in()` is the policy that says so.
+- Events are the one exception to "managers publish in their own gyms": the calendar is run centrally, so `events_insert`/`events_update` are `is_admin()`, not `can_publish_content()`. Everyone in the audience reads them.
+- Events are also the one record whose scope is a *set* of gyms rather than one nullable `gym_id`: an event runs at any number of gyms (`event_gyms`), and one with no rows there is company-wide.
 - An acknowledgement is the database's record, not the client's claim: timestamps and the acknowledged guide version are stamped server-side, and you can only confirm content you are allowed to read.
 
 Permission matrix (also the RLS test spec):
@@ -28,6 +30,7 @@ Permission matrix (also the RLS test spec):
 | Publish company-wide news/guides                       | yes        | yes     | no                   | no       |
 | Publish gym news/guides, edit checklist templates      | yes        | yes     | own gyms             | no       |
 | Complete checklists, write daily log, report incidents | yes        | yes     | own gyms             | own gyms |
+| Manage events (calendar)                               | yes        | yes     | no                   | no       |
 | Change incident status                                 | yes        | yes     | own gyms             | no       |
 | See acknowledgement reports                            | yes        | yes     | own gyms             | no       |
 | Create custom chat channels                            | company    | company | own gyms             | no       |
@@ -43,6 +46,7 @@ Permission matrix (also the RLS test spec):
 - **Checklists:** opening/closing/custom templates (company-wide or per gym) generated into daily runs at 03:00 gym-local time; items ticked by staff with live sync; completion history; missed runs surfaced to managers.
 - **Daily log:** per-gym timeline of handover/note/issue entries; "issue" entries convert to incidents in one click.
 - **Incidents & maintenance:** kind (injury/equipment/cleaning/other), severity, status open → in progress → resolved, photo attachments, comment thread, assignee. Creation notifies gym managers and admins; high severity also emails.
+- **Events:** the calendar — title, description, type (community/campaign/groups/offer/other), optional link, and a single date or a from → to range with optional times. Runs at any number of gyms, or company-wide when none are picked; read by everyone at those gyms, written by admins only. List and month views.
 - **Notifications:** in-app inbox, email (Resend), web push (VAPID) for PWA, native desktop notifications via Realtime in the Tauri app. Per-user preferences per notification type.
 - **Team chat:** auto channel per gym + `#company`, custom public/private channels, DMs (2+ people), @mentions, image/file attachments, edit/delete own messages, unread badges, typing presence. No threads, reactions or search in V1.
 - **Admin:** gym CRUD, user list, invite dialog, deactivate, role editing with audit log.
@@ -57,14 +61,14 @@ Permission matrix (also the RLS test spec):
 
 ### 2.4 Later releases
 
-- **V2:** tasks (assignable to a person or a gym, due dates, recurrence, incident → task conversion), calendars (events per gym + company-wide; no shift rostering).
+- **V2:** tasks (assignable to a person or a gym, due dates, recurrence, incident → task conversion). Calendars came forward into V1 as the Events module (§2.2); only shift rostering stays out (§4).
 - **V3:** dashboards over in-app data, sync from BRP Systems (membership/booking). Needs BRP API key, service account, rate limits and webhook info from BRP first.
 
 ### 2.5 Non-functional
 
 - Works on phone (PWA), browser, Windows and Mac desktop from one codebase.
 - Permissions enforced in the database (RLS), never only in the UI.
-- Soft delete on posts, guides, incidents, messages. Storage objects are never deleted from the UI in V1.
+- Soft delete on posts, guides, incidents, messages, events. Storage objects are never deleted from the UI in V1.
 - Audit log for membership, role and incident changes.
 - Auto-update for desktop installers.
 
@@ -85,10 +89,11 @@ Core: `gyms`, `profiles` (id = auth user id, `is_superadmin`, `is_admin`, `local
 News: `posts`, `post_reads`. Guides: `guide_categories`, `guides`, `guide_acks`.
 Checklists: `checklist_templates`, `checklist_template_items`, `checklist_runs`, `checklist_run_items`.
 Daily log: `daily_log_entries`. Incidents: `incidents`, `incident_attachments`, `incident_comments`.
+Events: `events` (`event_type`, `starts_on`/`start_time`/`ends_on`/`end_time`, generated `last_on`), `event_gyms` (event, gym; no rows = company-wide).
 Notifications: `notifications`, `notification_prefs`, `push_subscriptions`.
 Chat: `channels` (kind gym/company/custom/dm, `member_hash` for DM dedupe), `channel_members` (`last_read_at`, `muted`), `messages` (`mentions uuid[]`, soft delete), `message_attachments`.
 Assistant (V1.5): `assistant_conversations`, `assistant_messages`, `assistant_usage`.
-RLS helpers: `is_superadmin()`, `is_admin()`, `member_gym_ids()`, `managed_gym_ids()`, `is_channel_member(channel_id)`.
+RLS helpers: `is_superadmin()`, `is_admin()`, `member_gym_ids()`, `managed_gym_ids()`, `can_read_event(event_id)`, `is_channel_member(channel_id)`.
 
 ### 3.2 Repository layout
 
@@ -127,6 +132,10 @@ gymops/
 | Google Workspace SSO                                                      | Not all staff have company Google accounts; invite-only email/password is simpler. Can be added as an additional provider later.                                                                                                           |
 | Markdown editor or PDF document library for guides                        | Managers need a friendly editor; rich text with images/files/video links chosen.                                                                                                                                                           |
 | Shift rostering in the calendar                                           | A large product on its own (availability, swaps, hours). Calendar stays events-only.                                                                                                                                                       |
+| `timestamptz` for event dates                                             | A company-wide event has no gym and therefore no zone to render an instant in, and "19:00" is a wall-clock fact about the gym's own day. `date` + optional `time` says exactly that and needs no conversion on either side; a future ICS export composes the instant against `gyms.timezone` at export time. |
+| `react-day-picker` / `date-fns` for the month view                        | A date *picker* has no event-chip slot, so the grid would be styled around it anyway. The month math is one pure module over `Date.UTC` (`month-grid.ts`), and date entry is native `type="date"`/`type="time"`. No new dependency.        |
+| A copy of the event per gym, or a nullable `gym_id`                       | A `gym_id` cannot say "two of the three gyms", and copies drift the moment one of them is edited. `event_gyms` keeps one event to edit and lets `on delete cascade` clean up when a gym closes.                                            |
+| Spanning bars for multi-day events in the grid                            | Needs per-week lane assignment and row measurement. Repeating the chip on every day it covers reads the same and survives the grid collapsing on a phone.                                                                                  |
 | Threads, reactions, message search in chat V1                             | Cut to ship chat sooner; listed as first chat follow-ups if channels get busy.                                                                                                                                                             |
 | Embeddings/pgvector pipeline for the assistant                            | Corpus is small; Postgres full-text search behind Claude tools is enough to start and needs no extra provider. pgvector is the upgrade path if recall is poor.                                                                             |
 | Assistant taking actions (create incidents etc.) or reading live ops data | Read-only over guides/news keeps permissions and data exposure simple in V1.5. Revisit after usage.                                                                                                                                        |
@@ -186,6 +195,8 @@ gymops/
 | A `tags` table with a join | Tags here are labels for filtering one gym's timeline, not a taxonomy: `text[]` with a GIN index answers "everything tagged wall4" in one query and needs no second screen to manage. A trigger lower-cases, trims and de-duplicates them so "#Broken" and "broken" are one tag. |
 | Letting a manager edit an entry somebody else wrote | The log is a record of shifts; a manager rewriting what staff reported would make it worthless as one. A manager can take an entry off the timeline, and a trigger holds every other column to its old value when the editor is not the author. |
 | `deleted_at is null` inside a SELECT policy | It reads well and it breaks soft delete: Postgres refuses an UPDATE that would leave the row invisible to its own writer, so "delete" failed for every user on posts and guides (found in P4-06, fixed in `20260902171000`). The row stays visible to the people who may publish there — the ones deleting it — and the listing queries filter it out. |
+| Repeating the active check inside `can_publish_content()` | Proposed after misreading the publish gate as unguarded. The check belongs in `managed_gym_ids()`/`member_gym_ids()` where `20260902130000` put it — one place, every caller, gates included. A second copy in the gate would be dead code that reads like a real rule, and the next person would have to prove to themselves which of the two is load-bearing. A test pins it instead (`supabase/tests/120-deactivated-publisher.test.sql`). |
+| One dropdown component for every `<select>` | The 21 of them are three different controls wearing one tag. A form field needs a real form control (`Select`); a filter needs a trigger that reads as the current state (`DropdownMenu` + `DropdownMenuRadioGroup`); and a 400-entry timezone list needs type-to-search (`Combobox`). Using `DropdownMenu` for a form field would drop it out of the form, and a `Select` for the timezone list is unusable at that length. |
 
 ## 5. Conventions
 

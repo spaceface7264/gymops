@@ -6,6 +6,14 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
   emptyDoc,
   isEmptyDoc,
   MissingRequirements,
@@ -22,6 +30,10 @@ import {
   type Guide,
   type GuideInput,
 } from './queries'
+
+// Radix treats an empty value as "no value chosen" and shows the placeholder
+// instead of the item, so "no category" needs a value of its own.
+const noCategory = 'none'
 
 /** Route component for `/guides/new` and `/guides/:guideId/edit`. */
 export function GuideEditorPage() {
@@ -113,40 +125,62 @@ function GuideEditor({ guide }: { guide?: Guide }) {
 
       <div className="space-y-2">
         <Label htmlFor={`${fieldId}-scope`}>{t('guides.scope')}</Label>
-        <select
-          id={`${fieldId}-scope`}
-          className="border-input bg-background h-9 w-full rounded-md border px-2 text-sm"
+        <Select
           value={gymId ?? 'company'}
-          onChange={(event) =>
-            setChosenGymId(event.target.value === 'company' ? null : event.target.value)
-          }
+          onValueChange={(value) => {
+            // Radix keeps a hidden native select for form submission, and it
+            // fires an empty value whenever the current one matches no option
+            // — here, the render before the profile that decides the scope
+            // arrives. Taking it would scope the post to nobody.
+            if (value === '') return
+            setChosenGymId(value === 'company' ? null : value)
+          }}
         >
-          {scope.canPublishCompanyWide && (
-            <option value="company">{t('guides.companyWide')}</option>
-          )}
-          {scope.publishableGyms.map((gym) => (
-            <option key={gym.id} value={gym.id}>
-              {gym.name}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger id={`${fieldId}-scope`} className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent position="popper">
+            <SelectGroup>
+              {scope.canPublishCompanyWide && (
+                <SelectItem value="company">{t('guides.companyWide')}</SelectItem>
+              )}
+              {scope.publishableGyms.map((gym) => (
+                <SelectItem key={gym.id} value={gym.id}>
+                  {gym.name}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="space-y-2">
         <Label htmlFor={`${fieldId}-category`}>{t('guides.category')}</Label>
-        <select
-          id={`${fieldId}-category`}
-          className="border-input bg-background h-9 w-full rounded-md border px-2 text-sm"
-          value={categoryId ?? ''}
-          onChange={(event) => setCategoryId(event.target.value || null)}
+        <Select
+          value={categoryId ?? noCategory}
+          onValueChange={(value) => {
+            // Radix keeps a hidden native select for form submission, and it
+            // fires an empty value whenever the current one matches no option
+            // — here, the render before the profile that decides the scope
+            // arrives. Taking it would scope the post to nobody.
+            if (value === '') return
+            setCategoryId(value === noCategory ? null : value)
+          }}
         >
-          <option value="">{t('guides.noCategory')}</option>
-          {(categories.data ?? []).map((category) => (
-            <option key={category.id} value={category.id}>
-              {category.name}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger id={`${fieldId}-category`} className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent position="popper">
+            <SelectGroup>
+              <SelectItem value={noCategory}>{t('guides.noCategory')}</SelectItem>
+              {(categories.data ?? []).map((category) => (
+                <SelectItem key={category.id} value={category.id}>
+                  {category.name}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="space-y-2">

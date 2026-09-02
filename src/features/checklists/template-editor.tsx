@@ -5,6 +5,14 @@ import { useNavigate, useParams } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { MissingRequirements, usePublishScope } from '@/features/content'
 import { useGymScope } from '@/features/gyms'
 import {
@@ -141,39 +149,51 @@ function TemplateEditor({ template }: { template?: ChecklistTemplate }) {
 
       <div className="space-y-2">
         <Label htmlFor={`${fieldId}-scope`}>{t('checklists.scope')}</Label>
-        <select
-          id={`${fieldId}-scope`}
-          className="border-input bg-background h-9 w-full rounded-md border px-2 text-sm"
+        <Select
           value={gymId ?? 'company'}
-          onChange={(event) =>
-            setChosenGymId(event.target.value === 'company' ? null : event.target.value)
-          }
+          onValueChange={(value) => {
+            // Radix keeps a hidden native select for form submission, and it
+            // fires an empty value whenever the current one matches no option
+            // — here, the render before the profile that decides the scope
+            // arrives. Taking it would scope the post to nobody.
+            if (value === '') return
+            setChosenGymId(value === 'company' ? null : value)
+          }}
         >
-          {scope.canPublishCompanyWide && (
-            <option value="company">{t('checklists.companyWide')}</option>
-          )}
-          {scope.publishableGyms.map((gym) => (
-            <option key={gym.id} value={gym.id}>
-              {gym.name}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger id={`${fieldId}-scope`} className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent position="popper">
+            <SelectGroup>
+              {scope.canPublishCompanyWide && (
+                <SelectItem value="company">{t('checklists.companyWide')}</SelectItem>
+              )}
+              {scope.publishableGyms.map((gym) => (
+                <SelectItem key={gym.id} value={gym.id}>
+                  {gym.name}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="space-y-2">
         <Label htmlFor={`${fieldId}-kind`}>{t('checklists.kindLabel')}</Label>
-        <select
-          id={`${fieldId}-kind`}
-          className="border-input bg-background h-9 w-full rounded-md border px-2 text-sm"
-          value={kind}
-          onChange={(event) => setKind(event.target.value as ChecklistKind)}
-        >
-          {kinds.map((option) => (
-            <option key={option} value={option}>
-              {t(`checklists.kind.${option}`)}
-            </option>
-          ))}
-        </select>
+        <Select value={kind} onValueChange={(value) => setKind(value as ChecklistKind)}>
+          <SelectTrigger id={`${fieldId}-kind`} className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent position="popper">
+            <SelectGroup>
+              {kinds.map((option) => (
+                <SelectItem key={option} value={option}>
+                  {t(`checklists.kind.${option}`)}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="space-y-2">

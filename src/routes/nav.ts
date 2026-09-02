@@ -1,5 +1,6 @@
 import {
   BookOpen,
+  CalendarDays,
   House,
   ListChecks,
   MessagesSquare,
@@ -16,6 +17,7 @@ export type NavEntry = {
   labelKey:
     | 'nav.home'
     | 'nav.news'
+    | 'nav.events'
     | 'nav.guides'
     | 'nav.checklists'
     | 'nav.dailyLog'
@@ -40,6 +42,7 @@ export type NavEntry = {
 export const navEntries: NavEntry[] = [
   { to: '/', labelKey: 'nav.home', icon: House },
   { to: '/news', labelKey: 'nav.news', icon: Newspaper },
+  { to: '/events', labelKey: 'nav.events', icon: CalendarDays },
   { to: '/guides', labelKey: 'nav.guides', icon: BookOpen },
   { to: '/checklists', labelKey: 'nav.checklists', icon: ListChecks },
   { to: '/daily-log', labelKey: 'nav.dailyLog', icon: NotebookPen },
