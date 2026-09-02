@@ -5,7 +5,7 @@ import { Link } from 'react-router'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { excerpt, toDoc, usePublishScope } from '@/features/content'
+import { ContentSearch, excerpt, toDoc, usePublishScope } from '@/features/content'
 import { CategoryDialog } from './category-dialog'
 import { CategoryTree } from './category-tree'
 import {
@@ -61,6 +61,8 @@ export function GuidesPage() {
           </div>
         )}
       </header>
+
+      <ContentSearch />
 
       <div className="grid gap-4 md:grid-cols-[16rem_1fr]">
         <nav aria-label={t('guides.categories')} className="space-y-0.5">

@@ -19,7 +19,7 @@ The repo has no git remote yet, so CI has never actually run on GitHub: the work
 | Design                   | ✅ Complete    | Approved 2026-09-01. Spec in `PROJECT_SPEC.md`. |
 | P1 Scaffold and auth | ✅ Complete | P1-01 to P1-10 done on `phase-1-scaffold`. |
 | P2 Users and gyms admin  | ✅ Complete    | P2-01 to P2-06 done on `phase-2-admin`.         |
-| P3 News and guides       | 🔄 In progress | `phase-3-content`. P3-01 … P3-05 done.          |
+| P3 News and guides       | 🔄 In progress | `phase-3-content`. P3-01 … P3-06 done.          |
 | P4 Daily ops             | ⬜ Not started |                                                 |
 | P5 Notifications and PWA | ⬜ Not started |                                                 |
 | P6 Team chat             | ⬜ Not started |                                                 |
@@ -53,7 +53,8 @@ Update this list as work begins:
 | P3-03 | ✅ done | 2026-09-02 | 2026-09-02 | `src/features/news`: feed (pinned first, drafts labelled, excerpt, pin from the list), post detail (edit, pin, publish/unpublish, delete behind a dialog) and the editor page at `/news/new` and `/news/:postId/edit`. `usePublishScope()` in `features/content` is the UI half of `can_publish_content()`. News lost its nav placeholder. 121 unit tests; driven in Chrome as a manager (draft → image upload → publish, image signed and rendered) and as staff (another gym's post invisible, no editing controls). |
 | P3-04 | ✅ done | 2026-09-02 | 2026-09-02 | `acknowledgement.tsx` (button + per-gym report) and `use-track-post-read.ts`: opening a published post writes `post_reads` once (`ignoreDuplicates`), the button upserts `acknowledged_at`, and the report lists the audience with the people who have not confirmed first — `gym_memberships` RLS narrows a manager's report to their own gyms without asking for a gym. The reminder itself is P5-02's `ack reminder` trigger. 128 unit tests; the manager/staff report and refusal paths checked against the local API by HTTP. |
 | P3-05 | ✅ done | 2026-09-02 | 2026-09-02 | `src/features/guides`: `/guides` (one tree mixing company and gym categories, guides filtered by the selected branch), the viewer, the editor at `/guides/new` and `/guides/:guideId/edit`, and category create/rename/delete. `guides.version` is bumped only when the author ticks "significant change", and `guide_acks` stores the confirmed version, so a reader who is behind is asked again. Guides lost their nav placeholder. 140 unit tests; the tree, the confirmation and the re-confirmation after a version bump driven in Chrome as staff. |
-| P3-06, P3-07, P4-01 … P8-06 | ⬜ not started | | | |
+| P3-06 | ✅ done | 2026-09-02 | 2026-09-02 | `features/content/search.ts` + `ContentSearch`: one debounced search over both `posts` and `guides` using `websearch_to_tsquery` on the `simple` configuration, with a snippet cut around the first matching word and hits labelled news/guide, scope and draft. The box sits on `/news` and `/guides`. 145 unit tests; a Danish word matched through RLS by HTTP, and another gym's post did not. |
+| P3-07, P4-01 … P8-06 | ⬜ not started | | | |
 
 Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
 
@@ -192,6 +193,8 @@ of truth; nothing in config.toml applies to a hosted project)
 | 2026-09-02 | P3-05: a category is deleted outright rather than soft-deleted — it holds no content of its own — and `on delete restrict` on both the guides and the child categories means only an emptied category can go. Renaming keeps the scope: moving a category between gyms would move the guides under it out of the audience that has been reading them. |
 | 2026-09-02 | P3-05: the tree keeps a category whose parent RLS filtered out, at the root. Losing a whole branch because its parent belongs to another gym would be worse than showing it one level too high. |
 | 2026-09-02 | P3-05: the whole guide list is fetched once and filtered by branch in the client. A chain of this size has a few hundred guides at most, and the tree then filters without a round trip per click. |
+
+| 2026-09-02 | P3-06: search is `websearch_to_tsquery` against the generated `search_vector` columns — quoted phrases and `-word` work without a parser of our own — and it runs as two queries rather than a view or an RPC, so RLS on each table is what limits the hits. There is no Search nav entry: the box sits on the two modules it covers. |
 
 ## How to update this file
 

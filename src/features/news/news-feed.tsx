@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { excerpt, toDoc, usePublishScope } from '@/features/content'
+import { ContentSearch, excerpt, toDoc, usePublishScope } from '@/features/content'
 import { useGymScope } from '@/features/gyms'
 import { postDate } from './post-date'
 import { PostBadges } from './post-badges'
@@ -33,6 +33,8 @@ export function NewsFeed() {
           </Button>
         )}
       </header>
+
+      <ContentSearch />
 
       {feed.isPending && (
         <p className="text-muted-foreground text-sm">{t('news.loading')}</p>
