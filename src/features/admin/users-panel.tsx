@@ -11,6 +11,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useProfile } from '@/features/auth'
+import { MissingRequirements } from '@/features/content'
 import { useGymScope } from '@/features/gyms'
 import { useAdminGyms, useAdminUsers, useSetUserActive, type AdminUser } from './queries'
 import { InviteDialog } from './invite-dialog'
@@ -84,6 +85,10 @@ export function UsersPanel() {
         </Button>
       </div>
 
+      <MissingRequirements
+        reasons={assignableGyms.length === 0 ? [t('admin.users.noAssignableGyms')] : []}
+      />
+
       {users.isPending && (
         <p className="text-muted-foreground text-sm">{t('admin.loading')}</p>
       )}
@@ -131,6 +136,11 @@ export function UsersPanel() {
                       // Deactivating yourself would end the session you are
                       // working in and leave nobody able to undo it.
                       disabled={setActive.isPending || user.id === profile?.id}
+                      title={
+                        user.id === profile?.id
+                          ? t('admin.users.cannotDeactivateSelf')
+                          : undefined
+                      }
                       onClick={() =>
                         setActive.mutate({ id: user.id, active: !user.active })
                       }

@@ -117,11 +117,21 @@ describe('UsersPanel', () => {
     await waitFor(() => expect(update).toHaveBeenCalledWith({ active: true }))
   })
 
-  it('will not let you deactivate yourself', async () => {
+  it('will not let you deactivate yourself, and says why', async () => {
     renderWithProviders(<UsersPanel />)
 
     const own = (await screen.findByText('Anders Admin')).closest('tr') as HTMLElement
-    expect(within(own).getByRole('button', { name: 'Deactivate' })).toBeDisabled()
+    const button = within(own).getByRole('button', { name: 'Deactivate' })
+    expect(button).toBeDisabled()
+    expect(button).toHaveAttribute('title', 'You cannot deactivate your own account.')
+  })
+
+  it('says why inviting is unavailable when there is no gym to invite into', async () => {
+    gymRows.mockResolvedValue({ data: [{ ...nord, active: false }], error: null })
+    renderWithProviders(<UsersPanel />)
+
+    expect(await screen.findByText(/nobody to invite/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Invite' })).toBeDisabled()
   })
 
   it('offers a manager no deactivate button at all', async () => {

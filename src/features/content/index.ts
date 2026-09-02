@@ -3,6 +3,7 @@ export { RichText } from './rich-text'
 export { contentExtensions, proseClassName } from './schema'
 export { contentImagePath, docText, emptyDoc, excerpt, isEmptyDoc, toDoc } from './doc'
 export { ContentSearch } from './content-search'
+export { MissingRequirements } from './missing-requirements'
 export {
   minSearchLength,
   searchKeys,

@@ -53,6 +53,255 @@ export type Database = {
           },
         ]
       }
+      checklist_run_items: {
+        Row: {
+          done_at: string | null
+          done_by: string | null
+          id: string
+          label: string
+          note: string | null
+          position: number
+          required: boolean
+          run_id: string
+          template_item_id: string | null
+        }
+        Insert: {
+          done_at?: string | null
+          done_by?: string | null
+          id?: string
+          label: string
+          note?: string | null
+          position: number
+          required?: boolean
+          run_id: string
+          template_item_id?: string | null
+        }
+        Update: {
+          done_at?: string | null
+          done_by?: string | null
+          id?: string
+          label?: string
+          note?: string | null
+          position?: number
+          required?: boolean
+          run_id?: string
+          template_item_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checklist_run_items_done_by_fkey"
+            columns: ["done_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checklist_run_items_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "checklist_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checklist_run_items_template_item_id_fkey"
+            columns: ["template_item_id"]
+            isOneToOne: false
+            referencedRelation: "checklist_template_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      checklist_runs: {
+        Row: {
+          created_at: string
+          gym_id: string
+          id: string
+          run_date: string
+          template_id: string
+        }
+        Insert: {
+          created_at?: string
+          gym_id: string
+          id?: string
+          run_date: string
+          template_id: string
+        }
+        Update: {
+          created_at?: string
+          gym_id?: string
+          id?: string
+          run_date?: string
+          template_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checklist_runs_gym_id_fkey"
+            columns: ["gym_id"]
+            isOneToOne: false
+            referencedRelation: "gyms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checklist_runs_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "checklist_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      checklist_template_items: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          label: string
+          position: number
+          required: boolean
+          template_id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          label: string
+          position: number
+          required?: boolean
+          template_id: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          label?: string
+          position?: number
+          required?: boolean
+          template_id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checklist_template_items_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "checklist_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      checklist_templates: {
+        Row: {
+          active: boolean
+          created_at: string
+          created_by: string | null
+          gym_id: string | null
+          id: string
+          kind: Database["public"]["Enums"]["checklist_kind"]
+          name: string
+          updated_at: string
+          updated_by: string | null
+          weekdays: number[]
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          gym_id?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["checklist_kind"]
+          name: string
+          updated_at?: string
+          updated_by?: string | null
+          weekdays?: number[]
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          gym_id?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["checklist_kind"]
+          name?: string
+          updated_at?: string
+          updated_by?: string | null
+          weekdays?: number[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checklist_templates_gym_id_fkey"
+            columns: ["gym_id"]
+            isOneToOne: false
+            referencedRelation: "gyms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      daily_log_entries: {
+        Row: {
+          body: string
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          gym_id: string
+          id: string
+          kind: Database["public"]["Enums"]["daily_log_kind"]
+          tags: string[]
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          gym_id: string
+          id?: string
+          kind?: Database["public"]["Enums"]["daily_log_kind"]
+          tags?: string[]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          gym_id?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["daily_log_kind"]
+          tags?: string[]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_log_entries_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "daily_log_entries_gym_id_fkey"
+            columns: ["gym_id"]
+            isOneToOne: false
+            referencedRelation: "gyms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "daily_log_entries_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       guide_acks: {
         Row: {
           acknowledged_at: string
@@ -299,6 +548,170 @@ export type Database = {
         }
         Relationships: []
       }
+      incident_attachments: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          incident_id: string
+          mime_type: string | null
+          path: string
+          size_bytes: number | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          incident_id: string
+          mime_type?: string | null
+          path: string
+          size_bytes?: number | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          incident_id?: string
+          mime_type?: string | null
+          path?: string
+          size_bytes?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incident_attachments_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incident_attachments_incident_id_fkey"
+            columns: ["incident_id"]
+            isOneToOne: false
+            referencedRelation: "incidents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      incident_comments: {
+        Row: {
+          body: string
+          created_at: string
+          created_by: string | null
+          id: string
+          incident_id: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          incident_id: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          incident_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incident_comments_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incident_comments_incident_id_fkey"
+            columns: ["incident_id"]
+            isOneToOne: false
+            referencedRelation: "incidents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      incidents: {
+        Row: {
+          assignee_id: string | null
+          body: string
+          created_at: string
+          created_by: string | null
+          gym_id: string
+          id: string
+          kind: Database["public"]["Enums"]["incident_kind"]
+          resolved_at: string | null
+          severity: Database["public"]["Enums"]["incident_severity"]
+          status: Database["public"]["Enums"]["incident_status"]
+          title: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          assignee_id?: string | null
+          body: string
+          created_at?: string
+          created_by?: string | null
+          gym_id: string
+          id?: string
+          kind?: Database["public"]["Enums"]["incident_kind"]
+          resolved_at?: string | null
+          severity?: Database["public"]["Enums"]["incident_severity"]
+          status?: Database["public"]["Enums"]["incident_status"]
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          assignee_id?: string | null
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          gym_id?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["incident_kind"]
+          resolved_at?: string | null
+          severity?: Database["public"]["Enums"]["incident_severity"]
+          status?: Database["public"]["Enums"]["incident_status"]
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incidents_assignee_id_fkey"
+            columns: ["assignee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incidents_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incidents_gym_id_fkey"
+            columns: ["gym_id"]
+            isOneToOne: false
+            referencedRelation: "gyms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incidents_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invites: {
         Row: {
           accepted_at: string | null
@@ -507,21 +920,33 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_complete_in: { Args: { target_gym_id: string }; Returns: boolean }
+      can_listen_to_checklists: { Args: { topic: string }; Returns: boolean }
       can_publish_content: { Args: { target_gym_id: string }; Returns: boolean }
       can_read_content: { Args: { target_gym_id: string }; Returns: boolean }
+      content_object_gym: { Args: { object_name: string }; Returns: string }
       content_search_vector: {
         Args: { doc: Json; title: string }
         Returns: unknown
       }
+      generate_checklist_runs: { Args: { as_of?: string }; Returns: number }
+      incident_object_gym: { Args: { object_name: string }; Returns: string }
+      is_active_user: { Args: never; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
       is_superadmin: { Args: never; Returns: boolean }
       managed_gym_ids: { Args: never; Returns: string[] }
       member_gym_ids: { Args: never; Returns: string[] }
+      shares_gym_with: { Args: { target_user: string }; Returns: boolean }
       tiptap_text: { Args: { doc: Json }; Returns: string }
     }
     Enums: {
+      checklist_kind: "opening" | "closing" | "custom"
       content_status: "draft" | "published"
+      daily_log_kind: "handover" | "note" | "issue"
       gym_role: "manager" | "staff"
+      incident_kind: "injury" | "equipment" | "cleaning" | "other"
+      incident_severity: "low" | "medium" | "high"
+      incident_status: "open" | "in_progress" | "resolved"
       invite_status: "pending" | "accepted" | "revoked"
     }
     CompositeTypes: {
@@ -650,8 +1075,13 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      checklist_kind: ["opening", "closing", "custom"],
       content_status: ["draft", "published"],
+      daily_log_kind: ["handover", "note", "issue"],
       gym_role: ["manager", "staff"],
+      incident_kind: ["injury", "equipment", "cleaning", "other"],
+      incident_severity: ["low", "medium", "high"],
+      incident_status: ["open", "in_progress", "resolved"],
       invite_status: ["pending", "accepted", "revoked"],
     },
   },

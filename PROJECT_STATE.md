@@ -23,8 +23,19 @@ now generated with npm 11, and `src/test/setup.ts` stubs the two variables.
 This is also why the phase-2 and phase-3 commit hashes changed on 2026-09-02.
 
 The `invite` function (P2-03) still has never been deployed; that is the first
-item of "Hosted project cutover", and P4-02's `pg_cron` pulls the cutover into
-phase 4.
+item of "Hosted project cutover". P4-02 is done and did *not* need it — the
+local stack ships `pg_cron` — but the extension has to be enabled on the hosted
+project before the schema is pushed there.
+
+**Phase 4 is complete** (P4-01 … P4-10) on `phase-4-daily-ops`, which has
+not been pushed or opened as a PR yet — phases 1–3 each went to `main`
+through one. Next up: **phase 5, notifications and the PWA** (P5-01 …
+P5-06), which is where the `notify` function, the VAPID keys and Resend
+finally have to exist, and where P2-03's `invite` gets deployed.
+
+Testing Realtime locally needs the full stack: the run screen's live sync does
+not work under the CI-style `supabase start -x …`, which leaves the realtime
+container out. `supabase stop && supabase start` brings it back.
 
 ## Phase status
 
@@ -34,7 +45,7 @@ phase 4.
 | P1 Scaffold and auth | ✅ Complete | P1-01 to P1-10, merged in PR #1. |
 | P2 Users and gyms admin  | ✅ Complete    | P2-01 to P2-06, merged in PR #2.                |
 | P3 News and guides       | ✅ Complete    | P3-01 to P3-07 (PR #3) and the audit fixes (#4). |
-| P4 Daily ops             | ⬜ Not started |                                                 |
+| P4 Daily ops             | ✅ Complete    | P4-01 to P4-10 on `phase-4-daily-ops`; no PR yet. |
 | P5 Notifications and PWA | ⬜ Not started |                                                 |
 | P6 Team chat             | ⬜ Not started |                                                 |
 | P7 Desktop and release   | ⬜ Not started |                                                 |
@@ -70,7 +81,18 @@ Update this list as work begins:
 | P3-06 | ✅ done | 2026-09-02 | 2026-09-02 | `features/content/search.ts` + `ContentSearch`: one debounced search over both `posts` and `guides` using `websearch_to_tsquery` on the `simple` configuration, with a snippet cut around the first matching word and hits labelled news/guide, scope and draft. The box sits on `/news` and `/guides`. 145 unit tests; a Danish word matched through RLS by HTTP, and another gym's post did not. |
 | P3-07 | ✅ done | 2026-09-02 | 2026-09-02 | `UnreadNewsCard` replaces the placeholder home: published posts this person has not opened, plus the ones they have opened but not acknowledged, confirmations first. One query with `post_reads!left` filtered to the signed-in user. 146 unit tests; checked in Chrome as staff — acknowledging a post drops it off the home block, the unread one stays. |
 | Audit fixes | ✅ done | 2026-09-02 | 2026-09-02 | Branch `phase-3-hardening`. `20260902130000_content_integrity.sql`: `is_active_user()` plus active checks in `member_gym_ids()`, `managed_gym_ids()`, `can_read_content()` and `gyms_select`; a trigger banning the auth user when `active` flips; `post_reads`/`guide_acks` guards that stamp the timestamps and the guide version server-side and refuse content the writer cannot read. Client: the deactivated notice in the shell, the translated sign-in refusal, admins in the company-wide acknowledgement audience, and a `RouteError` boundary over every route. 18 new pgTAP assertions (128 total), 153 unit tests; all three original exploits re-run against the fixed API and refused. |
-| P4-01 … P8-06 | ⬜ not started | | | |
+| P4-01 | ✅ done | 2026-09-02 | 2026-09-02 | `20260902150000_checklist_schema.sql`: `checklist_templates` (+ `weekdays`, `active`), `checklist_template_items`, `checklist_runs` (unique per template/gym/day) and `checklist_run_items`, which snapshot the label so an edited template cannot rewrite history. `can_complete_in()` is the new "complete checklists" rule; `checklist_runs` has no insert policy at all, because the scheduled job (P4-02) creates them. Ticking records `done_by` from the session, never the request. `supabase/tests/070-checklist-permissions.test.sql` — 27 assertions written before the migration, 155 pgTAP total. |
+| P4-02 | ✅ done | 2026-09-02 | 2026-09-02 | `20260902160000_checklist_generation.sql`: `pg_cron` plus `generate_checklist_runs(as_of)`, a security-definer function that creates one run per due template per gym and snapshots the template's items into it. The job runs hourly at :00 and each gym generates when *its own* clock reads 03:xx, so one schedule serves every time zone, the 45-minute ones included. Idempotent on the P4-01 unique key; inactive gyms, inactive templates and templates with no items generate nothing. `supabase/tests/080-checklist-generation.test.sql` — 13 assertions, 168 pgTAP total. |
+| P4-03 | ✅ done | 2026-09-02 | 2026-09-02 | `features/checklists`: `/checklists/templates` lists every template the viewer may see with its scope, kind, schedule and size, and `…/new` and `…/:templateId/edit` edit one — name, kind, scope, the seven weekday toggles, and the items with up/down reordering and a required flag. Items are diffed on save (ids kept, positions renumbered, dropped rows deleted) so a run item does not lose the template item it came from. Deactivation replaces deletion. `/checklists` redirects to the templates page until P4-04 puts the runs at the index. 9 new unit tests (162 total); checked against the real API as `manager@gymops.test` — the template saved, company-wide and another gym's were refused with 403, and P4-02 generated a run with both items from it. |
+| P4-04 | ✅ done | 2026-09-02 | 2026-09-02 | `/checklists` is now the run screen: today's runs for the gym in scope (each gym's own date), progress over the required items, a Complete badge, per-item notes saved on blur, and ticking that sends only `done_at`. `20260902170000_checklist_realtime.sql` publishes `checklist_run_items` and opens one private channel per gym scope, authorised by `can_listen_to_checklists()` — the first policy this project puts on `realtime.messages`. 8 new pgTAP assertions (176 total), 9 unit tests (171 total). Verified on the running stack: staff joined their own gym's channel, were refused another gym's and `checklists:all`, and received the manager's tick live; a tick over REST claiming someone else's `done_by` was still recorded as the manager's. |
+| P4-05 | ✅ done | 2026-09-02 | 2026-09-02 | `ChecklistHistoryCard` on the home page, for admins and managers only: how many of the last seven days' runs were completed, and every run nobody finished — name, date, gym when the scope is all of them, and how far it got. `runOutcome()` calls a run missed only once the gym's own day is over, so this evening's unfinished closing is not an accusation. Read-only, no migration. 8 new unit tests (179 total); the classification re-checked over REST as `manager@gymops.test` against generated runs for yesterday and today. |
+| P4-06 | ✅ done | 2026-09-02 | 2026-09-02 | `20260902180000_daily_log.sql`: `daily_log_entries` (handover/note/issue, plain-text body, `tags text[]` normalised by trigger), written by anyone `can_complete_in()` allows, edited only by its author — a trigger pins every other column when the editor is not — and removed by the author or the gym's managers. `profiles` widened to colleagues via `shares_gym_with()`, which also brings the names back on checklist ticks. `/daily-log` is the timeline: composer, kind and tag filters, entries grouped by the gym's own date, inline edit. 16 new pgTAP assertions (193 total), 9 unit tests (191 total); the rules re-checked over REST — tags normalised to `{broken,wall4}`, a manager's rewrite silently ignored while their removal went through, staff writing into another gym refused 403. |
+| Soft-delete fix | ✅ done | 2026-09-02 | 2026-09-02 | `20260902171000_soft_delete_visibility.sql`. Found while building P4-06: `posts_select` and `guides_select` required `deleted_at is null`, and Postgres refuses an update that hides the row from its own writer — so Delete on a news post or a guide failed for **every** user with "new row violates row-level security policy". The unit tests mock the client, so it only ever failed in a browser. Deleted rows now stay visible to the people who may publish there; every listing, detail and search query filters `deleted_at is null`. Re-checked over REST end to end. |
+| P4-07 | ✅ done | 2026-09-02 | 2026-09-02 | `20260902190000_incidents.sql`: `incidents` (kind, severity, status open → in_progress → resolved, assignee, `resolved_at` stamped by trigger), `incident_attachments`, `incident_comments`, and storage RLS for the `incidents` bucket via `incident_object_gym()`. Reporting is `can_complete_in()`, handling is `can_publish_content()`, and two triggers keep them apart on both insert and update — the reporter owns the words, the gym's managers own the status. No delete anywhere. `supabase/tests/110-incident-permissions.test.sql` — 32 assertions, 225 pgTAP total; re-checked over REST including a real upload into the bucket (own gym 200, another gym 400) and an incident filed as "resolved" coming back open. |
+| P4-08 | ✅ done | 2026-09-02 | 2026-09-02 | `features/incidents`: `/incidents` (open by default, status and kind filters), `/incidents/new` (title, kind, severity, what happened, and photographs from the camera or the library) and `/incidents/:incidentId` (the report, its photographs, the thread, and — only for `can_publish_content()` — status, severity and assignee). Photographs are held in the form and uploaded once the insert returns the id, because the storage path and `incident_attachments.incident_id` both need it; they are signed for display like `content` images. The form reads `?title=`/`?body=`, which is P4-09's hand-off. No migration and no Realtime (spec §4). Incidents lost their nav placeholder. 15 new unit tests (206 total); the whole flow driven in Chrome against the local stack as staff (report with a photo → signed and rendered, no status controls) and as a manager (in progress, assigned, commented, in Danish), plus 16 REST checks of the §2.1 split — another gym refused 403, a reporter's own "resolved" ignored, an upload into another gym's folder 400. |
+| P4-09 | ✅ done | 2026-09-02 | 2026-09-02 | `incidentDraft()` in `features/daily-log` and a "Report as an incident" link on every `issue` entry, for whoever `can_complete_in()` allows there. The entry's first line becomes the title (cut at 80 characters), the entry itself the description, and the tags ride along on their own line, because that is usually where the entry says *where*. It is a link to `/incidents/new?title=&body=`, so nothing is filed until the reporter has picked the kind and severity — no migration and no new query. 5 new unit tests (211 total); driven in Chrome as a manager in Danish: an issue with two tags → one click → the pre-filled form → a filed incident carrying the whole entry. |
+| P4-10 | ✅ done | 2026-09-02 | 2026-09-02 | The home page in the order spec §2.2 gives it: the news block, `TodaysChecklistsCard` (today's runs, unfinished first, for everybody), `OpenIncidentsCard` (the unresolved ones, worst severity first, five at a time with a count on the link) and `LatestLogEntryCard` (`useLatestLogEntry`, one row, clamped to three lines), with P4-05's week underneath for the people who run a gym. No migration and no new tables — three cards over queries that already existed, plus one `limit(1)` read. The home page's test stub now answers per table, because four cards read four tables. 6 new unit tests (217 total); checked in Chrome against the local stack as a manager in Danish (all five blocks) and as staff in English (four — no week), and a tick on `/checklists` showed as "1 of 2 done" on the home page. |
+| P5-01 … P8-06 | ⬜ not started | | | |
 
 Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
 
@@ -92,9 +114,10 @@ Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
 
 | Gap | Why it matters | Suggested home |
 | --- | --- | --- |
-| `supabase/functions/invite` is outside every gate — excluded from ESLint by decision, no test, and CI never type-checks it | The one piece of server code with its own permission logic is the one nothing checks | A `deno check` step in the CI database job, plus a test when P5-03 adds `notify` |
-| Nothing catches `database.types.ts` drift | A migration merged without `npm run db:types` leaves the client types silently wrong | One CI step: `db:types` then `git diff --exit-code` |
+| ~~`supabase/functions/invite` is outside every gate~~ | — | **Fixed 2026-09-02**: a `functions` CI job runs `deno check`, `deno lint` and `deno fmt --check`. A behavioural test still waits for P5-03. |
+| ~~Nothing catches `database.types.ts` drift~~ | — | **Fixed 2026-09-02**: the database job regenerates the types and fails on a diff. It caught drift on its first run. |
 | Search has no ranking; the feed sorts drafts above published news; signed image URLs expire at 1h against a 55min stale time; the vendored `dialog.tsx` carries two untranslated "Close" strings; guides have no acknowledgement report | Each is small and none is a correctness bug | Fold into P3 polish or take them with P5-06 (Playwright) |
+| `CardTitle` renders a `div`, so no home-page block is a heading | A screen reader gets one flat list of cards with no landmarks to jump between; it is a vendored shadcn primitive, so the fix is one file and touches every card | P5 polish, or with P5-06 (Playwright) |
 
 ## Hosted project cutover
 
@@ -103,8 +126,13 @@ Everything through P1-10 runs on the local stack: CI is `supabase db reset` + pg
 locally is **P2-03** (the `invite` Edge Function needs to be deployed and to send real mail);
 after that come P4-02 (pg_cron), P5-03 (`notify`, database webhook, Resend, VAPID), P5-05
 (web push needs HTTPS and a real origin), P7-02 (`gymops://` plus a web fallback page) and
-P8-03 (assistant, `ANTHROPIC_API_KEY`). Work through this list once, at P2-03 — and note
-that P4-02 needs `pg_cron`, so the cutover now lands *inside* phase 4 rather than after it.
+P8-03 (assistant, `ANTHROPIC_API_KEY`). Work through this list once, at P2-03.
+
+**Correction (2026-09-02):** P4-02 does *not* force the cutover. The local stack
+already carries `pg_cron` 1.6.4 in `shared_preload_libraries`, so the scheduled job can
+be built and tested locally like everything else; the extension still has to be enabled
+on the hosted project before deploying. The first task that genuinely cannot be finished
+locally is P5-03 (`notify`, the database webhook, Resend, VAPID).
 
 **Before touching anything**
 
@@ -119,7 +147,10 @@ that P4-02 needs `pg_cron`, so the cutover now lands *inside* phase 4 rather tha
 - [ ] `supabase link --project-ref <ref>`, then `supabase db push`. Never `db reset` against
       hosted, and never let `supabase/seed.sql` or `supabase/seeds/` near it: they contain
       pgTAP helpers and four users with a published password.
-- [ ] Enable **pg_cron** (P4-02) and confirm `pg_graphql`/`pgcrypto` availability.
+- [ ] Enable **pg_cron** and confirm `pg_graphql`/`pgcrypto` availability. The P4-02
+      migration runs `create extension if not exists pg_cron`, which needs the
+      privilege the dashboard toggle grants; after `db push`, check `cron.job` holds
+      `generate-checklist-runs` and that `cron.database_name` points at this database.
 - [ ] Create the three private buckets — `content`, `incidents`, `chat`, all
       `public = false`, 50 MiB — and apply the storage RLS policies from migrations.
 - [ ] Regenerate `src/lib/database.types.ts` and check it matches; `db:types` is pinned to
@@ -226,6 +257,44 @@ of truth; nothing in config.toml applies to a hosted project)
 | 2026-09-02 | Audit: acknowledgements are stamped by the database. `post_reads.read_at` keeps the first read, `acknowledged_at` the first confirmation, and `guide_acks.version` is read from the guide — a client had been free to claim version 9999 and a date years back, which made the ack report unusable as evidence. The guards also refuse content the writer cannot read, using the caller's own RLS rather than a second copy of the rules. |
 | 2026-09-02 | Audit: the company-wide acknowledgement report unions `gym_memberships` with the admin profiles. Admins hold no membership, so a report claiming to cover everyone quietly left them out. A manager cannot read those profiles, which is right: their report is their own gyms. |
 | 2026-09-02 | Audit: one pathless layout route carries `errorElement`, so a throw anywhere renders `RouteError` with a way out. These screens run unattended on a front desk; a blank document is the worst possible failure there. |
+
+| 2026-09-02 | P4-01: a run item snapshots its `label` and `required` from the template. A template edited in March must not rewrite what somebody ticked in February, which is what following `template_item_id` for the text would have done; the id is kept for reporting and goes null if the item is removed. |
+| 2026-09-02 | P4-01: `checklist_runs` has no insert policy for clients — the scheduled job (P4-02) creates every run as the service role. A gym that needs an unscheduled checklist gets a template, not a hand-made run. |
+| 2026-09-02 | P4-01: §2.1 reads "Complete checklists" as plain "yes" for a manager, which taken literally would let a manager tick a checklist in a gym they have never set foot in. `can_complete_in()` requires membership of the run's gym (any role) or the admin flag — the reading that has operational meaning. Recorded in §2.1 so the matrix and the policies say the same thing. |
+| 2026-09-02 | P4-01: `done_by` is stamped from the session by a trigger and `done_at` keeps the first tick, the same rule the acknowledgements got in the audit. Ticking is a record of who did the work. |
+| 2026-09-02 | P4-01: the schedule lives on the template as `weekdays` (ISO, 1 = Monday), evaluated by P4-02 against the gym's own date — a Sunday checklist must not fire on Saturday in one time zone and Sunday in another. |
+| 2026-09-02 | CI gained a `functions` job (`deno check`/`lint`/`fmt`) and a generated-types drift check. The functions directory needed its own `deno.json` to keep Deno away from the web app's `package.json`, and Prettier now ignores it: one formatter owns each file. |
+
+| 2026-09-02 | P4-02: one hourly job, not a schedule per time zone. `cron.schedule` fires at :00 UTC and the function selects the gyms whose local hour is 3, so opening a gym in a new zone is a row in `gyms`, not a migration. Every UTC offset passes through local hour 3 once a day, 30- and 45-minute ones included. |
+| 2026-09-02 | P4-02: a missed night stays missed. The job only ever generates for the gym's current local date; it does not backfill days when nothing ran. A run invented after the fact would claim work nobody was asked to do, and P4-05 already surfaces the gap to managers. |
+| 2026-09-02 | P4-02: a template with no items generates no run — a run whose every required item is ticked the moment it exists is noise on the home page. An empty template is a draft. |
+| 2026-09-02 | P4-02: `revoke ... from public` is not enough on Supabase. Default privileges grant execute on every new `public` function to `anon`, `authenticated` and `service_role`; the pgTAP assertion caught the generator still callable by a logged-in browser, and the revoke now names the three roles. P4-01's note that runs are created "as the service role" was loose: they are created by the job's owner, and `service_role` cannot call the generator either. |
+
+| 2026-09-02 | P4-03: the template editor lives in the checklists module at `/checklists/templates`, not under `/admin`. Managers edit their own gyms' checklists (spec §2.1), and `/admin` is where company-wide administration lives; the editor sits next to the runs it produces, the way the guide editor sits next to the guides. |
+| 2026-09-02 | P4-03: items are reordered with up/down buttons rather than dragged. Reordering happens on a front-desk touch screen as often as a mouse, and drag-and-drop would add a dependency and a keyboard story for a list that is rarely longer than ten rows. |
+| 2026-09-02 | P4-03: saving diffs the items instead of replacing them. Deleting and re-inserting every row on each save would null the `template_item_id` of every run item ever generated (`on delete set null`), so a typo fix would cut the reporting link on months of history. |
+| 2026-09-02 | P4-03: the editor refuses to save a template with no items, which matches P4-02 refusing to generate from one. The rule is stated once in the UI as a hint rather than discovered as a checklist that never appears. |
+
+| 2026-09-02 | P4-04: one private Realtime channel per gym scope (`checklists:<gym id>`, `checklists:all` for an admin), authorised by `can_listen_to_checklists()` against a policy on `realtime.messages`. A single shared channel would have been simpler, but a private channel per gym keeps the socket honest as well as the payloads: joining another gym's topic is refused outright rather than joined and then filtered. |
+| 2026-09-02 | P4-04: a Realtime event only invalidates the query; the screen refetches instead of patching the cached row from the payload. The payload may belong to a run the screen is not showing, and a refetch of one gym's runs is a small query. |
+| 2026-09-02 | P4-04: `replica identity full` on `checklist_run_items` was tried and reverted. Realtime's RLS check is `exists(select 1 from … where <primary key>)`, and the WAL already carries the whole new tuple for an update, so it changed nothing but the WAL volume. It is only needed for DELETE payloads, which nothing subscribes to. |
+| 2026-09-02 | P4-04: "who ticked it" shows a name only when `profiles` lets the viewer see one — admins and the managers of your gyms. Staff see the time alone. Widening `profiles` for this screen was rejected; it is the same gap P3 recorded, and P6 (chat member lists) is where it gets decided. |
+| 2026-09-02 | P4-04 diagnostic note: a client that joins a topic it is not authorised for tears down its own socket, so a *later* legitimate subscription on the same client receives nothing. That first looked like Realtime dropping staff events and cost an afternoon; it is a property of the test client, not of the policy. |
+
+| 2026-09-02 | P4-03 fix, then applied across the app: a control disabled by incomplete input says what is missing. Rami hit it on the checklist editor — a filled-in form with an empty Navn field and a dead Save button that said nothing. `MissingRequirements` (in `features/content`) now carries the list in the checklist, news and guide editors, the category dialog and the invite button; the two one-off guards (deactivating yourself, a superadmin's company role) explain themselves in place. The component takes translated sentences rather than keys, so each feature keeps its wording in its own namespace. |
+| 2026-09-02 | P4-05: a run counts as missed only when the gym's own date has moved past it, not when the clock passes some cut-off. A closing checklist is finished at closing time, and a card that called it missed at 18:00 would be wrong every single evening. |
+| 2026-09-02 | P4-05: the home block is hidden from staff as an affordance, not as a permission — RLS still lets any member read their gym's runs, and the run screen shows them today's. What managers get is the week and the gaps, which is the thing they act on. |
+
+| 2026-09-02 | P4-06: `profiles` is now readable by anyone you share a gym with, decided by Rami when the daily log made the gap concrete. It supersedes the P3 note that deferred this to P6, and it also restores the names on "who ticked this item" (P4-04). `shares_gym_with()` is a definer function because `gym_memberships` has RLS of its own — a staff member cannot read a colleague's membership row, so the overlap cannot be asked inline in a policy. |
+| 2026-09-02 | P4-06: a daily log entry is plain text, not Tiptap. It is a sentence typed mid-shift; photographs are what incidents (P4-07) are for. |
+| 2026-09-02 | P4-06: a manager can remove an entry but not rewrite it. Editing is the author's alone, enforced by a trigger that pins `body`, `kind` and `tags` to their old values for anybody else — the same shape as the acknowledgement and checklist-tick guards. |
+| 2026-09-02 | P4-06: `daily_log_entries.created_by` references `public.profiles`, not `auth.users` like the older content tables, so the timeline can ask for the author's name in the same query. Both FKs point at `profiles`, so the embed is named (`author:profiles!daily_log_entries_created_by_fkey`). |
+| 2026-09-02 | Soft delete never worked (found in P4-06). Postgres will not let an UPDATE leave the updated row invisible under the writer's own SELECT policy, and `posts_select`/`guides_select` both required `deleted_at is null` — so every Delete button failed in the browser while the mocked unit tests stayed green. A row now stays visible to whoever may publish there, and the queries filter it. Worth remembering when writing the next `deleted_at`: keep it out of the SELECT policy, or nothing can ever set it. |
+
+| 2026-09-02 | P4-07: the split in §2.1 between reporting an incident (anyone who works there) and changing its status (managers, admins) is enforced by two triggers rather than by two tables. On insert, anyone who cannot publish there gets `status = 'open'` and no assignee; on update, they cannot move status, severity or assignee, while anyone who is not the reporter cannot touch the title, body or kind. The REST check caught the insert half — a staff member filed one already resolved before the trigger existed. |
+| 2026-09-02 | P4-07: `resolved_at` follows the status rather than being posted — set on the way into `resolved`, cleared on the way out, the same rule `done_at` has on a checklist item. |
+| 2026-09-02 | P4-07: the `incidents` bucket gets its own path helper. `content_object_gym()` maps `company/…` to a null gym, which `can_read_content()` treats as company-wide; a photograph of an injury must never resolve that way, so `incident_object_gym()` returns the nil uuid for anything that is not a gym uuid. |
+| 2026-09-02 | P4-07: no delete policy on incidents, their attachments or their comments. An incident is a record of something that happened to somebody; a comment is somebody's own words, editable only by them. |
 
 ## How to update this file
 

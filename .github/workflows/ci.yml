@@ -40,3 +40,30 @@ jobs:
         run: supabase db reset
       - name: pgTAP permission tests
         run: supabase test db
+
+      # A migration merged without `npm run db:types` leaves the client types
+      # silently wrong, which nothing else here would notice.
+      - name: Generated types match the migrations
+        run: |
+          supabase gen types typescript --local --schema public > src/lib/database.types.ts
+          git diff --exit-code src/lib/database.types.ts
+
+  functions:
+    name: Edge Functions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      # The functions are Deno with their own imports, so ESLint and tsc skip
+      # them (spec §5, P2-03). This is the only thing that type-checks them.
+      - name: Type-check
+        working-directory: supabase/functions
+        run: deno check invite/index.ts
+      - name: Lint
+        working-directory: supabase/functions
+        run: deno lint
+      - name: Format
+        working-directory: supabase/functions
+        run: deno fmt --check

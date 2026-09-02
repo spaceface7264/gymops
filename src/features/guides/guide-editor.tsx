@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import {
   emptyDoc,
   isEmptyDoc,
+  MissingRequirements,
   RichTextEditor,
   toDoc,
   usePublishScope,
@@ -74,7 +75,12 @@ function GuideEditor({ guide }: { guide?: Guide }) {
       : (scope.publishableGyms[0]?.id ?? null)
   const gymId = chosenGymId === undefined ? defaultGymId : chosenGymId
 
-  const canSave = title.trim() !== '' && !isEmptyDoc(body) && scope.canPublishIn(gymId)
+  const missing = [
+    title.trim() === '' && t('guides.needsTitle'),
+    isEmptyDoc(body) && t('guides.needsBody'),
+    !scope.canPublishIn(gymId) && t('guides.needsPermission'),
+  ].filter((reason): reason is string => Boolean(reason))
+  const canSave = missing.length === 0
 
   const submit = (status: GuideInput['status']) => {
     const input: GuideInput = { gymId, categoryId, title, body, requiresAck, status }
@@ -188,6 +194,8 @@ function GuideEditor({ guide }: { guide?: Guide }) {
           </Label>
         </div>
       )}
+
+      <MissingRequirements reasons={missing} />
 
       {save.isError && (
         <p role="alert" className="text-destructive text-sm">

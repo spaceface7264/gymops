@@ -22,6 +22,7 @@ function builder(table: string) {
   const chain = {
     select: () => chain,
     eq: () => chain,
+    is: () => chain,
     order: () => chain,
     single: () => Promise.resolve({ data: tableRows(table)[0] ?? null, error: null }),
     maybeSingle: () =>
@@ -236,6 +237,17 @@ describe('GuideEditorPage', () => {
       initialEntries: ['/guides/guide-1/edit'],
     })
   }
+
+  it('says what a new guide is still missing rather than only greying out Save', async () => {
+    renderWithProviders(<GuideEditorPage />, { path: '/guides/new' })
+
+    expect(screen.getByText('Give the guide a title.')).toBeInTheDocument()
+    expect(screen.getByText('Write something in the body.')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Publish' })).toBeDisabled()
+
+    await userEvent.type(screen.getByLabelText('Title'), 'Evacuation')
+    expect(screen.queryByText('Give the guide a title.')).not.toBeInTheDocument()
+  })
 
   it('leaves the version alone on an ordinary edit', async () => {
     renderEditor()

@@ -9,3 +9,6 @@ dist-ssr
 coverage
 .vite
 *.log
+
+# Deno pulls the Edge Functions' npm deps in here when type-checking
+supabase/functions/node_modules
