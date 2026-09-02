@@ -4,11 +4,13 @@ Last updated: 2026-09-02
 
 ## Currently working on
 
-**Phase 3, news and guides** (P3-01 … P3-07) is in progress on branch
-`phase-3-content`, branched off `phase-2-admin` because `main` does not yet
-carry phases 1 and 2. It needs no hosted project. Phase 2 is done; the `invite`
-function (P2-03) has never been deployed, and doing so — with a Resend account
-behind it — is the first item of "Hosted project cutover".
+**Phase 3 is done** on branch `phase-3-content` (P3-01 … P3-07), branched off
+`phase-2-admin` because `main` does not yet carry phases 1 and 2. Nothing in it
+needed a hosted project. Next up: **phase 4, daily ops** (P4-01 … P4-10), whose
+P4-02 (pg_cron) is the first task after P2-03 that cannot be finished locally.
+
+The `invite` function (P2-03) has still never been deployed; doing so — with a
+Resend account behind it — is the first item of "Hosted project cutover".
 
 The repo has no git remote yet, so CI has never actually run on GitHub: the workflow is verified only by running the same commands locally. Push the branch and check the first run.
 
@@ -19,7 +21,7 @@ The repo has no git remote yet, so CI has never actually run on GitHub: the work
 | Design                   | ✅ Complete    | Approved 2026-09-01. Spec in `PROJECT_SPEC.md`. |
 | P1 Scaffold and auth | ✅ Complete | P1-01 to P1-10 done on `phase-1-scaffold`. |
 | P2 Users and gyms admin  | ✅ Complete    | P2-01 to P2-06 done on `phase-2-admin`.         |
-| P3 News and guides       | 🔄 In progress | `phase-3-content`. P3-01 … P3-06 done.          |
+| P3 News and guides       | ✅ Complete    | P3-01 to P3-07 done on `phase-3-content`.       |
 | P4 Daily ops             | ⬜ Not started |                                                 |
 | P5 Notifications and PWA | ⬜ Not started |                                                 |
 | P6 Team chat             | ⬜ Not started |                                                 |
@@ -54,7 +56,8 @@ Update this list as work begins:
 | P3-04 | ✅ done | 2026-09-02 | 2026-09-02 | `acknowledgement.tsx` (button + per-gym report) and `use-track-post-read.ts`: opening a published post writes `post_reads` once (`ignoreDuplicates`), the button upserts `acknowledged_at`, and the report lists the audience with the people who have not confirmed first — `gym_memberships` RLS narrows a manager's report to their own gyms without asking for a gym. The reminder itself is P5-02's `ack reminder` trigger. 128 unit tests; the manager/staff report and refusal paths checked against the local API by HTTP. |
 | P3-05 | ✅ done | 2026-09-02 | 2026-09-02 | `src/features/guides`: `/guides` (one tree mixing company and gym categories, guides filtered by the selected branch), the viewer, the editor at `/guides/new` and `/guides/:guideId/edit`, and category create/rename/delete. `guides.version` is bumped only when the author ticks "significant change", and `guide_acks` stores the confirmed version, so a reader who is behind is asked again. Guides lost their nav placeholder. 140 unit tests; the tree, the confirmation and the re-confirmation after a version bump driven in Chrome as staff. |
 | P3-06 | ✅ done | 2026-09-02 | 2026-09-02 | `features/content/search.ts` + `ContentSearch`: one debounced search over both `posts` and `guides` using `websearch_to_tsquery` on the `simple` configuration, with a snippet cut around the first matching word and hits labelled news/guide, scope and draft. The box sits on `/news` and `/guides`. 145 unit tests; a Danish word matched through RLS by HTTP, and another gym's post did not. |
-| P3-07, P4-01 … P8-06 | ⬜ not started | | | |
+| P3-07 | ✅ done | 2026-09-02 | 2026-09-02 | `UnreadNewsCard` replaces the placeholder home: published posts this person has not opened, plus the ones they have opened but not acknowledged, confirmations first. One query with `post_reads!left` filtered to the signed-in user. 146 unit tests; checked in Chrome as staff — acknowledging a post drops it off the home block, the unread one stays. |
+| P4-01 … P8-06 | ⬜ not started | | | |
 
 Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
 
@@ -66,6 +69,7 @@ Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
 | GitHub repository (remote) | P1-10 CI actually running | Rami | `.github/workflows/ci.yml` exists and its steps pass locally, but the repo has no remote, so no run has happened. Add the remote, push `phase-1-scaffold` and `phase-2-admin`, confirm both jobs go green. |
 | Resend account + API key | real invite mail (P2-03), P5-03 | Rami | not created. `[auth.rate_limit] email_sent = 2` per hour and hosted Supabase's built-in SMTP are both far below what inviting 200+ staff needs, so a provider must exist before invites go out for real. |
 | VAPID key pair                                              | P5-03                                | generated during P5-03     | —                    |
+| Code splitting for the editor bundle | a comfortable first load on a phone (P5-05, P7-04) | Rami | Tiptap took the built bundle to ~1.15 MB (345 kB gzip) and Vite now warns. Only publishers open the editor, so lazy-loading `RichTextEditor` is the obvious cut. Not urgent on desktop; decide before the PWA and installer work. |
 | Anthropic API key                                           | P8-03                                | Rami                       | not created          |
 | Apple Developer ID + Windows signing cert                   | first public desktop release (P7-04) | Rami                       | not started          |
 | BRP Systems API key, service account, rate limits, webhooks | V3                                   | Rami → BRP account manager | not requested        |

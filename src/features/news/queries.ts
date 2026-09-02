@@ -36,6 +36,8 @@ export const newsKeys = {
   list: (gymId: string | null) => ['news', 'list', gymId] as const,
   detail: (postId: string) => ['news', 'detail', postId] as const,
   myRead: (postId: string, userId: string) => ['news', 'read', postId, userId] as const,
+  unread: (gymId: string | null, userId: string) =>
+    ['news', 'unread', gymId, userId] as const,
   ackReport: (postId: string, gymId: string | null) =>
     ['news', 'ack-report', postId, gymId] as const,
 }
@@ -275,6 +277,42 @@ export function useAckReport(
             a.gymName.localeCompare(b.gymName) ||
             a.name.localeCompare(b.name),
         )
+    },
+  })
+}
+
+export type HomePost = NewsPost & {
+  post_reads: { read_at: string; acknowledged_at: string | null }[]
+}
+
+/**
+ * The published posts this person still has to deal with: the ones they have
+ * not opened, and the ones they have opened but not acknowledged. The read row
+ * is embedded and filtered to the signed-in user, so one query answers it —
+ * `post_reads` RLS would hide everyone else's rows anyway.
+ */
+export function useUnreadNews(gymId: string | null, userId: string | undefined) {
+  return useQuery({
+    queryKey: newsKeys.unread(gymId, userId ?? ''),
+    enabled: Boolean(userId),
+    queryFn: async () => {
+      let query = supabase
+        .from('posts')
+        .select(`${postColumns}, post_reads!left(read_at, acknowledged_at)`)
+        .eq('status', 'published')
+        .eq('post_reads.user_id', userId ?? '')
+        .order('pinned', { ascending: false })
+        .order('published_at', { ascending: false })
+
+      if (gymId) query = query.or(`gym_id.eq.${gymId},gym_id.is.null`)
+
+      const { data, error } = await query
+      if (error) throw error
+
+      return (data as HomePost[]).filter((post) => {
+        const read = post.post_reads[0]
+        return !read || (post.requires_ack && !read.acknowledged_at)
+      })
     },
   })
 }

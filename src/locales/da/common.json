@@ -201,7 +201,13 @@
     "label": "Center"
   },
   "home": {
-    "placeholder": "Skelettet er klar. Login og app-rammen kommer i fase 1."
+    "news": {
+      "allCaughtUp": "Ikke noget nyt — du er ajour.",
+      "allNews": "Alle nyheder",
+      "needsConfirmation": "Bekræft",
+      "title": "Nyheder til dig",
+      "unread": "Ulæst"
+    }
   },
   "language": {
     "da": "Dansk",

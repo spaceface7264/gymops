@@ -201,7 +201,13 @@
     "label": "Gym"
   },
   "home": {
-    "placeholder": "Scaffold ready. Auth and the app shell land in phase 1."
+    "news": {
+      "allCaughtUp": "Nothing new — you are up to date.",
+      "allNews": "All news",
+      "needsConfirmation": "Confirm",
+      "title": "News for you",
+      "unread": "Unread"
+    }
   },
   "language": {
     "da": "Danish",
