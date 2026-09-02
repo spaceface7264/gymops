@@ -27,8 +27,11 @@ item of "Hosted project cutover". P4-02 is done and did *not* need it — the
 local stack ships `pg_cron` — but the extension has to be enabled on the hosted
 project before the schema is pushed there.
 
-Next up: **P4-04**, the run UI — the screen staff actually tick. It takes over
-the `/checklists` index from the redirect P4-03 left there.
+Next up: **P4-05**, completion history and missed runs on the manager home.
+
+Testing Realtime locally needs the full stack: the run screen's live sync does
+not work under the CI-style `supabase start -x …`, which leaves the realtime
+container out. `supabase stop && supabase start` brings it back.
 
 ## Phase status
 
@@ -38,7 +41,7 @@ the `/checklists` index from the redirect P4-03 left there.
 | P1 Scaffold and auth | ✅ Complete | P1-01 to P1-10, merged in PR #1. |
 | P2 Users and gyms admin  | ✅ Complete    | P2-01 to P2-06, merged in PR #2.                |
 | P3 News and guides       | ✅ Complete    | P3-01 to P3-07 (PR #3) and the audit fixes (#4). |
-| P4 Daily ops             | 🔄 In progress | `phase-4-daily-ops`. P4-01 … P4-03 done.        |
+| P4 Daily ops             | 🔄 In progress | `phase-4-daily-ops`. P4-01 … P4-04 done.        |
 | P5 Notifications and PWA | ⬜ Not started |                                                 |
 | P6 Team chat             | ⬜ Not started |                                                 |
 | P7 Desktop and release   | ⬜ Not started |                                                 |
@@ -77,7 +80,8 @@ Update this list as work begins:
 | P4-01 | ✅ done | 2026-09-02 | 2026-09-02 | `20260902150000_checklist_schema.sql`: `checklist_templates` (+ `weekdays`, `active`), `checklist_template_items`, `checklist_runs` (unique per template/gym/day) and `checklist_run_items`, which snapshot the label so an edited template cannot rewrite history. `can_complete_in()` is the new "complete checklists" rule; `checklist_runs` has no insert policy at all, because the scheduled job (P4-02) creates them. Ticking records `done_by` from the session, never the request. `supabase/tests/070-checklist-permissions.test.sql` — 27 assertions written before the migration, 155 pgTAP total. |
 | P4-02 | ✅ done | 2026-09-02 | 2026-09-02 | `20260902160000_checklist_generation.sql`: `pg_cron` plus `generate_checklist_runs(as_of)`, a security-definer function that creates one run per due template per gym and snapshots the template's items into it. The job runs hourly at :00 and each gym generates when *its own* clock reads 03:xx, so one schedule serves every time zone, the 45-minute ones included. Idempotent on the P4-01 unique key; inactive gyms, inactive templates and templates with no items generate nothing. `supabase/tests/080-checklist-generation.test.sql` — 13 assertions, 168 pgTAP total. |
 | P4-03 | ✅ done | 2026-09-02 | 2026-09-02 | `features/checklists`: `/checklists/templates` lists every template the viewer may see with its scope, kind, schedule and size, and `…/new` and `…/:templateId/edit` edit one — name, kind, scope, the seven weekday toggles, and the items with up/down reordering and a required flag. Items are diffed on save (ids kept, positions renumbered, dropped rows deleted) so a run item does not lose the template item it came from. Deactivation replaces deletion. `/checklists` redirects to the templates page until P4-04 puts the runs at the index. 9 new unit tests (162 total); checked against the real API as `manager@gymops.test` — the template saved, company-wide and another gym's were refused with 403, and P4-02 generated a run with both items from it. |
-| P4-04 … P8-06 | ⬜ not started | | | |
+| P4-04 | ✅ done | 2026-09-02 | 2026-09-02 | `/checklists` is now the run screen: today's runs for the gym in scope (each gym's own date), progress over the required items, a Complete badge, per-item notes saved on blur, and ticking that sends only `done_at`. `20260902170000_checklist_realtime.sql` publishes `checklist_run_items` and opens one private channel per gym scope, authorised by `can_listen_to_checklists()` — the first policy this project puts on `realtime.messages`. 8 new pgTAP assertions (176 total), 9 unit tests (171 total). Verified on the running stack: staff joined their own gym's channel, were refused another gym's and `checklists:all`, and received the manager's tick live; a tick over REST claiming someone else's `done_by` was still recorded as the manager's. |
+| P4-05 … P8-06 | ⬜ not started | | | |
 
 Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
 
@@ -258,6 +262,12 @@ of truth; nothing in config.toml applies to a hosted project)
 | 2026-09-02 | P4-03: items are reordered with up/down buttons rather than dragged. Reordering happens on a front-desk touch screen as often as a mouse, and drag-and-drop would add a dependency and a keyboard story for a list that is rarely longer than ten rows. |
 | 2026-09-02 | P4-03: saving diffs the items instead of replacing them. Deleting and re-inserting every row on each save would null the `template_item_id` of every run item ever generated (`on delete set null`), so a typo fix would cut the reporting link on months of history. |
 | 2026-09-02 | P4-03: the editor refuses to save a template with no items, which matches P4-02 refusing to generate from one. The rule is stated once in the UI as a hint rather than discovered as a checklist that never appears. |
+
+| 2026-09-02 | P4-04: one private Realtime channel per gym scope (`checklists:<gym id>`, `checklists:all` for an admin), authorised by `can_listen_to_checklists()` against a policy on `realtime.messages`. A single shared channel would have been simpler, but a private channel per gym keeps the socket honest as well as the payloads: joining another gym's topic is refused outright rather than joined and then filtered. |
+| 2026-09-02 | P4-04: a Realtime event only invalidates the query; the screen refetches instead of patching the cached row from the payload. The payload may belong to a run the screen is not showing, and a refetch of one gym's runs is a small query. |
+| 2026-09-02 | P4-04: `replica identity full` on `checklist_run_items` was tried and reverted. Realtime's RLS check is `exists(select 1 from … where <primary key>)`, and the WAL already carries the whole new tuple for an update, so it changed nothing but the WAL volume. It is only needed for DELETE payloads, which nothing subscribes to. |
+| 2026-09-02 | P4-04: "who ticked it" shows a name only when `profiles` lets the viewer see one — admins and the managers of your gyms. Staff see the time alone. Widening `profiles` for this screen was rejected; it is the same gap P3 recorded, and P6 (chat member lists) is where it gets decided. |
+| 2026-09-02 | P4-04 diagnostic note: a client that joins a topic it is not authorised for tears down its own socket, so a *later* legitimate subscription on the same client receives nothing. That first looked like Realtime dropping staff events and cost an afternoon; it is a property of the test client, not of the policy. |
 
 ## How to update this file
 

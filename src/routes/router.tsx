@@ -1,7 +1,8 @@
-import { createBrowserRouter, Navigate, Outlet } from 'react-router'
+import { createBrowserRouter, Outlet } from 'react-router'
 import { AuditPanel, GymsPanel, UsersPanel } from '@/features/admin'
 import { RequireAuth } from '@/features/auth'
 import {
+  ChecklistRunsPage,
   ChecklistTemplateEditorPage,
   ChecklistTemplatesPage,
 } from '@/features/checklists'
@@ -51,12 +52,7 @@ export const router = createBrowserRouter([
           { path: 'news/new', element: <PostEditorPage /> },
           { path: 'news/:postId', element: <PostDetailPage /> },
           { path: 'news/:postId/edit', element: <PostEditorPage /> },
-          // P4-04 puts today's runs at the index; until then the only
-          // checklist screen is the one that defines them.
-          {
-            path: 'checklists',
-            element: <Navigate to="/checklists/templates" replace />,
-          },
+          { path: 'checklists', element: <ChecklistRunsPage /> },
           { path: 'checklists/templates', element: <ChecklistTemplatesPage /> },
           { path: 'checklists/templates/new', element: <ChecklistTemplateEditorPage /> },
           {

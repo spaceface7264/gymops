@@ -22,6 +22,11 @@ Requires a Docker-compatible container runtime (OrbStack installed 2026-09-01) f
 | `npm run db:types` | regenerate `src/lib/database.types.ts` (commit it) |
 | `npm run typecheck lint format:check test build` | the gates CI runs |
 
+Realtime features (checklist live sync, later chat and notifications) need the
+realtime container, which a stack started with `supabase start -x …` does not
+have — `supabase stop && supabase start` brings the full stack back. Node 20 has
+no native WebSocket, so a script that drives a Realtime client needs Node 22+.
+
 CI is `.github/workflows/ci.yml`: a `web` job running those gates on Node 20, and a `database` job that starts the local stack (minus the services the tests do not need) and runs `db reset` + `test db`.
 
 Seed users (local only, from `supabase/seed.sql`): `super@`, `admin@`, `manager@`, `staff@` `gymops.test`, all with password `Password123`; gyms Copenhagen Nord, Aarhus C, Odense.
