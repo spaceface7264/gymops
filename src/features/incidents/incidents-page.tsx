@@ -1,9 +1,16 @@
-import { Plus } from 'lucide-react'
+import { ChevronDown, Plus } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { useCompletionScope } from '@/features/checklists'
 import { useGymScope } from '@/features/gyms'
 import { IncidentBadges } from './incident-badges'
@@ -29,6 +36,8 @@ export function IncidentsPage() {
   const incidents = useIncidents(gymId, filters)
 
   const canReport = gymId !== null && canCompleteIn(gymId)
+  const kindLabel =
+    filters.kind === 'all' ? t('incidents.allKinds') : t(`incidents.kind.${filters.kind}`)
 
   return (
     <div className="space-y-4">
@@ -59,24 +68,37 @@ export function IncidentsPage() {
           ))}
         </div>
 
-        <select
-          aria-label={t('incidents.kindLabel')}
-          className="border-input bg-background h-8 rounded-md border px-2 text-sm"
-          value={filters.kind}
-          onChange={(event) =>
-            setFilters((current) => ({
-              ...current,
-              kind: event.target.value as IncidentKind | 'all',
-            }))
-          }
-        >
-          <option value="all">{t('incidents.allKinds')}</option>
-          {incidentKinds.map((option) => (
-            <option key={option} value={option}>
-              {t(`incidents.kind.${option}`)}
-            </option>
-          ))}
-        </select>
+        {/* The trigger carries the label and the current value, so the button's
+            accessible name reads "Kind: Injury" without an aria-label hiding
+            the value from a screen reader. */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button size="sm" variant="outline">
+              {t('incidents.kindLabel')}: {kindLabel}
+              <ChevronDown />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuRadioGroup
+              value={filters.kind}
+              onValueChange={(kind) =>
+                setFilters((current) => ({
+                  ...current,
+                  kind: kind as IncidentKind | 'all',
+                }))
+              }
+            >
+              <DropdownMenuRadioItem value="all">
+                {t('incidents.allKinds')}
+              </DropdownMenuRadioItem>
+              {incidentKinds.map((option) => (
+                <DropdownMenuRadioItem key={option} value={option}>
+                  {t(`incidents.kind.${option}`)}
+                </DropdownMenuRadioItem>
+              ))}
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {incidents.isPending && (

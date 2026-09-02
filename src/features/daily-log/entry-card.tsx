@@ -3,6 +3,14 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { Badge } from '@/components/ui/badge'
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -66,18 +74,20 @@ export function EntryCard({
 
       {editing ? (
         <div className="space-y-2">
-          <select
-            aria-label={t('dailyLog.kindLabel')}
-            className="border-input bg-background h-9 rounded-md border px-2 text-sm"
-            value={kind}
-            onChange={(event) => setKind(event.target.value as DailyLogKind)}
-          >
-            {dailyLogKinds.map((option) => (
-              <option key={option} value={option}>
-                {t(`dailyLog.kind.${option}`)}
-              </option>
-            ))}
-          </select>
+          <Select value={kind} onValueChange={(value) => setKind(value as DailyLogKind)}>
+            <SelectTrigger aria-label={t('dailyLog.kindLabel')}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent position="popper">
+              <SelectGroup>
+                {dailyLogKinds.map((option) => (
+                  <SelectItem key={option} value={option}>
+                    {t(`dailyLog.kind.${option}`)}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
           <textarea
             aria-label={t('dailyLog.entry')}
             className="border-input bg-background min-h-20 w-full rounded-md border p-2 text-sm"

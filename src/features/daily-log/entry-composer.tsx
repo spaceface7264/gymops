@@ -4,6 +4,14 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { MissingRequirements } from '@/features/content'
 import { dailyLogKinds, parseTags, useCreateLogEntry, type DailyLogKind } from './queries'
 
@@ -40,18 +48,23 @@ export function EntryComposer({ gymId }: { gymId: string }) {
         <div className="flex flex-wrap gap-3">
           <div className="space-y-1">
             <Label htmlFor={`${fieldId}-kind`}>{t('dailyLog.kindLabel')}</Label>
-            <select
-              id={`${fieldId}-kind`}
-              className="border-input bg-background h-9 rounded-md border px-2 text-sm"
+            <Select
               value={kind}
-              onChange={(event) => setKind(event.target.value as DailyLogKind)}
+              onValueChange={(value) => setKind(value as DailyLogKind)}
             >
-              {dailyLogKinds.map((option) => (
-                <option key={option} value={option}>
-                  {t(`dailyLog.kind.${option}`)}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger id={`${fieldId}-kind`}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent position="popper">
+                <SelectGroup>
+                  {dailyLogKinds.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {t(`dailyLog.kind.${option}`)}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="min-w-48 flex-1 space-y-1">

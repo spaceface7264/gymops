@@ -209,11 +209,15 @@ describe('PostEditorPage', () => {
     })
   })
 
-  it('does not offer company-wide to a manager, only to an admin', () => {
+  it('does not offer company-wide to a manager, only to an admin', async () => {
     const { unmount } = renderWithProviders(<PostEditorPage />, { path: '/news/new' })
+    await userEvent.click(screen.getByLabelText('Applies to'))
+    // An option that must be there, so the absence below is a real absence
+    // rather than a list that has not opened yet.
     expect(
-      within(screen.getByLabelText('Applies to')).queryByText('Company-wide'),
-    ).not.toBeInTheDocument()
+      await screen.findByRole('option', { name: 'Copenhagen Nord' }),
+    ).toBeInTheDocument()
+    expect(screen.queryByRole('option', { name: 'Company-wide' })).not.toBeInTheDocument()
     unmount()
 
     profile.mockReturnValue({
@@ -223,8 +227,9 @@ describe('PostEditorPage', () => {
       gym_memberships: [],
     })
     renderWithProviders(<PostEditorPage />, { path: '/news/new' })
+    await userEvent.click(screen.getByLabelText('Applies to'))
     expect(
-      within(screen.getByLabelText('Applies to')).getByText('Company-wide'),
+      await screen.findByRole('option', { name: 'Company-wide' }),
     ).toBeInTheDocument()
   })
 

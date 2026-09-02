@@ -48,6 +48,30 @@ Object.defineProperty(Document.prototype, 'elementFromPoint', {
   value: () => null,
 })
 
+/**
+ * Radix Select (and every other primitive built on its popper) drives its
+ * trigger with the Pointer Capture API and scrolls the chosen item into view.
+ * jsdom implements neither, so opening a Select threw before the click landed.
+ * These follow the same rule as the Range stubs above: the tests check what the
+ * control does, not where the browser paints it.
+ */
+Object.defineProperty(HTMLElement.prototype, 'hasPointerCapture', {
+  configurable: true,
+  value: () => false,
+})
+Object.defineProperty(HTMLElement.prototype, 'setPointerCapture', {
+  configurable: true,
+  value: () => {},
+})
+Object.defineProperty(HTMLElement.prototype, 'releasePointerCapture', {
+  configurable: true,
+  value: () => {},
+})
+Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+  configurable: true,
+  value: () => {},
+})
+
 afterEach(() => {
   cleanup()
 })

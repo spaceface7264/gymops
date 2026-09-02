@@ -6,6 +6,14 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
   emptyDoc,
   isEmptyDoc,
   MissingRequirements,
@@ -109,24 +117,34 @@ function PostEditor({ post }: { post?: NewsPost }) {
 
       <div className="space-y-2">
         <Label htmlFor={`${fieldId}-scope`}>{t('news.scope')}</Label>
-        <select
-          id={`${fieldId}-scope`}
-          className="border-input bg-background h-9 w-full rounded-md border px-2 text-sm"
+        <Select
           value={gymId ?? 'company'}
-          onChange={(event) =>
-            setChosenGymId(event.target.value === 'company' ? null : event.target.value)
-          }
+          onValueChange={(value) => {
+            // Radix keeps a hidden native select for form submission, and it
+            // fires an empty value whenever the current one matches no option
+            // — here, the render before the profile that decides the scope
+            // arrives. Taking it would scope the post to nobody.
+            if (value === '') return
+            setChosenGymId(value === 'company' ? null : value)
+          }}
         >
-          {/* Only an admin may publish company-wide (spec §2.1). */}
-          {scope.canPublishCompanyWide && (
-            <option value="company">{t('news.companyWide')}</option>
-          )}
-          {scope.publishableGyms.map((gym) => (
-            <option key={gym.id} value={gym.id}>
-              {gym.name}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger id={`${fieldId}-scope`} className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent position="popper">
+            <SelectGroup>
+              {/* Only an admin may publish company-wide (spec §2.1). */}
+              {scope.canPublishCompanyWide && (
+                <SelectItem value="company">{t('news.companyWide')}</SelectItem>
+              )}
+              {scope.publishableGyms.map((gym) => (
+                <SelectItem key={gym.id} value={gym.id}>
+                  {gym.name}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="space-y-2">

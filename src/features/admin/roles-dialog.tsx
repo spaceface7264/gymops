@@ -7,6 +7,14 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import type { Database } from '@/lib/database.types'
 import {
   useRemoveMembership,
@@ -98,19 +106,26 @@ export function RolesDialog({
             return (
               <div key={gym.id} className="flex items-center justify-between gap-3">
                 <Label htmlFor={`roles-${gym.id}`}>{gym.name}</Label>
-                <select
-                  id={`roles-${gym.id}`}
-                  className="border-input bg-background h-9 w-40 rounded-md border px-2 text-sm"
+                <Select
                   value={current}
                   disabled={pending}
-                  onChange={(event) => change(gym.id, event.target.value)}
+                  onValueChange={(value) => change(gym.id, value)}
                 >
-                  <option value={noRole}>{t('admin.roles.none')}</option>
-                  <option value="staff">{t('admin.users.staff')}</option>
-                  {canMakeManagers && (
-                    <option value="manager">{t('admin.users.manager')}</option>
-                  )}
-                </select>
+                  <SelectTrigger id={`roles-${gym.id}`} className="w-40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent position="popper">
+                    <SelectGroup>
+                      <SelectItem value={noRole}>{t('admin.roles.none')}</SelectItem>
+                      <SelectItem value="staff">{t('admin.users.staff')}</SelectItem>
+                      {canMakeManagers && (
+                        <SelectItem value="manager">
+                          {t('admin.users.manager')}
+                        </SelectItem>
+                      )}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
               </div>
             )
           })}

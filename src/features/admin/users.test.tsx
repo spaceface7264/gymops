@@ -156,9 +156,12 @@ describe('RolesDialog', () => {
     const row = (await screen.findByText('Mette Manager')).closest('tr') as HTMLElement
     await user.click(within(row).getByRole('button', { name: 'Roles' }))
 
+    // The trigger shows the label, not the value: the option list lives in a
+    // portal and only exists while the select is open.
     const select = screen.getByLabelText('Copenhagen Nord')
-    expect(select).toHaveValue('manager')
-    expect(within(select).getByRole('option', { name: 'Manager' })).toBeInTheDocument()
+    expect(select).toHaveTextContent('Manager')
+    await user.click(select)
+    expect(await screen.findByRole('option', { name: 'Manager' })).toBeInTheDocument()
   })
 
   it('lets a manager grant staff only', async () => {
@@ -174,10 +177,11 @@ describe('RolesDialog', () => {
     const row = (await screen.findByText('Sam Staff')).closest('tr') as HTMLElement
     await user.click(within(row).getByRole('button', { name: 'Roles' }))
 
-    const select = screen.getByLabelText('Copenhagen Nord')
-    expect(
-      within(select).queryByRole('option', { name: 'Manager' }),
-    ).not.toBeInTheDocument()
+    await user.click(screen.getByLabelText('Copenhagen Nord'))
+    // Waiting for an option that must exist proves the list is open before
+    // asserting that another one is absent.
+    expect(await screen.findByRole('option', { name: 'Staff' })).toBeInTheDocument()
+    expect(screen.queryByRole('option', { name: 'Manager' })).not.toBeInTheDocument()
     expect(screen.queryByLabelText('Company-wide admin')).not.toBeInTheDocument()
   })
 
@@ -204,7 +208,8 @@ describe('RolesDialog', () => {
     const row = (await screen.findByText('Sam Staff')).closest('tr') as HTMLElement
     await user.click(within(row).getByRole('button', { name: 'Roles' }))
 
-    await user.selectOptions(screen.getByLabelText('Copenhagen Nord'), 'manager')
+    await user.click(screen.getByLabelText('Copenhagen Nord'))
+    await user.click(await screen.findByRole('option', { name: 'Manager' }))
     await waitFor(() =>
       expect(upsert).toHaveBeenCalledWith(
         { user_id: 'user-sam', gym_id: 'gym-nord', role: 'manager' },
@@ -212,7 +217,8 @@ describe('RolesDialog', () => {
       ),
     )
 
-    await user.selectOptions(screen.getByLabelText('Copenhagen Nord'), 'none')
+    await user.click(screen.getByLabelText('Copenhagen Nord'))
+    await user.click(await screen.findByRole('option', { name: 'No role' }))
     await waitFor(() => expect(remove).toHaveBeenCalled())
   })
 })

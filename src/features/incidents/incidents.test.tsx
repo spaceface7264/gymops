@@ -155,7 +155,8 @@ describe('the incident list', () => {
       expect(filters).toHaveBeenCalledWith('eq', ['status', 'resolved']),
     )
 
-    await userEvent.selectOptions(screen.getByLabelText('Kind'), 'injury')
+    await userEvent.click(screen.getByRole('button', { name: /^Kind:/ }))
+    await userEvent.click(await screen.findByRole('menuitemradio', { name: 'Injury' }))
     await waitFor(() => expect(filters).toHaveBeenCalledWith('eq', ['kind', 'injury']))
   })
 
@@ -191,8 +192,10 @@ describe('reporting one', () => {
 
     await userEvent.type(screen.getByLabelText('Title'), '  Hold broke on wall 4  ')
     await userEvent.type(screen.getByLabelText('What happened'), 'A crimp sheared off.')
-    await userEvent.selectOptions(screen.getByLabelText('Kind'), 'equipment')
-    await userEvent.selectOptions(screen.getByLabelText('Severity'), 'high')
+    await userEvent.click(screen.getByLabelText('Kind'))
+    await userEvent.click(await screen.findByRole('option', { name: 'Equipment' }))
+    await userEvent.click(screen.getByLabelText('Severity'))
+    await userEvent.click(await screen.findByRole('option', { name: 'High' }))
     await userEvent.click(screen.getByRole('button', { name: 'Report it' }))
 
     await waitFor(() =>
