@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { usePublishScope } from '@/features/content'
+import { MissingRequirements, usePublishScope } from '@/features/content'
 import { useCreateCategory, useRenameCategory, type GuideCategory } from './queries'
 
 /**
@@ -138,6 +138,10 @@ function CategoryForm({
           </div>
         </>
       )}
+
+      <MissingRequirements
+        reasons={name.trim() === '' ? [t('guides.categoryNeedsName')] : []}
+      />
 
       {save.isError && (
         <p role="alert" className="text-destructive text-sm">

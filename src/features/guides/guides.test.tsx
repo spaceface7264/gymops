@@ -237,6 +237,17 @@ describe('GuideEditorPage', () => {
     })
   }
 
+  it('says what a new guide is still missing rather than only greying out Save', async () => {
+    renderWithProviders(<GuideEditorPage />, { path: '/guides/new' })
+
+    expect(screen.getByText('Give the guide a title.')).toBeInTheDocument()
+    expect(screen.getByText('Write something in the body.')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Publish' })).toBeDisabled()
+
+    await userEvent.type(screen.getByLabelText('Title'), 'Evacuation')
+    expect(screen.queryByText('Give the guide a title.')).not.toBeInTheDocument()
+  })
+
   it('leaves the version alone on an ordinary edit', async () => {
     renderEditor()
 

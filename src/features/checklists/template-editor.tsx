@@ -5,7 +5,7 @@ import { useNavigate, useParams } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { usePublishScope } from '@/features/content'
+import { MissingRequirements, usePublishScope } from '@/features/content'
 import { useGymScope } from '@/features/gyms'
 import {
   useChecklistTemplate,
@@ -16,12 +16,6 @@ import {
 import { isoWeekdays, weekdayNames } from './weekdays'
 
 const kinds: ChecklistKind[] = ['opening', 'closing', 'custom']
-
-type MissingKey =
-  | 'checklists.needsName'
-  | 'checklists.needsDay'
-  | 'checklists.needsItem'
-  | 'checklists.needsPermission'
 
 /** An item while it is being edited: `key` survives reordering, `id` is the saved row. */
 type DraftItem = { key: string; id?: string; label: string; required: boolean }
@@ -92,11 +86,12 @@ function TemplateEditor({ template }: { template?: ChecklistTemplate }) {
   const filledItems = items.filter((item) => item.label.trim() !== '')
   // What still stands between this form and a saved checklist. Saying it is
   // the point: a greyed-out button with no reason is a dead end.
-  const missing: MissingKey[] = []
-  if (name.trim() === '') missing.push('checklists.needsName')
-  if (weekdays.length === 0) missing.push('checklists.needsDay')
-  if (filledItems.length === 0) missing.push('checklists.needsItem')
-  if (!scope.canPublishIn(gymId)) missing.push('checklists.needsPermission')
+  const missing = [
+    name.trim() === '' && t('checklists.needsName'),
+    weekdays.length === 0 && t('checklists.needsDay'),
+    filledItems.length === 0 && t('checklists.needsItem'),
+    !scope.canPublishIn(gymId) && t('checklists.needsPermission'),
+  ].filter((reason): reason is string => Boolean(reason))
   const canSave = missing.length === 0
 
   const updateItem = (key: string, change: Partial<DraftItem>) =>
@@ -299,13 +294,7 @@ function TemplateEditor({ template }: { template?: ChecklistTemplate }) {
         </div>
       )}
 
-      {missing.length > 0 && (
-        <ul className="text-muted-foreground space-y-0.5 text-sm">
-          {missing.map((key) => (
-            <li key={key}>{t(key)}</li>
-          ))}
-        </ul>
-      )}
+      <MissingRequirements reasons={missing} />
 
       {save.isError && (
         <p role="alert" className="text-destructive text-sm">

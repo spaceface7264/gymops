@@ -83,6 +83,12 @@ export function RolesDialog({
           </div>
         )}
 
+        {canMakeAdmins && user.is_superadmin && (
+          <p className="text-muted-foreground text-sm">
+            {t('admin.roles.superadminLocked')}
+          </p>
+        )}
+
         <div className="space-y-3">
           {assignableGyms.map((gym) => {
             const current =

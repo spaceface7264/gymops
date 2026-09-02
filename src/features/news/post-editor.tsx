@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import {
   emptyDoc,
   isEmptyDoc,
+  MissingRequirements,
   RichTextEditor,
   toDoc,
   usePublishScope,
@@ -74,7 +75,12 @@ function PostEditor({ post }: { post?: NewsPost }) {
       : (scope.publishableGyms[0]?.id ?? null)
   const gymId = chosenGymId === undefined ? defaultGymId : chosenGymId
 
-  const canSave = title.trim() !== '' && !isEmptyDoc(body) && scope.canPublishIn(gymId)
+  const missing = [
+    title.trim() === '' && t('news.needsTitle'),
+    isEmptyDoc(body) && t('news.needsBody'),
+    !scope.canPublishIn(gymId) && t('news.needsPermission'),
+  ].filter((reason): reason is string => Boolean(reason))
+  const canSave = missing.length === 0
 
   const submit = (status: PostInput['status']) => {
     const input: PostInput = { gymId, title, body, requiresAck, status }
@@ -153,6 +159,8 @@ function PostEditor({ post }: { post?: NewsPost }) {
         />
         <Label htmlFor={`${fieldId}-ack`}>{t('news.requireAcknowledgement')}</Label>
       </div>
+
+      <MissingRequirements reasons={missing} />
 
       {save.isError && (
         <p role="alert" className="text-destructive text-sm">

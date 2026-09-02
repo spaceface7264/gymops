@@ -242,11 +242,15 @@ describe('PostEditorPage', () => {
     expect(insert.mock.lastCall?.[0]).toMatchObject({ gym_id: 'gym-nord' })
   })
 
-  it('refuses to save a post with no body', async () => {
+  it('refuses to save a post with no body, and says which part is missing', async () => {
     renderWithProviders(<PostEditorPage />, { path: '/news/new' })
+
+    expect(screen.getByText('Give the post a title.')).toBeInTheDocument()
 
     await userEvent.type(screen.getByLabelText('Headline'), 'Empty')
 
+    expect(screen.queryByText('Give the post a title.')).not.toBeInTheDocument()
+    expect(screen.getByText('Write something in the body.')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Publish' })).toBeDisabled()
     expect(insert).not.toHaveBeenCalled()
   })
