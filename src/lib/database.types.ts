@@ -509,10 +509,12 @@ export type Database = {
     Functions: {
       can_publish_content: { Args: { target_gym_id: string }; Returns: boolean }
       can_read_content: { Args: { target_gym_id: string }; Returns: boolean }
+      content_object_gym: { Args: { object_name: string }; Returns: string }
       content_search_vector: {
         Args: { doc: Json; title: string }
         Returns: unknown
       }
+      is_active_user: { Args: never; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
       is_superadmin: { Args: never; Returns: boolean }
       managed_gym_ids: { Args: never; Returns: string[] }

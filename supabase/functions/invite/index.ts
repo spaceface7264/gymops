@@ -7,7 +7,7 @@
 //
 // Deployment and the settings this depends on: PROJECT_STATE.md, "Hosted
 // project cutover".
-import { createClient, type SupabaseClient } from 'jsr:@supabase/supabase-js@2'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '../../../src/lib/database.types.ts'
 
 type GymRole = Database['public']['Enums']['gym_role']
@@ -157,19 +157,19 @@ Deno.serve(async (request: Request) => {
   // accept-invite screen stays about the password (P1-07).
   const applyError = invite.asAdmin
     ? (
-        await service
-          .from('profiles')
-          .update({ is_admin: true })
-          .eq('id', invited.user.id)
-      ).error
+      await service
+        .from('profiles')
+        .update({ is_admin: true })
+        .eq('id', invited.user.id)
+    ).error
     : (
-        await service.from('gym_memberships').insert({
-          user_id: invited.user.id,
-          gym_id: invite.gymId ?? '',
-          role: invite.role ?? 'staff',
-          created_by: caller.id,
-        })
-      ).error
+      await service.from('gym_memberships').insert({
+        user_id: invited.user.id,
+        gym_id: invite.gymId ?? '',
+        role: invite.role ?? 'staff',
+        created_by: caller.id,
+      })
+    ).error
 
   if (applyError) return fail(500, 'rights_not_applied')
 

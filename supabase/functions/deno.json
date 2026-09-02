@@ -1,0 +1,12 @@
+{
+  "nodeModulesDir": "auto",
+  "imports": {
+    "@supabase/supabase-js": "jsr:@supabase/supabase-js@^2"
+  },
+  "//": "fmt mirrors .prettierrc.json, so the Deno half of the codebase reads like the rest of it",
+  "fmt": {
+    "semiColons": false,
+    "singleQuote": true,
+    "lineWidth": 90
+  }
+}
