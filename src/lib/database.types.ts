@@ -874,6 +874,98 @@ export type Database = {
           },
         ]
       }
+      notification_prefs: {
+        Row: {
+          email: boolean
+          in_app: boolean
+          push: boolean
+          type: Database["public"]["Enums"]["notification_type"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          email?: boolean
+          in_app?: boolean
+          push?: boolean
+          type: Database["public"]["Enums"]["notification_type"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          email?: boolean
+          in_app?: boolean
+          push?: boolean
+          type?: Database["public"]["Enums"]["notification_type"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_prefs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          email_requested: boolean
+          gym_id: string | null
+          id: string
+          read_at: string | null
+          subject_id: string | null
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+          url: string | null
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          email_requested?: boolean
+          gym_id?: string | null
+          id?: string
+          read_at?: string | null
+          subject_id?: string | null
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+          url?: string | null
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          email_requested?: boolean
+          gym_id?: string | null
+          id?: string
+          read_at?: string | null
+          subject_id?: string | null
+          title?: string
+          type?: Database["public"]["Enums"]["notification_type"]
+          url?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_gym_id_fkey"
+            columns: ["gym_id"]
+            isOneToOne: false
+            referencedRelation: "gyms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       post_reads: {
         Row: {
           acknowledged_at: string | null
@@ -1014,6 +1106,47 @@ export type Database = {
         }
         Relationships: []
       }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          id: string
+          last_used_at: string | null
+          p256dh: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          last_used_at?: string | null
+          p256dh: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          last_used_at?: string | null
+          p256dh?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -1021,6 +1154,7 @@ export type Database = {
     Functions: {
       can_complete_in: { Args: { target_gym_id: string }; Returns: boolean }
       can_listen_to_checklists: { Args: { topic: string }; Returns: boolean }
+      can_listen_to_notifications: { Args: { topic: string }; Returns: boolean }
       can_publish_content: { Args: { target_gym_id: string }; Returns: boolean }
       can_read_content: { Args: { target_gym_id: string }; Returns: boolean }
       can_read_event: { Args: { target_event_id: string }; Returns: boolean }
@@ -1036,6 +1170,17 @@ export type Database = {
       is_superadmin: { Args: never; Returns: boolean }
       managed_gym_ids: { Args: never; Returns: string[] }
       member_gym_ids: { Args: never; Returns: string[] }
+      notification_pref: {
+        Args: {
+          target_type: Database["public"]["Enums"]["notification_type"]
+          target_user: string
+        }
+        Returns: {
+          email: boolean
+          in_app: boolean
+          push: boolean
+        }[]
+      }
       shares_gym_with: { Args: { target_user: string }; Returns: boolean }
       tiptap_text: { Args: { doc: Json }; Returns: string }
     }
@@ -1049,6 +1194,11 @@ export type Database = {
       incident_severity: "low" | "medium" | "high"
       incident_status: "open" | "in_progress" | "resolved"
       invite_status: "pending" | "accepted" | "revoked"
+      notification_type:
+        | "incident_reported"
+        | "incident_status_changed"
+        | "ack_reminder"
+        | "invite"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1185,6 +1335,12 @@ export const Constants = {
       incident_severity: ["low", "medium", "high"],
       incident_status: ["open", "in_progress", "resolved"],
       invite_status: ["pending", "accepted", "revoked"],
+      notification_type: [
+        "incident_reported",
+        "incident_status_changed",
+        "ack_reminder",
+        "invite",
+      ],
     },
   },
 } as const

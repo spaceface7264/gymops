@@ -29,10 +29,15 @@ project before the schema is pushed there.
 
 **Phase 4 is complete.** P4-01 … P4-10 are on `main` through PR #5; the
 events module (P4-11), the shadcn select swap and the deactivated-publisher
-tests follow in PR #6 from the same branch. Next up: **phase 5, notifications
-and the PWA** (P5-01 … P5-06), which is where the `notify` function, the VAPID
-keys and Resend finally have to exist, and where P2-03's `invite` gets
-deployed.
+tests follow in PR #6 from the same branch.
+
+**Phase 5, notifications and the PWA** (P5-01 … P5-06), is under way on
+`phase-5-notifications`. It is where the `notify` function, the VAPID keys and
+Resend finally have to exist, and where P2-03's `invite` gets deployed. The
+VAPID pair and the Resend key are local-only for now — `notify` sends by web
+push and email when the secrets are set and records what it would have sent
+when they are not, so the whole fan-out is testable on this machine and the
+hosted half stays in "Hosted project cutover".
 
 Testing Realtime locally needs the full stack: the run screen's live sync does
 not work under the CI-style `supabase start -x …`, which leaves the realtime
@@ -47,7 +52,7 @@ container out. `supabase stop && supabase start` brings it back.
 | P2 Users and gyms admin  | ✅ Complete    | P2-01 to P2-06, merged in PR #2.                |
 | P3 News and guides       | ✅ Complete    | P3-01 to P3-07 (PR #3) and the audit fixes (#4). |
 | P4 Daily ops             | ✅ Complete    | P4-01 to P4-10 merged in PR #5; P4-11 in PR #6.   |
-| P5 Notifications and PWA | ⬜ Not started |                                                 |
+| P5 Notifications and PWA | 🔄 In progress | P5-01 done on `phase-5-notifications`.          |
 | P6 Team chat             | ⬜ Not started |                                                 |
 | P7 Desktop and release   | ⬜ Not started |                                                 |
 | P8 AI assistant (V1.5)   | ⬜ Not started | Needs Anthropic API key in Supabase secrets.    |
@@ -94,7 +99,8 @@ Update this list as work begins:
 | P4-09 | ✅ done | 2026-09-02 | 2026-09-02 | `incidentDraft()` in `features/daily-log` and a "Report as an incident" link on every `issue` entry, for whoever `can_complete_in()` allows there. The entry's first line becomes the title (cut at 80 characters), the entry itself the description, and the tags ride along on their own line, because that is usually where the entry says *where*. It is a link to `/incidents/new?title=&body=`, so nothing is filed until the reporter has picked the kind and severity — no migration and no new query. 5 new unit tests (211 total); driven in Chrome as a manager in Danish: an issue with two tags → one click → the pre-filled form → a filed incident carrying the whole entry. |
 | P4-10 | ✅ done | 2026-09-02 | 2026-09-02 | The home page in the order spec §2.2 gives it: the news block, `TodaysChecklistsCard` (today's runs, unfinished first, for everybody), `OpenIncidentsCard` (the unresolved ones, worst severity first, five at a time with a count on the link) and `LatestLogEntryCard` (`useLatestLogEntry`, one row, clamped to three lines), with P4-05's week underneath for the people who run a gym. No migration and no new tables — three cards over queries that already existed, plus one `limit(1)` read. The home page's test stub now answers per table, because four cards read four tables. 6 new unit tests (217 total); checked in Chrome against the local stack as a manager in Danish (all five blocks) and as staff in English (four — no week), and a tick on `/checklists` showed as "1 of 2 done" on the home page. |
 | P4-11 | ✅ done | 2026-09-02 | 2026-09-02 | Events, the calendar, pulled forward from V2 (spec §2.4). `20260902200000_events.sql`: `event_type` enum (community/campaign/groups/offer/other), `events` with `starts_on`/`start_time`/`ends_on`/`end_time` and a generated `last_on`, four CHECK constraints (title, http(s) link, range order, time order) and soft delete, plus `event_gyms` — an event runs at any number of gyms and one with no rows there is company-wide. Reads go through `can_read_event()` (security definer, or its policy and `event_gyms`' would evaluate each other); writes are `is_admin()`, **not** `can_publish_content()` — a manager reads the calendar and cannot write it. 38 new pgTAP assertions (279 total). Client: `src/features/events/` with a list view (upcoming / earlier), a hand-rolled Monday-first month grid over `month-grid.ts` (no date dependency), a create/edit dialog whose scope is a row of gym toggles, and view/month/type in the URL. The gym filter is client-side now that the scope is a second table. 27 new unit tests (244 total). Checked against the local stack over PostgREST: an event scoped to Odense was invisible to Copenhagen Nord staff until Nord was added, and then both gyms read the same row; a manager's insert was refused 42501 and their delete of a scope row removed nothing. |
-| P5-01 … P8-06 | ⬜ not started | | | |
+| P5-01 | ✅ done | 2026-09-02 | 2026-09-02 | `20260902212850_notifications.sql`: `notification_type` enum (incident reported / status changed / ack reminder / invite — P6-08 extends it), `notifications` (rendered `title`/`body`/`url`, `gym_id`, `subject_id`, `email_requested`, `read_at`), `notification_prefs` (`in_app`/`email`/`push` per type, absent row = defaults) and `push_subscriptions` (one per browser, `endpoint` unique). **No insert policy anywhere on `notifications`** — spec §5 says triggers create them — and `guard_notification_edit()` pins every column but `read_at`, so a recipient marks one read and cannot rewrite what they were told or hand it to somebody else. `notification_pref()` returns the effective switches with the defaults applied. `notifications` is published to Realtime behind `can_listen_to_notifications('notifications:<own uid>')`, which is the unread badge (P5-04) and P7-03's native notifications. 26 new pgTAP assertions (305 total). |
+| P5-02 … P8-06 | ⬜ not started | | | |
 
 Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
 
@@ -304,6 +310,13 @@ of truth; nothing in config.toml applies to a hosted project)
 | 2026-09-02 | P4-07: no delete policy on incidents, their attachments or their comments. An incident is a record of something that happened to somebody; a comment is somebody's own words, editable only by them. |
 | 2026-09-02 | A deactivated manager keeps their `role = 'manager'` membership rows, so it looks at first reading as though `can_publish_content()` is missing the active check that `can_read_content()` grew in `20260902130000`. It is not: the check sits one level down, in `managed_gym_ids()` and `member_gym_ids()`, which covers every caller of both instead of each gate repeating it. `supabase/tests/120-deactivated-publisher.test.sql` now pins the outcome — 16 assertions that a deactivated manager cannot write posts, guides, guide categories or checklist templates, cannot see their own gyms' drafts, and gets it all back on reactivation. Verified by reverting the `p.active` join in the live database: 9 of the 16 fail, so the test is not vacuous. |
 | 2026-09-02 | The hand-rolled `<select>`s became shadcn components, and which component depends on what the control is: a labelled field in a form is a `Select`, a filter whose trigger shows the current value is a `DropdownMenu` with a `DropdownMenuRadioGroup`, and a list too long to scroll — timezones, people, tags — wants a `Combobox` and is still a raw `<select>` until that lands. Radix keeps a hidden native select inside the form for submission, and it fires an **empty** value whenever the current one matches no option; in the news editor that is the render before the profile arrives, and it scoped the post to nobody. Every handler whose option list can be empty for a render now ignores `''`. "No category"/"no parent" need a real value for the same reason (`'none'`, which `roles-dialog` already used) — Radix reads `''` as "nothing chosen" and shows the placeholder. |
+
+| 2026-09-02 | P5-01: a notification stores its rendered `title`/`body`/`url` rather than pointing at the row that caused it. The inbox is a record of what somebody was told; re-deriving the text later from an incident that has since been re-titled and resolved would show them a message that was never sent. |
+| 2026-09-02 | P5-01: `notifications` has no insert policy at all, so even a client acting as itself cannot write one — spec §5's "created only by database triggers" is enforced by the absence of a policy rather than by a rule the trigger has to pass. `guard_notification_edit()` covers the other half: the only column an update may move is `read_at`. |
+| 2026-09-02 | P5-01: preferences are stored sparsely — no row means every channel is on — and read through `notification_pref()`, which applies the defaults. The alternative, a row per user per type written on sign-up, needs a backfill migration every time the enum gains a value, and P6-08 is already going to add two. |
+| 2026-09-02 | P5-01: whether an event deserves an email is decided where it is raised (`notifications.email_requested`: a high-severity incident yes, an ordinary one no) and the recipient's preference can only turn that off, never on. Otherwise every reader would have to be trusted to grade somebody else's incident. |
+| 2026-09-02 | P5-01: each person's Realtime topic is their own uid (`notifications:<uid>`), with no admin-wide channel — unlike checklists, where `checklists:all` exists. An inbox is per person by definition, and a channel carrying everybody's would hand one subscriber the fan-out of 200 users. |
+| 2026-09-02 | P5-01: `push_subscriptions.endpoint` is the unique key, not `(user_id, device)`. The endpoint *is* the browser's identity to the push service, a re-subscribe produces a new one, and the old one starts answering 410 — which is the signal `notify` (P5-03) uses to delete it. |
 
 ## How to update this file
 
