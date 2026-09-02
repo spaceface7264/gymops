@@ -1,7 +1,7 @@
 import { cleanup, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { DailyLogPage, parseTags } from '@/features/daily-log'
+import { DailyLogPage, incidentDraft, parseTags } from '@/features/daily-log'
 import { renderWithProviders } from '@/test/render'
 
 type Row = Record<string, unknown>
@@ -244,5 +244,65 @@ describe('the daily log', () => {
     renderWithProviders(<DailyLogPage />)
 
     expect(await screen.findByText(/Only this gym's team/)).toBeInTheDocument()
+  })
+})
+
+describe('an issue becoming an incident', () => {
+  it('takes the first line as the title and keeps the tags with the story', () => {
+    expect(
+      incidentDraft({ body: 'Hold broke on wall 4\nTaped it off.', tags: ['wall4'] }),
+    ).toEqual({
+      title: 'Hold broke on wall 4',
+      body: 'Hold broke on wall 4\nTaped it off.\n\n#wall4',
+    })
+  })
+
+  it('cuts a title that would not fit the list', () => {
+    const { title } = incidentDraft({ body: 'x'.repeat(120), tags: [] })
+    expect(title).toHaveLength(81)
+    expect(title.endsWith('…')).toBe(true)
+  })
+
+  it('offers the conversion on an issue, to whoever may report there', async () => {
+    tableRows.mockImplementation((table) =>
+      table === 'daily_log_entries'
+        ? [entry({ kind: 'issue', body: 'Hold broke on wall 4', tags: ['wall4'] })]
+        : [],
+    )
+    renderWithProviders(<DailyLogPage />)
+
+    const [card] = await timelineEntries()
+    const link = within(card).getByRole('link', { name: 'Report as an incident' })
+    expect(link).toHaveAttribute(
+      'href',
+      '/incidents/new?title=Hold+broke+on+wall+4&body=Hold+broke+on+wall+4%0A%0A%23wall4',
+    )
+  })
+
+  it('leaves a handover alone', async () => {
+    renderWithProviders(<DailyLogPage />)
+
+    const [card] = await timelineEntries()
+    expect(
+      within(card).queryByRole('link', { name: 'Report as an incident' }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('does not offer it in a gym this person does not work in', async () => {
+    profile.mockReturnValue({
+      id: 'user-sam',
+      is_admin: false,
+      is_superadmin: false,
+      gym_memberships: [{ role: 'staff', gyms: { id: 'gym-aarhus', name: 'Aarhus C' } }],
+    })
+    tableRows.mockImplementation((table) =>
+      table === 'daily_log_entries' ? [entry({ kind: 'issue' })] : [],
+    )
+    renderWithProviders(<DailyLogPage />)
+
+    const [card] = await timelineEntries()
+    expect(
+      within(card).queryByRole('link', { name: 'Report as an incident' }),
+    ).not.toBeInTheDocument()
   })
 })

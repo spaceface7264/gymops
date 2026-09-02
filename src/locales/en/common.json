@@ -237,6 +237,7 @@
     "readOnly": "Only this gym's team can write in its log.",
     "remove": "Remove",
     "removed": "Removed from the timeline.",
+    "reportAsIncident": "Report as an incident",
     "save": "Save",
     "saveFailed": "The entry could not be saved. Try again.",
     "someone": "Someone",

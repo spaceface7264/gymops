@@ -107,6 +107,7 @@ export function DailyLogPage() {
                   <EntryCard
                     entry={entry}
                     canManage={publish.canPublishIn(entry.gym_id)}
+                    canReport={canCompleteIn(entry.gym_id)}
                     showGym={gymId === null}
                   />
                 </li>

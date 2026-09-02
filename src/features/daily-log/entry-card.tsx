@@ -1,10 +1,13 @@
+import { TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { useAuth } from '@/features/auth'
+import { incidentDraftPath } from './incident-draft'
 import {
   dailyLogKinds,
   parseTags,
@@ -21,10 +24,13 @@ import {
 export function EntryCard({
   entry,
   canManage,
+  canReport,
   showGym,
 }: {
   entry: DailyLogEntry
   canManage: boolean
+  /** Whether to offer turning an issue into an incident (spec §2.2). */
+  canReport: boolean
   showGym: boolean
 }) {
   const { t, i18n } = useTranslation()
@@ -111,6 +117,17 @@ export function EntryCard({
               #{tag}
             </Badge>
           ))}
+        </div>
+      )}
+
+      {!editing && entry.kind === 'issue' && canReport && (
+        <div className="flex gap-2">
+          <Button asChild variant="outline" size="sm">
+            <Link to={incidentDraftPath(entry)}>
+              <TriangleAlert className="size-4" />
+              {t('dailyLog.reportAsIncident')}
+            </Link>
+          </Button>
         </div>
       )}
 
