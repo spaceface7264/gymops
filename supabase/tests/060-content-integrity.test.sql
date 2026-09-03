@@ -6,7 +6,7 @@
 --
 -- Every assertion here failed before `20260902130000_content_integrity.sql`.
 begin;
-select plan(18);
+select plan(19);
 
 -- ---------------------------------------------------------------- fixtures --
 select tests.create_user('super');
@@ -93,6 +93,11 @@ select is(
   (select count(*)::int from public.profiles where id = tests.get_user_id('staff_a')),
   1,
   'a deactivated member still sees their own profile, so the app can say why'
+);
+select is(
+  (select count(*)::int from public.profiles),
+  1,
+  'a deactivated person sees only themselves, not the admins'
 );
 
 select tests.become_postgres();
