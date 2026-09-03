@@ -13,6 +13,7 @@ import {
 import { GymProvider } from '@/features/gyms'
 import { IncidentDetailPage, IncidentFormPage, IncidentsPage } from '@/features/incidents'
 import { AcceptInvitePage } from '@/routes/accept-invite-page'
+import { AccountPage } from '@/routes/account-page'
 import { AdminPage, RequireSuperadmin } from '@/routes/admin-page'
 import { AuthCallbackPage } from '@/routes/auth-callback-page'
 import { AppShell } from '@/routes/app-shell'
@@ -82,6 +83,7 @@ export const router = createRouter([
           { path: 'chat/:channelId', element: <ChatPage /> },
           { path: 'notifications', element: <InboxPage /> },
           { path: 'install', element: <InstallPage /> },
+          { path: 'account', element: <AccountPage /> },
           {
             path: 'notifications/preferences',
             element: <NotificationPreferencesPage />,

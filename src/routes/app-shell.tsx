@@ -1,5 +1,6 @@
+import { UserRound } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { NavLink, Outlet, useLocation } from 'react-router'
+import { Link, NavLink, Outlet, useLocation } from 'react-router'
 import { Button } from '@/components/ui/button'
 import {
   DeactivatedNotice,
@@ -80,10 +81,18 @@ export function AppShell() {
           <div className="flex items-center gap-3">
             <NotificationBell />
             {user?.email && (
-              <span className="text-muted-foreground hidden text-sm sm:inline">
+              <Link
+                to="/account"
+                className="text-muted-foreground hidden text-sm hover:underline sm:inline"
+              >
                 {user.email}
-              </span>
+              </Link>
             )}
+            <Button variant="ghost" size="icon" className="sm:hidden" asChild>
+              <Link to="/account" aria-label={t('auth.account.title')}>
+                <UserRound className="size-5" />
+              </Link>
+            </Button>
             <Button
               variant="outline"
               size="sm"

@@ -46,8 +46,8 @@ testable on this machine and the hosted half stays in "Hosted project cutover".
 **Phase 7, desktop and release** (P7-01 … P7-06) is **merged into `main`** as
 PR #9 (2026-09-03), verified by hand in the debug bundle; P7-07 has its
 checklist in `docs/walkthrough.md` and the walkthrough itself is still to be
-driven. **Currently working on P7B-01** (the account screen's hooks) on
-`basics-account-search-dm`, spec and plan under `docs/superpowers/`. The Rust toolchain was
+driven. **P7B-01** (the account screen) is done; **currently working on P7B-02**
+on `basics-account-search-dm`, spec and plan under `docs/superpowers/`. The Rust toolchain was
 installed for it on 2026-09-03 (rustup, stable 1.98, minimal profile, in
 `~/.cargo`); `npm run tauri dev` is the desktop window against the Vite dev
 server and needs `. ~/.cargo/env` in a shell that has not sourced it.
@@ -68,7 +68,7 @@ container out. `supabase stop && supabase start` brings it back.
 | P5 Notifications and PWA | ✅ Complete    | P5-01 to P5-06, merged in PR #7.                |
 | P6 Team chat             | ✅ Complete    | P6-01 … P6-08, merged in PR #8.                 |
 | P7 Desktop and release   | ✅ Complete    | P7-01 … P7-06 merged in PR #9; P7-07 walkthrough pending (checklist in `docs/`). |
-| P7b Basics pass          | ⬜ Not started | P7B-01 … P7B-03, `basics-account-search-dm`.  |
+| P7b Basics pass          | 🔄 In progress | P7B-01 done; P7B-02, P7B-03 on `basics-account-search-dm`.  |
 | P8 AI assistant (V1.5)   | ⬜ Not started | Needs Anthropic API key in Supabase secrets.    |
 
 ## Task status
@@ -134,7 +134,7 @@ Update this list as work begins:
 | P7-05 | ✅ done | 2026-09-03 | 2026-09-03 | `@sentry/react` in `src/lib/sentry.ts`, imported first in `main.tsx`; inert without `VITE_SENTRY_DSN` (`.env.example`, release.yml secret). Errors via React 19's `createRoot` hooks (`reactErrorHandler`) and the global handlers; tracing at 0.2 with `reactRouterV7BrowserTracingIntegration` + `wrapCreateBrowserRouterV7`, so spans are named by route; `release: gymops@<version>` from a `__APP_VERSION__` define; `sendDefaultPii: false`. One project for both clients, told apart by a `client` tag (`platform` is Sentry's own field and cannot be searched as a tag). The Rust shell is not instrumented — it has no code of its own. Project **boulders/gymops** (EU region, `de.sentry.io`), created by Rami on 2026-09-03: members may not create projects in that org, the MCP got 403. Verified from both clients with a temporary throw: [GYMOPS-1](https://boulders.sentry.io/issues/GYMOPS-1) has the Chrome event (`http://localhost:5173/login`) and the desktop one (`tauri://localhost/auth/callback`, `client: desktop`), release `gymops@0.1.0`, first-party frames readable in dev. Source maps for production builds are not uploaded yet (needs `SENTRY_AUTH_TOKEN` and the Vite plugin — Blockers). |
 | P7-06 | ✅ done | 2026-09-03 | 2026-09-03 | `README.md`: what the app is, setup (Node 20, a Docker runtime, the Supabase CLI, Rust for the shell), the four `VITE_*` variables and where the secrets live, the command table, the desktop workflow and its deep-link gotchas, the tagged release flow with the Actions secrets it needs, and the code-signing/notarization steps for macOS (Developer ID certificate + notarization credentials as the `APPLE_*` secrets `tauri-action` reads) and Windows (certificate thumbprint or `signCommand`). CLAUDE.md stays the agent's short version; the README is the one a new developer reads. |
 | P7-07 | 🔄 in progress | 2026-09-03 | | `docs/walkthrough.md` is the checklist (§2.1 accounts and the permission matrix row by row, every §2.2 module, the three clients). The desktop lines were ticked on 2026-09-03; the rest is to be driven in a later session — Rami's call on 2026-09-03 evening. The update line needs the first tagged release. |
-| P7B-01 | 🔄 in progress | 2026-09-03 | | Account hooks: `useUpdateName`, `useUpdateLocale`, `useChangePassword` in `src/features/auth/queries.ts`, exported from the feature index. Name and locale write both the auth user's metadata and the `profiles` row; password change re-authenticates with the current password first (`signInWithPassword`) and reports a wrong one as `wrong_password` without touching the account. All three invalidate `['auth']`. 4 new unit tests. |
+| P7B-01 | ✅ done | 2026-09-03 | 2026-09-03 | Account hooks: `useUpdateName`, `useUpdateLocale`, `useChangePassword` in `src/features/auth/queries.ts`, exported from the feature index. Name and locale write both the auth user's metadata and the `profiles` row; password change re-authenticates with the current password first (`signInWithPassword`) and reports a wrong one as `wrong_password` without touching the account. All three invalidate `['auth']`. The `/account` screen (`src/routes/account-page.tsx`) built on those hooks: a name card, a language card and a password card, each with its own save, feedback text and `auth.account.*` strings (en/da). Routed at `account` alongside `install` in `router.tsx`; the header's email in `AppShell` is now a `Link` to `/account`, plus an icon-only `UserRound` button next to the bell for phone widths where the email is hidden. 6 new page tests plus the existing hook tests (328 total, full suite green). The browser walk-through (sign in, rename, switch to Danish, wrong-then-right password change, sign out/in) could not be run in this session — the Claude-in-Chrome extension reported "not connected" after two attempts; it still needs doing by hand or in a session with the extension connected. |
 | P5-02 … P8-06 | ⬜ not started | | | |
 
 Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
