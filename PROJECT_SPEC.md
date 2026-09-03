@@ -242,6 +242,8 @@ gymops/
 | `generateSW` for the service worker | The worker exists for `push` and `notificationclick`; a generated one has neither, and the precaching it does give us is available from `injectManifest` too. |
 | One push subscription per user | A subscription is a browser's, not a person's: the same person's phone and laptop are two endpoints, and a browser that re-subscribes gets a new one. `push_subscriptions.endpoint` is the key, and `notify` deletes a row when the push service answers 404 or 410. |
 
+| Registering the service worker in the desktop shell too | The worker is the web's precache and push receiver (P5-05); the desktop ships the build inside the app, updates through the updater and is notified natively (P7-03/04). WKWebView also serves no service worker on the `tauri://` scheme, so it would be a silent no-op on macOS and a second update path on Windows. `main.tsx` skips it when `isDesktop()`. |
+
 | `supabase-js` in the Playwright fixtures | Creating a client opens a Realtime socket, and Node 20 — the version CI runs — has no native WebSocket. The fixtures need three REST verbs; `fetch` against PostgREST has no such dependency. |
 
 ## 5. Conventions

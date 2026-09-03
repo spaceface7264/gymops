@@ -56,6 +56,11 @@ export default tseslint.config(
                 'Import from the feature index (`@/features/<name>`) instead of reaching into it.',
             },
             {
+              // P7-01: the desktop shell is a platform detail behind `src/lib/platform`.
+              group: ['@tauri-apps/*'],
+              message: 'Ask `@/lib/platform` instead of importing Tauri directly.',
+            },
+            {
               group: ['../*/../*'],
               message: 'Use the `@/` alias instead of deep relative paths.',
             },
@@ -63,6 +68,10 @@ export default tseslint.config(
         },
       ],
     },
+  },
+  {
+    files: ['src/lib/platform/**/*.ts'],
+    rules: { 'no-restricted-imports': 'off' },
   },
   {
     // shadcn/ui primitives export variant helpers alongside components.

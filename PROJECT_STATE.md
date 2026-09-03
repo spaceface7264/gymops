@@ -35,23 +35,19 @@ tests follow in PR #6 from the same branch.
 as PR #7 (2026-09-03), with all four CI jobs green — including the new
 end-to-end job.
 
-**Phase 6, team chat** (P6-01 … P6-08) is **complete** on `phase-6-chat`:
-the schema and its RLS (P6-01), the automatic gym and `#company` channels
-(P6-02), the channel list and badges (P6-03), the message list (P6-04), the
-composer (P6-05), DMs (P6-06), custom channels (P6-07) and the mention/DM
-notifications with per-channel mute (P6-08). Draft PR #8 is ready to come out
-of draft once CI is green on the last two commits.
+**Phase 6, team chat** (P6-01 … P6-08) is **merged into `main`** as PR #8
+(2026-09-03), all four CI jobs green. Phase 6 is also where the `notify`
+function, the VAPID keys and Resend finally have to exist, and where P2-03's
+`invite` gets deployed. The VAPID pair and the Resend key are local-only for
+now — `notify` sends by web push and email when the secrets are set and
+records what it would have sent when they are not, so the whole fan-out is
+testable on this machine and the hosted half stays in "Hosted project cutover".
 
-The branch is pushed and open as **draft PR #8**, which is where the first CI
-run found what only ever shows up off this machine: `database.types.ts` had
-not been regenerated after P6-05's `chat_topic_channel()`, and the drift guard
-added on 2026-09-02 caught it. Three of the four jobs were green; the types are
-regenerated in the P6-08 commit. Phase 6 is also where the `notify` function, the VAPID keys and
-Resend finally have to exist, and where P2-03's `invite` gets deployed. The
-VAPID pair and the Resend key are local-only for now — `notify` sends by web
-push and email when the secrets are set and records what it would have sent
-when they are not, so the whole fan-out is testable on this machine and the
-hosted half stays in "Hosted project cutover".
+**Phase 7, desktop and release** (P7-01 … P7-07) is **in progress** on
+`phase-7-desktop`, branched from `main` after PR #8. The Rust toolchain was
+installed for it on 2026-09-03 (rustup, stable 1.98, minimal profile, in
+`~/.cargo`); `npm run tauri dev` is the desktop window against the Vite dev
+server and needs `. ~/.cargo/env` in a shell that has not sourced it.
 
 Testing Realtime locally needs the full stack: the run screen's live sync does
 not work under the CI-style `supabase start -x …`, which leaves the realtime
@@ -67,8 +63,8 @@ container out. `supabase stop && supabase start` brings it back.
 | P3 News and guides       | ✅ Complete    | P3-01 to P3-07 (PR #3) and the audit fixes (#4). |
 | P4 Daily ops             | ✅ Complete    | P4-01 to P4-10 merged in PR #5; P4-11 in PR #6.   |
 | P5 Notifications and PWA | ✅ Complete    | P5-01 to P5-06, merged in PR #7.                |
-| P6 Team chat             | ✅ Complete    | P6-01 … P6-08 on `phase-6-chat`; PR #8 (draft). |
-| P7 Desktop and release   | ⬜ Not started |                                                 |
+| P6 Team chat             | ✅ Complete    | P6-01 … P6-08, merged in PR #8.                 |
+| P7 Desktop and release   | 🔄 In progress | P7-01 done on `phase-7-desktop`; P7-02 next.     |
 | P8 AI assistant (V1.5)   | ⬜ Not started | Needs Anthropic API key in Supabase secrets.    |
 
 ## Task status
@@ -127,6 +123,7 @@ Update this list as work begins:
 | P6-06 | ✅ done | 2026-09-03 | 2026-09-03 | `20260903150000_start_dm.sql` + `new-dm-dialog.tsx`: "New conversation" in the chat sidebar, a picker of the colleagues `profiles_select` shows, and `start_dm(target_ids)` — which **finds or creates**, because the dedupe is the one part of a DM a client cannot do: `member_hash` is md5 of the sorted member ids, derived by a trigger after the members exist, so a browser asking "is this the same conversation" would have to open a second one to find out. The function is deliberately `security invoker`: it adds atomicity, not authority, and who you may message stays `profiles_select`'s answer rather than a second copy of it. A lost race takes the winner's channel — the unique index does the deciding. **Two things P6-01 got wrong and nothing had caught, because every DM in the tests so far was seated as `postgres`:** `returning id` on a channel you just created is a row `channels_select` will not show you (it has no members yet), so the id is generated in the function; and `channel_members_insert`'s DM branch asked a subquery on `channels`, which is itself filtered by that same policy — the creator could not see the channel they had just made, so the branch was dead. It now goes through `can_seat_in_dm()`. 17 new pgTAP assertions (447 total) and 2 unit tests (291). Driven in Chrome with Playwright: staff picked Mette Manager, the DM opened and took a message; the same pick a second time landed on the same channel with one row in the sidebar; and the manager's own sidebar showed it badged 1 with the words in it. |
 | P6-07 | ✅ done | 2026-09-03 | 2026-09-03 | `channel-dialog.tsx`, `channel-members-dialog.tsx`, `browse-channels-dialog.tsx` and the header they hang off: a manager opens a channel in a gym they run (an admin company-wide too), names and describes it, seats people in it, renames it and deletes it; anybody browses what they can see and has not joined, joins, and leaves again. The scope and the privacy are asked **only at creation** — moving a channel between gyms hands it to different managers, and making a public one private drops the readers who never joined. Deleting takes the messages with it (cascade), behind the same confirm dialog news uses. `people-picker.tsx` is now shared with the DM dialog, and `useDmCandidates()` became `useColleagues()`, since the list is the same one either way. `20260903160000_custom_channels.sql` is the migration this needed, and it is P6-06's lesson one layer along: `channels_select` asked `can_moderate_channel(id)`, which *looks the channel up*, so creating a private channel and reading back its id was refused — a command cannot see its own tuple. The moderation branch is now asked of the row being filtered; the function is untouched for the tables that ask about a channel they are not. 17 new pgTAP assertions (464 total), written before the dialogs and deliberately in the statement shapes the screen sends, and 5 unit tests (296). Driven in Chrome with Playwright end to end: create → post → members; staff browse → join → post → leave; rename → delete; and the private path — invisible in Browse, then seated by the manager and read by staff. |
 | P6-08 | ✅ done | 2026-09-03 | 2026-09-03 | `20260903140000_chat_notifications.sql` adds `chat_mention` and `chat_dm` to the enum and `20260903140100_chat_notification_trigger.sql` raises them — two migrations because Postgres refuses a new enum label in the transaction that created it. `notify_chat_message()` tells the people a message names in an ordinary channel, and everybody else in a DM (named or not, so a mention inside a DM is not a second event), through `raise_notification()` — so the per-type switch, the active check and the fan-out to push and email come for free. `chat_audience()` drops anyone who muted the channel: mute is "not from here", a stronger no than the per-type preference. The DM branch de-duplicates per channel over five minutes; the mention branch does not. Neither asks for email. The mute switch itself is now in the channel header (`useSetChannelMuted`) — the list has been showing the marker since P6-03 with no way to set it — and the preferences screen, the inbox icons and `notify`'s push/email headings all learned the two types in `en` and `da`. 12 new pgTAP assertions (430) and 2 unit tests (289); the preferences test now counts the enum rather than hard-coding twelve checkboxes. Verified in two browser sessions: a mention reached the manager's inbox as "You were mentioned / Sam Staff — Copenhagen Nord" with the words that were typed, and a second one after muting raised nothing. |
+| P7-01 | ✅ done | 2026-09-03 | 2026-09-03 | `src-tauri/` from `tauri init`, kept minimal: identifier `dk.gymops.desktop`, crate `gymops`, `frontendDist: ../dist` (the built assets ship inside the app, spec §3), `devUrl` the Vite server, bundle targets `dmg` + `msi`, icons rendered from `public/icon-512.png` with `tauri icon`. `src/lib/platform/` is the one place allowed to import `@tauri-apps/*` — ESLint's `no-restricted-imports` fences the rest of `src` off — and today exports `isDesktop()`; the first caller is `main.tsx`, which registers no service worker on desktop (P5-05's worker is the web's precache and push receiver; the desktop gets the updater and native notifications instead, P7-03/04). `vite.config.ts` pins port 5173 with `strictPort` because `tauri dev` opens the window on that URL. `npm run tauri dev` verified by hand on 2026-09-03: the window loads the dev server and signs in against the local stack. CSP is still `null` — decide it with the release work (P7-04). No `cargo check` in CI yet: it needs a Rust toolchain and WebKitGTK on the runner, which the tagged build workflow (P7-04) sets up anyway. 2 new unit tests (298 total). |
 | P5-02 … P8-06 | ⬜ not started | | | |
 
 Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
@@ -416,6 +413,7 @@ of truth; nothing in config.toml applies to a hosted project)
 | 2026-09-03 | P6-07: there is no preview of a channel you have not joined. Posting takes membership and the read marker lives on the membership row, so browsing lists what you could join and joining is what opens it. |
 | 2026-09-03 | P6-08: a DM is told as a DM even when it names somebody, and is de-duplicated per channel over five minutes; a mention in an ordinary channel is told every time, because somebody typed a name on purpose. |
 | 2026-09-03 | P6-08: mute lives on `channel_members`, not in the preferences screen — a type switch silences a kind of event everywhere, mute silences one conversation whatever the type. |
+| 2026-09-03 | P7-01: `@tauri-apps/*` is imported only under `src/lib/platform`; everything else asks `isDesktop()`. The web build and the desktop shell are one bundle, and a Tauri import spread through the features would be the thing that quietly breaks the web. |
 | 2026-09-03 | P6-08: chat raises no email. The grading belongs where the event is raised (P5-02), and a chat line is not email-worthy; push and the inbox still follow the recipient's preferences. |
 
 ## How to update this file

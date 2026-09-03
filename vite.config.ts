@@ -42,6 +42,10 @@ export default defineConfig({
       },
     }),
   ],
+  // P7-01: `tauri dev` opens the window on `devUrl`, so the port must be this
+  // one and no other; Vite must not clear the terminal Tauri is also writing to.
+  clearScreen: false,
+  server: { port: 5173, strictPort: true },
   resolve: {
     alias: {
       '@': path.resolve(import.meta.dirname, './src'),
