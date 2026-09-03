@@ -22,7 +22,7 @@ values
   ('aaaaaaaa-0000-0000-0000-000000000001', null, 'Chalk policy',
    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Only liquid chalk from Monday."}]}]}',
    'published', now()),
-  ('aaaaaaaa-0000-0000-0000-000000000002', null, 'Opening hours',
+  ('aaaaaaaa-0000-0000-0000-000000000002', null, 'Anything else',
    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"We mention chalk once, in passing."}]}]}',
    'published', now()),
   ('aaaaaaaa-0000-0000-0000-000000000003', null, 'Draft about chalk',
