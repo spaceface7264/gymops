@@ -216,6 +216,8 @@ gymops/
 | `generateSW` for the service worker | The worker exists for `push` and `notificationclick`; a generated one has neither, and the precaching it does give us is available from `injectManifest` too. |
 | One push subscription per user | A subscription is a browser's, not a person's: the same person's phone and laptop are two endpoints, and a browser that re-subscribes gets a new one. `push_subscriptions.endpoint` is the key, and `notify` deletes a row when the push service answers 404 or 410. |
 
+| `supabase-js` in the Playwright fixtures | Creating a client opens a Realtime socket, and Node 20 — the version CI runs — has no native WebSocket. The fixtures need three REST verbs; `fetch` against PostgREST has no such dependency. |
+
 ## 5. Conventions
 
 - **Language:** TypeScript strict everywhere, including Edge Functions (Deno). No `any`.

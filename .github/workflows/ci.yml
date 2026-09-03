@@ -48,6 +48,40 @@ jobs:
           supabase gen types typescript --local --schema public > src/lib/database.types.ts
           git diff --exit-code src/lib/database.types.ts
 
+  e2e:
+    name: End-to-end flows
+    runs-on: ubuntu-latest
+    # The dev server is started by Playwright itself (playwright.config.ts) and
+    # needs the same two variables a developer keeps in `.env.local`; these are
+    # the local stack's published demo values, not secrets.
+    env:
+      VITE_SUPABASE_URL: http://127.0.0.1:54321
+      VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.116.0
+      - run: npm ci
+      # Realtime stays in this time: the run screen subscribes to it, and a
+      # missing container is a console error on the screen under test.
+      - name: Start local stack
+        run: supabase start -x imgproxy,studio,postgres-meta,edge-runtime,logflare,vector,supavisor
+      - name: Apply migrations and seeds
+        run: supabase db reset
+      - run: npx playwright install --with-deps chromium
+      - run: npm run e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-traces
+          path: test-results
+          retention-days: 7
+
   functions:
     name: Edge Functions
     runs-on: ubuntu-latest
