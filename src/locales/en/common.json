@@ -80,6 +80,7 @@
       "reload": "Reload",
       "title": "Something went wrong"
     },
+    "loading": "Loading…",
     "name": "GymOps",
     "update": {
       "available": "GymOps {{version}} is ready.",

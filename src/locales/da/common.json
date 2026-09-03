@@ -80,6 +80,7 @@
       "reload": "Genindlæs",
       "title": "Noget gik galt"
     },
+    "loading": "Indlæser…",
     "name": "GymOps",
     "update": {
       "available": "GymOps {{version}} er klar.",
