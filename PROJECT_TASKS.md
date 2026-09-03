@@ -94,6 +94,14 @@ Legend: P1 = Phase 1 etc. Effort: S (< half day), M (1–2 days), L (3+ days).
 | P7-06 | README: setup, env, signing/notarization steps                                 | P7-04        | S      |
 | P7-07 | Full manual verification walkthrough (see `PROJECT_SPEC.md` §2 and plan)       | all P1–P7    | M      |
 
+## Phase 7b — basics pass (decided 2026-09-03, spec in `docs/superpowers/specs/2026-09-03-basics-account-search-dm-design.md`)
+
+| ID     | Task                                                                          | Depends on   | Effort |
+| ------ | ----------------------------------------------------------------------------- | ------------ | ------ |
+| P7B-01 | Account screen: own name, language, password (current password required)      | P1-07, P1-08 | M      |
+| P7B-02 | `content_search()` SQL function with `ts_rank`; search results ordered by it   | P3-06        | S      |
+| P7B-03 | `profiles_select` shows active admins to everyone; staff → admin DMs           | P6-06        | S      |
+
 ## Phase 8 — AI assistant (V1.5)
 
 | ID    | Task                                                                                                      | Depends on   | Effort |
@@ -110,6 +118,8 @@ Legend: P1 = Phase 1 etc. Effort: S (< half day), M (1–2 days), L (3+ days).
 - V2: tasks (`tasks`, recurrence, assignment, incident → task). Calendars shipped early as P4-11.
 - V3: dashboards, `brp-sync` Edge Function (needs BRP API key, service account, rate limits, webhook info).
 - Chat follow-ups: threads, reactions, search.
+- Global "search anything" in the header: relocate `ContentSearch`, then add `search_vector` columns and branches for incidents, events, daily log and people; chat last.
+- Acknowledgement reminders (the `ack_reminder` type exists, nothing raises it) and branded en/da auth mail templates — both before the cutover.
 - Assistant follow-ups: pgvector retrieval, live ops data, actions.
 
 ## Critical path
