@@ -1,6 +1,8 @@
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { Button } from '@/components/ui/button'
+import { isDesktop } from '@/lib/platform'
+import { DesktopNotificationOptIn } from './desktop-notification-opt-in'
 import { PushOptIn } from './push-opt-in'
 import {
   defaultPref,
@@ -46,7 +48,7 @@ export function NotificationPreferencesPage() {
         {t('notifications.preferencesHint')}
       </p>
 
-      <PushOptIn />
+      {isDesktop() ? <DesktopNotificationOptIn /> : <PushOptIn />}
 
       {prefs.isError && (
         <p role="alert" className="text-destructive text-sm">

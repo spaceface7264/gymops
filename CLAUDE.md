@@ -21,6 +21,7 @@ Requires a Docker-compatible container runtime (OrbStack installed 2026-09-01) f
 | `npm run db:migration <name>` | new migration file |
 | `npm run db:types` | regenerate `src/lib/database.types.ts` (commit it) |
 | `npm run typecheck lint format:check test build` | the gates CI runs |
+| `npm run tauri dev` | the desktop window over the Vite server (needs Rust: `. ~/.cargo/env`) |
 
 The notification fan-out (P5-03) runs as an Edge Function with secrets the
 stack's own runtime does not have: serve it with
@@ -44,5 +45,17 @@ the Google Chrome already installed on the machine. Both start the dev server
 themselves and reuse one that is already running.
 
 CI is `.github/workflows/ci.yml`: a `web` job running those gates on Node 20, and a `database` job that starts the local stack (minus the services the tests do not need) and runs `db reset` + `test db`.
+
+The desktop shell (P7) is `src-tauri/`, built with the Rust toolchain rustup put in
+`~/.cargo` on 2026-09-03. macOS honours the `gymops://` scheme only from a bundled
+app: `npm run tauri build -- --debug --bundles app` and open the `.app` under
+`src-tauri/target/debug/bundle/macos/` once, then `open 'gymops://auth/callback?…'`
+reaches it. A debug bundle embeds the `dist` its build command produced (the page is
+`tauri://localhost`), so a code or `.env.local` change needs a rebuild. Every copy of the app on the
+machine registers the `gymops:` scheme with the same identifier — an installed
+`/Applications/GymOps.app` or a mounted `.dmg` will take `open 'gymops://…'` instead
+of the debug bundle and, being a second instance, drop the link; `open -a
+<path-to-debug-app> 'gymops://…'` targets one copy, and `lsregister -dump | grep
+gymops:` shows who is registered. `src/lib/platform` is the only code allowed to import `@tauri-apps/*`.
 
 Seed users (local only, from `supabase/seed.sql`): `super@`, `admin@`, `manager@`, `staff@` `gymops.test`, all with password `Password123`; gyms Copenhagen Nord, Aarhus C, Odense.

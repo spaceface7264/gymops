@@ -126,18 +126,17 @@ export function useMarkAllRead() {
 }
 
 /** Only the types this person has actually changed; the rest are defaults. */
-export function useNotificationPrefs() {
-  return useQuery({
-    queryKey: notificationKeys.prefs,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('notification_prefs')
-        .select('type, in_app, email, push')
+export async function fetchNotificationPrefs(): Promise<NotificationPref[]> {
+  const { data, error } = await supabase
+    .from('notification_prefs')
+    .select('type, in_app, email, push')
 
-      if (error) throw error
-      return data
-    },
-  })
+  if (error) throw error
+  return data
+}
+
+export function useNotificationPrefs() {
+  return useQuery({ queryKey: notificationKeys.prefs, queryFn: fetchNotificationPrefs })
 }
 
 /**

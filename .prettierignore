@@ -10,3 +10,7 @@ CLAUDE.md
 supabase/.temp
 # Deno formats the Edge Functions (`deno fmt`), the way ESLint already skips them
 supabase/functions
+
+# Rust build output and the schemas Tauri regenerates on every build (P7-01)
+src-tauri/target
+src-tauri/gen

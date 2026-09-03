@@ -2,6 +2,12 @@ export { InboxPage } from './inbox-page'
 export { NotificationBell } from './notification-bell'
 export { NotificationPreferencesPage } from './preferences-page'
 export { PushOptIn } from './push-opt-in'
+export { DesktopNotificationOptIn } from './desktop-notification-opt-in'
+export {
+  desktopKeys,
+  useDesktopNotificationState,
+  useEnableDesktopNotifications,
+} from './desktop'
 export {
   pushConfigured,
   pushKeys,
@@ -14,6 +20,7 @@ export {
 export { notificationIcons } from './labels'
 export {
   defaultPref,
+  fetchNotificationPrefs,
   notificationChannels,
   notificationKeys,
   notificationTypes,

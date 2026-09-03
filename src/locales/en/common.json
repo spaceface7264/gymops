@@ -80,7 +80,13 @@
       "reload": "Reload",
       "title": "Something went wrong"
     },
-    "name": "GymOps"
+    "name": "GymOps",
+    "update": {
+      "available": "GymOps {{version}} is ready.",
+      "failed": "The update could not be installed. It will be tried again next time.",
+      "install": "Restart to update",
+      "installing": "Updating…"
+    }
   },
   "auth": {
     "acceptInvite": {
@@ -93,6 +99,12 @@
       "submit": "Create account",
       "submitting": "Creating account…",
       "title": "Welcome to GymOps"
+    },
+    "callback": {
+      "continueInBrowser": "Continue in the browser",
+      "description": "Your invite is ready. Finish creating your account in the desktop app, or here in the browser.",
+      "openApp": "Open in the GymOps app",
+      "title": "Open GymOps"
     },
     "deactivated": {
       "body": "You can no longer see the gym's news, guides or other work. If this is a mistake, ask a manager or an administrator to activate you again.",
@@ -642,6 +654,10 @@
       "push": "Push"
     },
     "channelFor": "{{channel}} for {{type}}",
+    "desktopDenied": "The system is blocking notifications for GymOps. Turn them on in its notification settings.",
+    "desktopOff": "This computer does not show notifications.",
+    "desktopOn": "This computer shows notifications.",
+    "desktopOnThisDevice": "Notifications on this computer",
     "empty": "Nothing has happened yet.",
     "installGuide": "How to install it",
     "loadFailed": "The notifications could not be loaded.",

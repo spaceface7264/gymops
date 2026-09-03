@@ -3,6 +3,7 @@ import path from 'node:path'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
+import pkg from './package.json' with { type: 'json' }
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
@@ -42,6 +43,12 @@ export default defineConfig({
       },
     }),
   ],
+  // P7-01: `tauri dev` opens the window on `devUrl`, so the port must be this
+  // one and no other; Vite must not clear the terminal Tauri is also writing to.
+  clearScreen: false,
+  // P7-05: `release` for Sentry, from the one version that tags a build.
+  define: { __APP_VERSION__: JSON.stringify(pkg.version) },
+  server: { port: 5173, strictPort: true },
   resolve: {
     alias: {
       '@': path.resolve(import.meta.dirname, './src'),

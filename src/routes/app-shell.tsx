@@ -13,6 +13,7 @@ import { GymSwitcher } from '@/features/gyms'
 import { NotificationBell } from '@/features/notifications'
 import { cn } from '@/lib/utils'
 import { isFullBleed, visibleNavEntries, type NavEntry } from '@/routes/nav'
+import { UpdateBanner } from '@/routes/update-banner'
 
 /**
  * Frame for every signed-in screen: a sidebar on desktop, a bottom bar on
@@ -73,6 +74,7 @@ export function AppShell() {
       </nav>
 
       <div className={cn('flex min-w-0 flex-1 flex-col', fullBleed && 'md:min-h-0')}>
+        <UpdateBanner />
         <header className="flex items-center justify-between gap-3 border-b p-3">
           <GymSwitcher />
           <div className="flex items-center gap-3">

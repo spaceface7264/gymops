@@ -80,7 +80,13 @@
       "reload": "Genindlæs",
       "title": "Noget gik galt"
     },
-    "name": "GymOps"
+    "name": "GymOps",
+    "update": {
+      "available": "GymOps {{version}} er klar.",
+      "failed": "Opdateringen kunne ikke installeres. Den prøves igen næste gang.",
+      "install": "Genstart for at opdatere",
+      "installing": "Opdaterer…"
+    }
   },
   "auth": {
     "acceptInvite": {
@@ -93,6 +99,12 @@
       "submit": "Opret konto",
       "submitting": "Opretter konto…",
       "title": "Velkommen til GymOps"
+    },
+    "callback": {
+      "continueInBrowser": "Fortsæt i browseren",
+      "description": "Din invitation er klar. Gør din konto færdig i skrivebordsappen eller her i browseren.",
+      "openApp": "Åbn i GymOps-appen",
+      "title": "Åbn GymOps"
     },
     "deactivated": {
       "body": "Du kan ikke længere se hallens nyheder, vejledninger og øvrige arbejde. Er det en fejl, så bed en leder eller administrator om at aktivere dig igen.",
@@ -642,6 +654,10 @@
       "push": "Push"
     },
     "channelFor": "{{channel}} for {{type}}",
+    "desktopDenied": "Systemet blokerer notifikationer fra GymOps. Slå dem til i systemets notifikationsindstillinger.",
+    "desktopOff": "Denne computer viser ikke notifikationer.",
+    "desktopOn": "Denne computer viser notifikationer.",
+    "desktopOnThisDevice": "Notifikationer på denne computer",
     "empty": "Der er ikke sket noget endnu.",
     "installGuide": "Sådan installerer du den",
     "loadFailed": "Notifikationerne kunne ikke hentes.",

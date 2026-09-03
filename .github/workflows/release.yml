@@ -1,0 +1,63 @@
+name: Release
+
+# A tag `v*` builds the desktop installers — a universal .dmg and an .msi —
+# and publishes them, with the updater's `latest.json`, as a draft release
+# on the public releases repository (P7-04). The source stays private; the
+# installed apps fetch the feed from there without a token.
+#
+# Secrets: TAURI_SIGNING_PRIVATE_KEY (updater signature, generated with
+# `tauri signer generate`), RELEASES_TOKEN (a PAT with `contents: write` on
+# spaceface7264/gymops-releases), and the three VITE_ values of the hosted
+# Supabase project the build should talk to, and VITE_SENTRY_DSN (P7-05). Apple signing/notarization and
+# Windows code signing are added by setting the variables tauri-action reads
+# (APPLE_CERTIFICATE…, see README) — absent, the bundles are unsigned.
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macOS (universal)
+            os: macos-latest
+            args: --target universal-apple-darwin
+          - name: Windows
+            os: windows-latest
+            args: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.os == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+      - run: npm ci
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASES_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          # The key has no password; unset, the signer prompts for one and fails.
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ''
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          VITE_VAPID_PUBLIC_KEY: ${{ secrets.VITE_VAPID_PUBLIC_KEY }}
+          VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
+        with:
+          owner: spaceface7264
+          repo: gymops-releases
+          tagName: ${{ github.ref_name }}
+          releaseName: GymOps ${{ github.ref_name }}
+          releaseDraft: true
+          includeUpdaterJson: true
+          args: ${{ matrix.args }}
