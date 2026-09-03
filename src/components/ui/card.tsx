@@ -7,7 +7,7 @@ function Card({ className, ...props }: React.ComponentProps<'div'>) {
     <div
       data-slot="card"
       className={cn(
-        'bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm',
+        'bg-card text-card-foreground flex flex-col gap-5 rounded-2xl border py-5',
         className,
       )}
       {...props}
@@ -20,7 +20,7 @@ function CardHeader({ className, ...props }: React.ComponentProps<'div'>) {
     <div
       data-slot="card-header"
       className={cn(
-        '@container/card-header grid auto-rows-min grid-rows-[auto_auto] items-start gap-2 px-6 has-data-[slot=card-action]:grid-cols-[1fr_auto] [.border-b]:pb-6',
+        '@container/card-header grid auto-rows-min grid-rows-[auto_auto] items-start gap-2 px-5 has-data-[slot=card-action]:grid-cols-[1fr_auto] [.border-b]:pb-6',
         className,
       )}
       {...props}
@@ -28,11 +28,21 @@ function CardHeader({ className, ...props }: React.ComponentProps<'div'>) {
   )
 }
 
-function CardTitle({ className, ...props }: React.ComponentProps<'div'>) {
+type HeadingLevel = 'h1' | 'h2' | 'h3' | 'h4'
+
+/**
+ * A real heading, so a screen reader can jump between cards: the home page is
+ * five of them and had no landmarks at all (Known gaps, audit 2026-09-02).
+ */
+function CardTitle({
+  as: Comp = 'h2',
+  className,
+  ...props
+}: React.ComponentProps<'h2'> & { as?: HeadingLevel }) {
   return (
-    <div
+    <Comp
       data-slot="card-title"
-      className={cn('leading-none font-semibold', className)}
+      className={cn('text-lg leading-tight font-semibold', className)}
       {...props}
     />
   )
@@ -62,14 +72,14 @@ function CardAction({ className, ...props }: React.ComponentProps<'div'>) {
 }
 
 function CardContent({ className, ...props }: React.ComponentProps<'div'>) {
-  return <div data-slot="card-content" className={cn('px-6', className)} {...props} />
+  return <div data-slot="card-content" className={cn('px-5', className)} {...props} />
 }
 
 function CardFooter({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="card-footer"
-      className={cn('flex items-center px-6 [.border-t]:pt-6', className)}
+      className={cn('flex items-center px-5 [.border-t]:pt-6', className)}
       {...props}
     />
   )
