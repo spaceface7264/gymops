@@ -244,6 +244,8 @@ gymops/
 
 | Registering the service worker in the desktop shell too | The worker is the web's precache and push receiver (P5-05); the desktop ships the build inside the app, updates through the updater and is notified natively (P7-03/04). WKWebView also serves no service worker on the `tauri://` scheme, so it would be a silent no-op on macOS and a second update path on Windows. `main.tsx` skips it when `isDesktop()`. |
 
+| Sending desktop-requested reset links through the web callback page | The page could try `gymops://` itself and explain when nothing opens, but it cannot complete the reset: the PKCE verifier is in the app that asked, and only there. It would add a hop and a hosted-origin setting to the desktop build for a nicer error on the wrong device. The mail redirects straight to `gymops://auth/callback`. |
+
 | `supabase-js` in the Playwright fixtures | Creating a client opens a Realtime socket, and Node 20 — the version CI runs — has no native WebSocket. The fixtures need three REST verbs; `fetch` against PostgREST has no such dependency. |
 
 ## 5. Conventions

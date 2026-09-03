@@ -1,4 +1,4 @@
-import { createBrowserRouter, Outlet } from 'react-router'
+import { createBrowserRouter } from 'react-router'
 import { AuditPanel, GymsPanel, UsersPanel } from '@/features/admin'
 import { RequireAuth } from '@/features/auth'
 import { ChatPage } from '@/features/chat'
@@ -13,6 +13,7 @@ import { GymProvider } from '@/features/gyms'
 import { IncidentDetailPage, IncidentFormPage, IncidentsPage } from '@/features/incidents'
 import { AcceptInvitePage } from '@/routes/accept-invite-page'
 import { AdminPage, RequireSuperadmin } from '@/routes/admin-page'
+import { AuthCallbackPage } from '@/routes/auth-callback-page'
 import { AppShell } from '@/routes/app-shell'
 import { ForgotPasswordPage } from '@/routes/forgot-password-page'
 import { HomePage } from '@/routes/home-page'
@@ -26,6 +27,7 @@ import { navEntries } from '@/routes/nav'
 import { NotFoundPage } from '@/routes/not-found-page'
 import { RouteError } from '@/routes/route-error'
 import { ResetPasswordPage } from '@/routes/reset-password-page'
+import { RootLayout } from '@/routes/root-layout'
 
 /**
  * Route table. Everything below `/` requires a session and renders inside the
@@ -35,14 +37,16 @@ import { ResetPasswordPage } from '@/routes/reset-password-page'
 export const router = createBrowserRouter([
   {
     // A pathless layout route, so anything thrown while rendering any screen
-    // below renders `RouteError` instead of an empty document.
-    element: <Outlet />,
+    // below renders `RouteError` instead of an empty document. It is also
+    // where the desktop app listens for deep links (P7-02).
+    element: <RootLayout />,
     errorElement: <RouteError />,
     children: [
       { path: '/login', element: <LoginPage /> },
       { path: '/forgot-password', element: <ForgotPasswordPage /> },
       { path: '/reset-password', element: <ResetPasswordPage /> },
       { path: '/accept-invite', element: <AcceptInvitePage /> },
+      { path: '/auth/callback', element: <AuthCallbackPage /> },
       {
         path: '/',
         element: (

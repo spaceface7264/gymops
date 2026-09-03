@@ -94,6 +94,12 @@
       "submitting": "Opretter konto…",
       "title": "Velkommen til GymOps"
     },
+    "callback": {
+      "continueInBrowser": "Fortsæt i browseren",
+      "description": "Din invitation er klar. Gør din konto færdig i skrivebordsappen eller her i browseren.",
+      "openApp": "Åbn i GymOps-appen",
+      "title": "Åbn GymOps"
+    },
     "deactivated": {
       "body": "Du kan ikke længere se hallens nyheder, vejledninger og øvrige arbejde. Er det en fejl, så bed en leder eller administrator om at aktivere dig igen.",
       "title": "Kontoen er deaktiveret"

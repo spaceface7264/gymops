@@ -94,6 +94,12 @@
       "submitting": "Creating account…",
       "title": "Welcome to GymOps"
     },
+    "callback": {
+      "continueInBrowser": "Continue in the browser",
+      "description": "Your invite is ready. Finish creating your account in the desktop app, or here in the browser.",
+      "openApp": "Open in the GymOps app",
+      "title": "Open GymOps"
+    },
     "deactivated": {
       "body": "You can no longer see the gym's news, guides or other work. If this is a mistake, ask a manager or an administrator to activate you again.",
       "title": "This account has been deactivated"

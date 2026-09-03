@@ -141,7 +141,8 @@ Deno.serve(async (request: Request) => {
   const { data: invited, error: mailError } = await service.auth.admin.inviteUserByEmail(
     invite.email,
     {
-      redirectTo: `${siteUrl}/accept-invite`,
+      // The callback screen offers the desktop app or the browser (P7-02).
+      redirectTo: `${siteUrl}/auth/callback`,
       data: { full_name: invite.fullName ?? null, locale: invite.locale },
     },
   )

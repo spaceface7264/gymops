@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { Database } from '@/lib/database.types'
+import { isDesktop } from '@/lib/platform'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from './auth-context'
 
@@ -65,17 +66,42 @@ export function useSignOut() {
 }
 
 /**
- * Mails a recovery link. The link lands on `/reset-password`, where the
- * Supabase client exchanges its `code` for a short-lived session (PKCE).
+ * Mails a recovery link. On the web it lands on `/reset-password`, where the
+ * Supabase client exchanges its `code` for a short-lived session (PKCE). The
+ * desktop app asks for `gymops://auth/callback` instead (P7-02): the PKCE
+ * verifier is in this client's storage, so the link can only be finished here,
+ * and the deep link brings it back.
  */
 export function useRequestPasswordReset() {
   return useMutation({
     mutationFn: async (email: string) => {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: isDesktop()
+          ? 'gymops://auth/callback'
+          : `${window.location.origin}/reset-password`,
       })
       if (error) throw error
     },
+  })
+}
+
+/**
+ * Exchanges a recovery link's `code` for a session (P7-02). The client does
+ * this itself when the code is in the page URL at start-up; a deep link
+ * arrives into a running app, so the callback screen asks explicitly.
+ */
+export function useExchangeCode(code: string | null) {
+  return useQuery({
+    queryKey: ['auth', 'exchange', code],
+    queryFn: async () => {
+      if (!code) throw new Error('No code to exchange')
+      const { error } = await supabase.auth.exchangeCodeForSession(code)
+      if (error) throw error
+      return true
+    },
+    enabled: code !== null,
+    retry: false,
+    staleTime: Infinity,
   })
 }
 

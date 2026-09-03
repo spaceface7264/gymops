@@ -30,6 +30,7 @@
     "@supabase/supabase-js": "^2.109.0",
     "@tanstack/react-query": "^5.102.8",
     "@tauri-apps/api": "^2.11.1",
+    "@tauri-apps/plugin-deep-link": "^2.4.10",
     "@tiptap/extension-image": "^3.31.0",
     "@tiptap/pm": "^3.31.0",
     "@tiptap/react": "^3.31.0",
