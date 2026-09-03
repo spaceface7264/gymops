@@ -46,9 +46,11 @@ testable on this machine and the hosted half stays in "Hosted project cutover".
 **Phase 7, desktop and release** (P7-01 … P7-06) is **merged into `main`** as
 PR #9 (2026-09-03), verified by hand in the debug bundle; P7-07 has its
 checklist in `docs/walkthrough.md` and the walkthrough itself is still to be
-driven. **P7B-01** (the account screen) is done; **P7B-02's database half**
-(`content_search()`) is done and **currently working on P7B-02's client half**
-on `basics-account-search-dm`, spec and plan under `docs/superpowers/`. The Rust toolchain was
+driven. **The basics pass (P7B-01 … P7B-03) is complete** on
+`basics-account-search-dm` — the account screen, ranked search over news and
+guides through `content_search()`, and admins visible to everyone (so staff
+can DM an admin) — every gate green a final time, and it now awaits its PR
+against `main`. The Rust toolchain was
 installed for it on 2026-09-03 (rustup, stable 1.98, minimal profile, in
 `~/.cargo`); `npm run tauri dev` is the desktop window against the Vite dev
 server and needs `. ~/.cargo/env` in a shell that has not sourced it.
@@ -69,7 +71,7 @@ container out. `supabase stop && supabase start` brings it back.
 | P5 Notifications and PWA | ✅ Complete    | P5-01 to P5-06, merged in PR #7.                |
 | P6 Team chat             | ✅ Complete    | P6-01 … P6-08, merged in PR #8.                 |
 | P7 Desktop and release   | ✅ Complete    | P7-01 … P7-06 merged in PR #9; P7-07 walkthrough pending (checklist in `docs/`). |
-| P7b Basics pass          | 🔄 In progress | P7B-01 done; P7B-02, P7B-03 on `basics-account-search-dm`.  |
+| P7b Basics pass          | ✅ Complete    | P7B-01…03, PR pending.                          |
 | P8 AI assistant (V1.5)   | ⬜ Not started | Needs Anthropic API key in Supabase secrets.    |
 
 ## Task status
