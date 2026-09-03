@@ -50,7 +50,12 @@ The desktop shell (P7) is `src-tauri/`, built with the Rust toolchain rustup put
 `~/.cargo` on 2026-09-03. macOS honours the `gymops://` scheme only from a bundled
 app: `npm run tauri build -- --debug --bundles app` and open the `.app` under
 `src-tauri/target/debug/bundle/macos/` once, then `open 'gymops://auth/callback?…'`
-reaches it. A debug bundle still loads `devUrl`, so it needs the Vite server the
-build command leaves running (or `npm run dev`). `src/lib/platform` is the only code allowed to import `@tauri-apps/*`.
+reaches it. A debug bundle embeds the `dist` its build command produced (the page is
+`tauri://localhost`), so a code or `.env.local` change needs a rebuild. Every copy of the app on the
+machine registers the `gymops:` scheme with the same identifier — an installed
+`/Applications/GymOps.app` or a mounted `.dmg` will take `open 'gymops://…'` instead
+of the debug bundle and, being a second instance, drop the link; `open -a
+<path-to-debug-app> 'gymops://…'` targets one copy, and `lsregister -dump | grep
+gymops:` shows who is registered. `src/lib/platform` is the only code allowed to import `@tauri-apps/*`.
 
 Seed users (local only, from `supabase/seed.sql`): `super@`, `admin@`, `manager@`, `staff@` `gymops.test`, all with password `Password123`; gyms Copenhagen Nord, Aarhus C, Odense.

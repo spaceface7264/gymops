@@ -27,6 +27,7 @@
     "tauri": "tauri"
   },
   "dependencies": {
+    "@sentry/react": "^10.73.0",
     "@supabase/supabase-js": "^2.109.0",
     "@tanstack/react-query": "^5.102.8",
     "@tauri-apps/api": "^2.11.1",

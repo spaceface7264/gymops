@@ -1,5 +1,6 @@
 import { isTauri } from '@tauri-apps/api/core'
-import { onOpenUrl } from '@tauri-apps/plugin-deep-link'
+import { listen } from '@tauri-apps/api/event'
+import { getCurrent } from '@tauri-apps/plugin-deep-link'
 import {
   isPermissionGranted,
   requestPermission,
@@ -23,18 +24,34 @@ export function isDesktop(): boolean {
  * Calls `handler` with every `gymops://` URL the desktop app is opened with —
  * the one it was launched by, and each one that arrives while it runs (P7-02).
  * On the web nothing ever arrives. Returns the unsubscribe.
+ *
+ * Not the plugin's `onOpenUrl`: that reads `getCurrent()` and only then
+ * subscribes to the event, and on macOS a link that launches the app can land
+ * in that gap and be lost. Subscribing first and reading `getCurrent()` after
+ * closes it; a URL that then comes both ways is handled once.
  */
 export function onDeepLink(handler: (url: string) => void): () => void {
   if (!isDesktop()) return () => {}
 
   let active = true
   let unlisten: (() => void) | undefined
-  void onOpenUrl((urls) => {
-    if (active) urls.forEach(handler)
-  }).then((stop) => {
-    if (active) unlisten = stop
-    else stop()
-  })
+  const seen = new Set<string>()
+  const deliver = (urls: string[]) => {
+    if (!active) return
+    for (const url of urls) {
+      if (seen.has(url)) continue
+      seen.add(url)
+      handler(url)
+    }
+  }
+
+  void listen<string[]>('deep-link://new-url', (event) => deliver(event.payload)).then(
+    (stop) => {
+      if (!active) return stop()
+      unlisten = stop
+      return getCurrent().then((urls) => deliver(urls ?? []))
+    },
+  )
 
   return () => {
     active = false

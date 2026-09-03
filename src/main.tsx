@@ -1,3 +1,6 @@
+// Sentry first, so the SDK is up before anything below can throw (P7-05).
+import '@/lib/sentry'
+import { reactErrorHandler } from '@sentry/react'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { registerSW } from 'virtual:pwa-register'
@@ -15,7 +18,13 @@ if (!isDesktop()) registerSW({ immediate: true })
 const rootElement = document.getElementById('root')
 if (!rootElement) throw new Error('Root element #root not found')
 
-createRoot(rootElement).render(
+createRoot(rootElement, {
+  // React 19 reports render errors through these rather than to window.onerror;
+  // the route error screen still shows, this is only the report (P7-05).
+  onUncaughtError: reactErrorHandler(),
+  onCaughtError: reactErrorHandler(),
+  onRecoverableError: reactErrorHandler(),
+}).render(
   <StrictMode>
     <App />
   </StrictMode>,

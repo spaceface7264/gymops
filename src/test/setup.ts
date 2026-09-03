@@ -21,6 +21,9 @@ vi.stubEnv('VITE_SUPABASE_PUBLISHABLE_KEY', 'test-publishable-key')
  */
 vi.stubEnv('VITE_VAPID_PUBLIC_KEY', 'dGVzdC12YXBpZC1rZXk')
 
+// P7-05: `vite.config.ts` defines this for the build; tests run without it.
+vi.stubGlobal('__APP_VERSION__', '0.0.0-test')
+
 /**
  * ProseMirror (the editor behind Tiptap, P3-01) measures the selection after
  * every transaction, and jsdom implements no `Range` measurement at all: without

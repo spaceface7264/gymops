@@ -8,7 +8,7 @@ name: Release
 # Secrets: TAURI_SIGNING_PRIVATE_KEY (updater signature, generated with
 # `tauri signer generate`), RELEASES_TOKEN (a PAT with `contents: write` on
 # spaceface7264/gymops-releases), and the three VITE_ values of the hosted
-# Supabase project the build should talk to. Apple signing/notarization and
+# Supabase project the build should talk to, and VITE_SENTRY_DSN (P7-05). Apple signing/notarization and
 # Windows code signing are added by setting the variables tauri-action reads
 # (APPLE_CERTIFICATE…, see README) — absent, the bundles are unsigned.
 
@@ -52,6 +52,7 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
           VITE_VAPID_PUBLIC_KEY: ${{ secrets.VITE_VAPID_PUBLIC_KEY }}
+          VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
         with:
           owner: spaceface7264
           repo: gymops-releases

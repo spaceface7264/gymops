@@ -1,3 +1,4 @@
+import { wrapCreateBrowserRouterV7 } from '@sentry/react'
 import { createBrowserRouter } from 'react-router'
 import { AuditPanel, GymsPanel, UsersPanel } from '@/features/admin'
 import { RequireAuth } from '@/features/auth'
@@ -29,12 +30,16 @@ import { RouteError } from '@/routes/route-error'
 import { ResetPasswordPage } from '@/routes/reset-password-page'
 import { RootLayout } from '@/routes/root-layout'
 
+// Names navigation spans after the matched route, `/incidents/:incidentId`
+// rather than one id per span (P7-05). Inert without a DSN.
+const createRouter = wrapCreateBrowserRouterV7(createBrowserRouter)
+
 /**
  * Route table. Everything below `/` requires a session and renders inside the
  * app shell; modules whose phase has not landed render a
  * placeholder, so a nav entry without a `phase` must have a route here.
  */
-export const router = createBrowserRouter([
+export const router = createRouter([
   {
     // A pathless layout route, so anything thrown while rendering any screen
     // below renders `RouteError` instead of an empty document. It is also
