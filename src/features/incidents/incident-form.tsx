@@ -83,7 +83,7 @@ export function IncidentFormPage() {
 
       <Card className="p-4">
         <form
-          className="space-y-3"
+          className="space-y-4"
           onSubmit={(event) => {
             event.preventDefault()
             // Both mutations record their own failure; catching here only keeps

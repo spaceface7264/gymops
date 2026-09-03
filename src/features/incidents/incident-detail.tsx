@@ -1,6 +1,7 @@
 import { ArrowLeft } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router'
+import { LoadingState, PageHeader } from '@/components'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
@@ -128,8 +129,7 @@ export function IncidentDetailPage() {
   const publish = usePublishScope()
   const incident = useIncident(incidentId ?? '')
 
-  if (incident.isPending)
-    return <p className="text-muted-foreground text-sm">{t('incidents.loading')}</p>
+  if (incident.isPending) return <LoadingState rows={5} />
   if (!incident.data) {
     return (
       <p role="alert" className="text-destructive text-sm">
@@ -153,7 +153,7 @@ export function IncidentDetailPage() {
 
       <header className="space-y-2">
         <IncidentBadges incident={incident.data} showGym={gymId === null} />
-        <h1 className="text-2xl font-semibold">{incident.data.title}</h1>
+        <PageHeader title={incident.data.title} />
         <p className="text-muted-foreground text-sm">
           {t('incidents.reportedBy', {
             who: incident.data.reporter?.full_name ?? t('incidents.someone'),
