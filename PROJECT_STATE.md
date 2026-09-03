@@ -145,7 +145,7 @@ Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
 | ~~Nothing catches `database.types.ts` drift~~ | — | **Fixed 2026-09-02**: the database job regenerates the types and fails on a diff. It caught drift on its first run. |
 | Search has no ranking; the feed sorts drafts above published news; signed image URLs expire at 1h against a 55min stale time; the vendored `dialog.tsx` carries two untranslated "Close" strings; guides have no acknowledgement report | Each is small and none is a correctness bug | Fold into P3 polish or take them with P5-06 (Playwright) |
 | `CardTitle` renders a `div`, so no home-page block is a heading | A screen reader gets one flat list of cards with no landmarks to jump between; it is a vendored shadcn primitive, so the fix is one file and touches every card | P5 polish, or with P5-06 (Playwright) |
-| **Deleting a chat message leaves its attachments reachable** (found 2026-09-03, P6-05) | `guard_message_edit()` empties the body, but `message_attachments_select` asks only `can_read_channel()`, so the rows — and a signed URL for each file — are still there for anybody in the channel. P6-01's own rule is that a "deleted" message the API still answers with is not deleted, and a photograph is the half people would most want gone. One predicate (`and m.deleted_at is null`) plus an assertion. | Its own small task before P6 ends, or with P6-07 |
+| ~~Deleting a chat message leaves its attachments reachable~~ | — | **Fixed 2026-09-03**: `20260903130000_deleted_message_attachments.sql` puts `deleted_at is null` into the `message_attachments` policies and re-routes the `chat` bucket's read policy through the message rather than the object's path, so a remembered path cannot be signed again either. 5 new pgTAP assertions (418). A signed URL already handed out still lives out its hour. |
 | Chat attachments are unvalidated on the way in (P6-05) | Any type, any size up to the bucket's 50 MiB, and a phone photograph goes up at full resolution over gym wifi. The storage policies decide *who* may upload, not *what*. | P6 polish, or with P7-04 |
 
 ## Hosted project cutover
@@ -399,6 +399,7 @@ of truth; nothing in config.toml applies to a hosted project)
 | 2026-09-03 | P6-05: typing presence shares the message stream's topic and its channel object (`useChannelLive()`), and carries a `typing_until` window instead of an on/off pair — nobody sends the "off" when they close the tab mid-sentence. |
 | 2026-09-03 | P6-05: `realtime.messages` gained an INSERT policy for chat topics, gated on `is_channel_member()` rather than `can_read_channel()`: speaking on a channel's topic is posting in it, and posting takes membership. |
 | 2026-09-03 | P6-05: mentions are resolved by the composer from the channel's own member list and stored as profile ids, never parsed out of the text. |
+| 2026-09-03 | P6-05 follow-up: a soft-deleted message's attachments are unreadable, row and object alike — the `chat` bucket's read policy now goes through the message rather than the object's path, because hiding the row leaves a remembered path signable. |
 
 ## How to update this file
 

@@ -12,7 +12,7 @@
 --
 -- Tested against supabase/migrations/20260903090000_chat_schema.sql.
 begin;
-select plan(49);
+select plan(54);
 
 -- ---------------------------------------------------------------- fixtures --
 insert into public.gyms (id, name, slug)
@@ -224,6 +224,18 @@ select lives_ok(
   'so does a colleague'
 );
 
+-- An attachment, so the delete below has something to take with it.
+select lives_ok(
+  $$ insert into public.message_attachments (id, message_id, path, mime_type)
+     values (
+       'ffffffff-0000-0000-0000-000000000001',
+       'bbbbbbbb-0000-0000-0000-000000000002',
+       'aaaaaaaa-0000-0000-0000-000000000001/topo.png',
+       'image/png'
+     ) $$,
+  'a file goes with your own message'
+);
+
 select tests.authenticate_as('staff_b');
 select throws_ok(
   $$ insert into public.messages (channel_id, body)
@@ -273,6 +285,26 @@ select is(
   'neither can they delete it'
 );
 
+select tests.authenticate_as('staff_a');
+select is(
+  (select count(*)::int from public.message_attachments
+   where id = 'ffffffff-0000-0000-0000-000000000001'),
+  1,
+  'a colleague sees the file on a message that stands'
+);
+
+select tests.become_postgres();
+insert into storage.objects (bucket_id, name)
+values ('chat', 'aaaaaaaa-0000-0000-0000-000000000001/topo.png');
+
+select tests.authenticate_as('staff_a');
+select is(
+  (select count(*)::int from storage.objects
+   where name = 'aaaaaaaa-0000-0000-0000-000000000001/topo.png'),
+  1,
+  'and can open the object behind it'
+);
+
 select tests.authenticate_as('manager_a');
 update public.messages set body = 'Manager''s words', deleted_at = now()
 where id = 'bbbbbbbb-0000-0000-0000-000000000002';
@@ -292,6 +324,23 @@ select is(
   'and records who took it away'
 );
 
+-- Deleting is not hiding a line and keeping the picture: the attachment row
+-- and the object itself both go with the message.
+select tests.authenticate_as('staff_a');
+select is(
+  (select count(*)::int from public.message_attachments
+   where id = 'ffffffff-0000-0000-0000-000000000001'),
+  0,
+  'a deleted message takes its attachments with it'
+);
+select is(
+  (select count(*)::int from storage.objects
+   where name = 'aaaaaaaa-0000-0000-0000-000000000001/topo.png'),
+  0,
+  'including the object, which a remembered path can no longer sign'
+);
+
+select tests.authenticate_as('manager_a');
 update public.messages set deleted_at = null, body = 'Back again'
 where id = 'bbbbbbbb-0000-0000-0000-000000000002';
 select is(
