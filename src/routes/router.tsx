@@ -15,6 +15,7 @@ import { AdminPage, RequireSuperadmin } from '@/routes/admin-page'
 import { AppShell } from '@/routes/app-shell'
 import { ForgotPasswordPage } from '@/routes/forgot-password-page'
 import { HomePage } from '@/routes/home-page'
+import { InstallPage } from '@/routes/install-page'
 import { LoginPage } from '@/routes/login-page'
 import { GuideDetailPage, GuideEditorPage, GuidesPage } from '@/features/guides'
 import { NewsFeed, PostDetailPage, PostEditorPage } from '@/features/news'
@@ -66,6 +67,7 @@ export const router = createBrowserRouter([
           },
           { path: 'daily-log', element: <DailyLogPage /> },
           { path: 'notifications', element: <InboxPage /> },
+          { path: 'install', element: <InstallPage /> },
           {
             path: 'notifications/preferences',
             element: <NotificationPreferencesPage />,

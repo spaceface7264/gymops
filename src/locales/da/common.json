@@ -457,6 +457,37 @@
     "unassigned": "Ingen er på den endnu.",
     "uploadFailed": "Billedet kunne ikke uploades. Prøv igen."
   },
+  "install": {
+    "title": "Installér GymOps",
+    "intro": "GymOps kører i browseren, men installeret åbner den som en app, holder dig logget ind og kan — på iPhone først da — sende dig push-notifikationer.",
+    "backToPreferences": "Tilbage til indstillinger",
+    "ios": {
+      "title": "iPhone og iPad (Safari)",
+      "steps": [
+        "Åbn GymOps i Safari. Chrome på iPhone kan ikke installere den.",
+        "Tryk på Del-knappen og derefter “Føj til hjemmeskærm”.",
+        "Åbn GymOps fra ikonet på hjemmeskærmen, ikke fra Safari.",
+        "Under Notifikationer → Indstillinger slår du push til for denne enhed."
+      ]
+    },
+    "android": {
+      "title": "Android (Chrome)",
+      "steps": [
+        "Åbn GymOps i Chrome.",
+        "Tryk på menuen og derefter “Installér app” eller “Føj til startskærm”.",
+        "Under Notifikationer → Indstillinger slår du push til for denne enhed."
+      ]
+    },
+    "desktop": {
+      "title": "Windows og Mac",
+      "steps": [
+        "Brug desktop-appen, når den er udgivet; indtil da installerer du browserversionen.",
+        "I Chrome eller Edge åbner du installationsikonet til højre i adressefeltet.",
+        "Under Notifikationer → Indstillinger slår du push til for denne enhed."
+      ]
+    },
+    "pushNote": "Push gælder pr. enhed og pr. browser: slår du det til her, er det ikke slået til andre steder, og logger du ud af en browser, bliver dens abonnement liggende, indtil du slår det fra."
+  },
   "language": {
     "da": "Dansk",
     "en": "Engelsk",
@@ -537,6 +568,7 @@
     },
     "channelFor": "{{channel}} for {{type}}",
     "empty": "Der er ikke sket noget endnu.",
+    "installGuide": "Sådan installerer du den",
     "loadFailed": "Notifikationerne kunne ikke hentes.",
     "loading": "Henter notifikationer…",
     "markAllRead": "Markér alle som læst",
@@ -545,6 +577,15 @@
     "open": "Åbn {{title}}",
     "preferences": "Indstillinger",
     "preferencesHint": "Slår du indbakken fra for en type, bliver den slet ikke gemt. E-mail sendes kun ved de alvorlige — en hændelse med høj alvorlighed — og aldrig fordi du beder om det her.",
+    "pushDenied": "Denne browser blokerer notifikationer. Slå dem til igen i browserens indstillinger for siden.",
+    "pushDisable": "Slå fra på denne enhed",
+    "pushEnable": "Slå til på denne enhed",
+    "pushFailed": "Push kunne ikke sættes op på denne enhed.",
+    "pushNotSetUp": "Push er ikke sat op i denne version.",
+    "pushOff": "Denne enhed modtager ikke push.",
+    "pushOn": "Denne enhed modtager push.",
+    "pushOnThisDevice": "Push på denne enhed",
+    "pushUnsupported": "Denne browser kan ikke modtage push. På iPhone virker det, når GymOps ligger på hjemmeskærmen.",
     "saveFailed": "Ændringen kunne ikke gemmes. Prøv igen.",
     "title": "Notifikationer",
     "type": {

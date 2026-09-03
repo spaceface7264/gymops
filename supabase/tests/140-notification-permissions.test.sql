@@ -5,7 +5,7 @@
 -- nothing else — not write one, not touch somebody else's, not edit the text
 -- it was sent.
 begin;
-select plan(26);
+select plan(28);
 
 -- ---------------------------------------------------------------- fixtures --
 select tests.create_user('manager_a');
@@ -129,6 +129,20 @@ select results_eq(
   $$ values (true, true, true) $$,
   'a type with no row is every channel on'
 );
+-- Switching a channel back on is an UPDATE, and `set_updated_at()` stamps an
+-- `updated_by` this table does not have. It cost a browser session in P5-05.
+select lives_ok(
+  $$ update public.notification_prefs set push = true
+     where user_id = tests.get_user_id('staff_a') and type = 'incident_reported' $$,
+  'and switches it back on again, which the shared updated-at trigger refused'
+);
+select results_eq(
+  $$ select in_app, email, push
+     from public.notification_pref(tests.get_user_id('staff_a'), 'incident_reported') $$,
+  $$ values (true, false, true) $$,
+  'the change takes'
+);
+
 select lives_ok(
   $$ delete from public.notification_prefs
      where user_id = tests.get_user_id('staff_a') and type = 'incident_reported' $$,

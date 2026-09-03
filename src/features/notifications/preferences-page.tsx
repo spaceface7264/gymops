@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { Button } from '@/components/ui/button'
+import { PushOptIn } from './push-opt-in'
 import {
   defaultPref,
   notificationChannels,
@@ -44,6 +45,8 @@ export function NotificationPreferencesPage() {
       <p className="text-muted-foreground text-sm">
         {t('notifications.preferencesHint')}
       </p>
+
+      <PushOptIn />
 
       {prefs.isError && (
         <p role="alert" className="text-destructive text-sm">

@@ -213,6 +213,9 @@ gymops/
 
 | A Notifications entry in the left nav | The nav lists the modules a shift moves through. An inbox is about the person, not the gym's work, so it sits in the header with the gym switcher and the account — where every app that has one puts it, and where it can carry a badge without competing with the modules. |
 
+| `generateSW` for the service worker | The worker exists for `push` and `notificationclick`; a generated one has neither, and the precaching it does give us is available from `injectManifest` too. |
+| One push subscription per user | A subscription is a browser's, not a person's: the same person's phone and laptop are two endpoints, and a browser that re-subscribes gets a new one. `push_subscriptions.endpoint` is the key, and `notify` deletes a row when the push service answers 404 or 410. |
+
 ## 5. Conventions
 
 - **Language:** TypeScript strict everywhere, including Edge Functions (Deno). No `any`.
