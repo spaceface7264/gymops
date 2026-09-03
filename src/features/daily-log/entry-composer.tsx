@@ -96,7 +96,7 @@ export function EntryComposer({ gymId }: { gymId: string }) {
           </p>
         )}
 
-        <Button type="submit" disabled={missing.length > 0 || create.isPending}>
+        <Button type="submit" size="lg" disabled={missing.length > 0 || create.isPending}>
           {t('dailyLog.add')}
         </Button>
       </form>
