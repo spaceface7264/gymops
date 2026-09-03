@@ -252,6 +252,8 @@ gymops/
 
 | `supabase-js` in the Playwright fixtures | Creating a client opens a Realtime socket, and Node 20 — the version CI runs — has no native WebSocket. The fixtures need three REST verbs; `fetch` against PostgREST has no such dependency. |
 
+| Ranking in the client (sorting the two lists by a score computed in JS) | The score lives with the vector; two queries cannot be ranked against each other without the database's `ts_rank`, and one function is also one round trip. |
+
 ## 5. Conventions
 
 - **Language:** TypeScript strict everywhere, including Edge Functions (Deno). No `any`.
