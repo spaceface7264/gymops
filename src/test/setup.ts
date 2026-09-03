@@ -13,6 +13,15 @@ vi.stubEnv('VITE_SUPABASE_URL', 'http://127.0.0.1:54321')
 vi.stubEnv('VITE_SUPABASE_PUBLISHABLE_KEY', 'test-publishable-key')
 
 /**
+ * P5-05: the push opt-in reads this to decide whether the build can subscribe
+ * at all. Left to the machine's own environment, the tests passed on a
+ * developer's `.env.local` and failed on CI, which has none. It has to be
+ * valid base64url, because the opt-in decodes it into an application server
+ * key before it subscribes.
+ */
+vi.stubEnv('VITE_VAPID_PUBLIC_KEY', 'dGVzdC12YXBpZC1rZXk')
+
+/**
  * ProseMirror (the editor behind Tiptap, P3-01) measures the selection after
  * every transaction, and jsdom implements no `Range` measurement at all: without
  * these stubs, typing into an editor throws instead of failing an assertion.

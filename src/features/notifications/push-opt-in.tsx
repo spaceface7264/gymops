@@ -60,7 +60,13 @@ export function PushOptIn() {
         <Button
           size="sm"
           variant={subscribed ? 'outline' : 'default'}
-          disabled={denied || !pushConfigured() || enable.isPending || disable.isPending}
+          // Turning it *off* needs no key and no permission: a browser that is
+          // already subscribed must always be able to stop.
+          disabled={
+            (!subscribed && (denied || !pushConfigured())) ||
+            enable.isPending ||
+            disable.isPending
+          }
           onClick={() => (subscribed ? disable.mutate() : enable.mutate())}
         >
           {subscribed ? t('notifications.pushDisable') : t('notifications.pushEnable')}

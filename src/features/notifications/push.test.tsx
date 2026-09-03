@@ -61,6 +61,8 @@ beforeEach(() => {
   subscribe.mockResolvedValue(subscription)
   unsubscribe.mockResolvedValue(true)
   requestPermission.mockResolvedValue('granted')
+  // One test takes the key away; the rest start from a build that has one.
+  vi.stubEnv('VITE_VAPID_PUBLIC_KEY', 'dGVzdC12YXBpZC1rZXk')
   givePushApis()
 })
 
@@ -127,6 +129,22 @@ describe('the push opt-in', () => {
 
     await waitFor(() => expect(unsubscribe).toHaveBeenCalled())
     expect(remove).toHaveBeenCalledWith('https://push.example/abc')
+  })
+
+  it('says a build with no VAPID key cannot subscribe, but still lets a subscribed browser stop', async () => {
+    vi.stubEnv('VITE_VAPID_PUBLIC_KEY', '')
+    getSubscription.mockResolvedValue(subscription)
+    renderWithProviders(<PushOptIn />)
+
+    expect(
+      await screen.findByText('Push is not configured for this build.'),
+    ).toBeInTheDocument()
+    // Turning it off needs neither the key nor the permission.
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: 'Turn off on this device' }),
+      ).toBeEnabled(),
+    )
   })
 
   it('points at the install guide where push cannot work at all', () => {

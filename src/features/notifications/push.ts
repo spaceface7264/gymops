@@ -11,8 +11,6 @@ import { supabase } from '@/lib/supabase'
  * whether it is still valid.
  */
 
-const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY ?? ''
-
 /** Push needs a service worker, the Push API and the Notification API. iOS has
  *  all three only once the app has been added to the Home Screen. */
 export const pushSupported = () =>
@@ -22,7 +20,9 @@ export const pushSupported = () =>
   'PushManager' in window &&
   'Notification' in window
 
-export const pushConfigured = () => vapidPublicKey.length > 0
+/** Read at call time, not at import: a build without the key is a state the
+ *  screen has to describe, and a test has to be able to put it in one. */
+export const pushConfigured = () => (import.meta.env.VITE_VAPID_PUBLIC_KEY ?? '') !== ''
 
 /** VAPID keys travel as base64url; `applicationServerKey` wants the bytes. */
 function applicationServerKey(base64: string): Uint8Array<ArrayBuffer> {
@@ -82,6 +82,7 @@ export function useEnablePush() {
     mutationFn: async () => {
       if (!user) throw new Error('not signed in')
       if (!pushConfigured()) throw new Error('no vapid key')
+      const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY ?? ''
 
       const permission = await Notification.requestPermission()
       if (permission !== 'granted') throw new Error(permission)
