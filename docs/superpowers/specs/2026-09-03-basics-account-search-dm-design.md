@@ -31,7 +31,7 @@ its own success/error line:
 `src/features/auth/queries.ts`; page `src/routes/account-page.tsx`; route in
 `router.tsx`; header link in `app-shell.tsx`; strings under `auth.account.*`
 in `en` and `da`. No migration: `profiles_update` already lets a person edit
-their own row, and `guard_profile_edit` (P2) keeps the role flags out of reach.
+their own row, and `guard_profile_privileges()` (P1) keeps the role flags out of reach.
 
 **Tests** — unit tests for the three hooks (what is written, what is
 invalidated) and for the page: a wrong current password shows the message and
