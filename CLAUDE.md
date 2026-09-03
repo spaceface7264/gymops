@@ -30,10 +30,13 @@ calls it reads `notify_functions_url` and `notify_service_key` from Vault, set
 locally by `supabase/seeds/local-webhook.sql`; with either missing the inbox
 still fills and nothing is pushed or emailed.
 
-Realtime features (checklist live sync, later chat and notifications) need the
+Realtime features (checklist live sync, the notification badge, and chat — both
+its message stream and its typing presence, which share one topic) need the
 realtime container, which a stack started with `supabase start -x …` does not
-have — `supabase stop && supabase start` brings the full stack back. Node 20 has
-no native WebSocket, so a script that drives a Realtime client needs Node 22+.
+have — `supabase stop && supabase start` brings the full stack back. Chat is
+the one that will look broken rather than merely stale: with no realtime,
+nothing arrives until a reload. Node 20 has no native WebSocket, so a script
+that drives a Realtime client needs Node 22+.
 
 End-to-end tests (P5-06) are Playwright against the local stack and its seed
 users: `npm run e2e` uses Playwright's own Chromium, `npm run e2e:chrome` drives

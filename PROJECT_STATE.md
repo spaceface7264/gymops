@@ -145,6 +145,8 @@ Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
 | ~~Nothing catches `database.types.ts` drift~~ | — | **Fixed 2026-09-02**: the database job regenerates the types and fails on a diff. It caught drift on its first run. |
 | Search has no ranking; the feed sorts drafts above published news; signed image URLs expire at 1h against a 55min stale time; the vendored `dialog.tsx` carries two untranslated "Close" strings; guides have no acknowledgement report | Each is small and none is a correctness bug | Fold into P3 polish or take them with P5-06 (Playwright) |
 | `CardTitle` renders a `div`, so no home-page block is a heading | A screen reader gets one flat list of cards with no landmarks to jump between; it is a vendored shadcn primitive, so the fix is one file and touches every card | P5 polish, or with P5-06 (Playwright) |
+| **Deleting a chat message leaves its attachments reachable** (found 2026-09-03, P6-05) | `guard_message_edit()` empties the body, but `message_attachments_select` asks only `can_read_channel()`, so the rows — and a signed URL for each file — are still there for anybody in the channel. P6-01's own rule is that a "deleted" message the API still answers with is not deleted, and a photograph is the half people would most want gone. One predicate (`and m.deleted_at is null`) plus an assertion. | Its own small task before P6 ends, or with P6-07 |
+| Chat attachments are unvalidated on the way in (P6-05) | Any type, any size up to the bucket's 50 MiB, and a phone photograph goes up at full resolution over gym wifi. The storage policies decide *who* may upload, not *what*. | P6 polish, or with P7-04 |
 
 ## Hosted project cutover
 
