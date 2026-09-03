@@ -1,6 +1,7 @@
 import { createBrowserRouter, Outlet } from 'react-router'
 import { AuditPanel, GymsPanel, UsersPanel } from '@/features/admin'
 import { RequireAuth } from '@/features/auth'
+import { ChatPage } from '@/features/chat'
 import { DailyLogPage } from '@/features/daily-log'
 import { EventsPage } from '@/features/events'
 import {
@@ -66,6 +67,10 @@ export const router = createBrowserRouter([
             element: <ChecklistTemplateEditorPage />,
           },
           { path: 'daily-log', element: <DailyLogPage /> },
+          // Both render the same screen; `fullBleedRoutes` in nav.ts is what
+          // tells the shell to drop its page padding and max width for them.
+          { path: 'chat', element: <ChatPage /> },
+          { path: 'chat/:channelId', element: <ChatPage /> },
           { path: 'notifications', element: <InboxPage /> },
           { path: 'install', element: <InstallPage /> },
           {

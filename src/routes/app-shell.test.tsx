@@ -17,6 +17,7 @@ const signOut = vi.fn<() => Promise<{ error: null }>>()
 const single = vi.fn<() => Promise<{ data: Row | null; error: null }>>()
 const gymRows = vi.fn<() => Promise<{ data: Row[]; error: null }>>()
 const unreadCount = vi.fn<() => Promise<{ count: number; error: null }>>()
+const chatOverview = vi.fn<() => Promise<{ data: Row[]; error: null }>>()
 let authCallback: AuthCallback | null = null
 
 vi.mock('@/lib/supabase', () => ({
@@ -39,6 +40,8 @@ vi.mock('@/lib/supabase', () => ({
         is: () => unreadCount(),
       }),
     }),
+    // The chat badge on the nav entry (P6-03).
+    rpc: () => chatOverview(),
     channel: () => {
       const subscription = { on: () => subscription, subscribe: () => subscription }
       return subscription
@@ -89,6 +92,7 @@ beforeEach(async () => {
   single.mockResolvedValue({ data: profile(), error: null })
   gymRows.mockResolvedValue({ data: [aarhus, nord], error: null })
   unreadCount.mockResolvedValue({ count: 0, error: null })
+  chatOverview.mockResolvedValue({ data: [], error: null })
   await i18next.changeLanguage('en')
 })
 
@@ -167,6 +171,30 @@ describe('AppShell navigation', () => {
         '/admin',
       ),
     )
+  })
+})
+
+describe('AppShell chat badge', () => {
+  it('counts what is unread in chat, leaving the muted channels out of it', async () => {
+    chatOverview.mockResolvedValue({
+      data: [
+        { channel_id: 'channel-gym', unread: 3, last_message_at: null, muted: false },
+        { channel_id: 'channel-loud', unread: 7, last_message_at: null, muted: true },
+      ],
+      error: null,
+    })
+    renderShell()
+
+    const chat = await screen.findByRole('link', { name: /Chat/ })
+    expect(await within(chat).findByLabelText('Chat, 3 unread')).toHaveTextContent('3')
+  })
+
+  it('shows no badge when there is nothing waiting', async () => {
+    renderShell()
+
+    const chat = await screen.findByRole('link', { name: 'Chat' })
+    await waitFor(() => expect(single).toHaveBeenCalled())
+    expect(within(chat).queryByLabelText(/unread/)).not.toBeInTheDocument()
   })
 })
 

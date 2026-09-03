@@ -14,6 +14,8 @@ export const notificationTypes: NotificationType[] = [
   'incident_status_changed',
   'ack_reminder',
   'invite',
+  'chat_mention',
+  'chat_dm',
 ]
 
 export type NotificationChannel = 'in_app' | 'email' | 'push'

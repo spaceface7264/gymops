@@ -53,6 +53,109 @@ export type Database = {
           },
         ]
       }
+      channel_members: {
+        Row: {
+          channel_id: string
+          created_at: string
+          last_read_at: string
+          muted: boolean
+          user_id: string
+        }
+        Insert: {
+          channel_id: string
+          created_at?: string
+          last_read_at?: string
+          muted?: boolean
+          user_id: string
+        }
+        Update: {
+          channel_id?: string
+          created_at?: string
+          last_read_at?: string
+          muted?: boolean
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "channel_members_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "channel_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      channels: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          gym_id: string | null
+          id: string
+          is_private: boolean
+          kind: Database["public"]["Enums"]["channel_kind"]
+          member_hash: string | null
+          name: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          gym_id?: string | null
+          id?: string
+          is_private?: boolean
+          kind: Database["public"]["Enums"]["channel_kind"]
+          member_hash?: string | null
+          name?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          gym_id?: string | null
+          id?: string
+          is_private?: boolean
+          kind?: Database["public"]["Enums"]["channel_kind"]
+          member_hash?: string | null
+          name?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "channels_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "channels_gym_id_fkey"
+            columns: ["gym_id"]
+            isOneToOne: false
+            referencedRelation: "gyms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "channels_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       checklist_run_items: {
         Row: {
           done_at: string | null
@@ -874,6 +977,109 @@ export type Database = {
           },
         ]
       }
+      message_attachments: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          message_id: string
+          mime_type: string | null
+          path: string
+          size_bytes: number | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          message_id: string
+          mime_type?: string | null
+          path: string
+          size_bytes?: number | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          message_id?: string
+          mime_type?: string | null
+          path?: string
+          size_bytes?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_attachments_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_attachments_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          body: string
+          channel_id: string
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          deleted_by: string | null
+          edited_at: string | null
+          id: string
+          mentions: string[]
+        }
+        Insert: {
+          body: string
+          channel_id: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          edited_at?: string | null
+          id?: string
+          mentions?: string[]
+        }
+        Update: {
+          body?: string
+          channel_id?: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          edited_at?: string | null
+          id?: string
+          mentions?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_deleted_by_fkey"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_prefs: {
         Row: {
           email: boolean
@@ -1156,22 +1362,47 @@ export type Database = {
     }
     Functions: {
       can_complete_in: { Args: { target_gym_id: string }; Returns: boolean }
+      can_listen_to_chat: { Args: { topic: string }; Returns: boolean }
       can_listen_to_checklists: { Args: { topic: string }; Returns: boolean }
       can_listen_to_notifications: { Args: { topic: string }; Returns: boolean }
+      can_moderate_channel: {
+        Args: { target_channel: string }
+        Returns: boolean
+      }
       can_publish_content: { Args: { target_gym_id: string }; Returns: boolean }
+      can_read_channel: { Args: { target_channel: string }; Returns: boolean }
       can_read_content: { Args: { target_gym_id: string }; Returns: boolean }
       can_read_event: { Args: { target_event_id: string }; Returns: boolean }
+      can_seat_in_dm: { Args: { target_channel: string }; Returns: boolean }
+      chat_audience: {
+        Args: { excluding: string; target_channel: string }
+        Returns: string[]
+      }
+      chat_author_name: { Args: { author: string }; Returns: string }
+      chat_object_channel: { Args: { object_name: string }; Returns: string }
+      chat_overview: {
+        Args: never
+        Returns: {
+          channel_id: string
+          last_message_at: string
+          muted: boolean
+          unread: number
+        }[]
+      }
+      chat_topic_channel: { Args: { topic: string }; Returns: string }
       content_audience: { Args: { target_gym: string }; Returns: string[] }
       content_object_gym: { Args: { object_name: string }; Returns: string }
       content_search_vector: {
         Args: { doc: Json; title: string }
         Returns: unknown
       }
+      dm_member_hash: { Args: { target_channel: string }; Returns: string }
       generate_checklist_runs: { Args: { as_of?: string }; Returns: number }
       gym_overseers: { Args: { target_gym: string }; Returns: string[] }
       incident_object_gym: { Args: { object_name: string }; Returns: string }
       is_active_user: { Args: never; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
+      is_channel_member: { Args: { target_channel: string }; Returns: boolean }
       is_superadmin: { Args: never; Returns: boolean }
       managed_gym_ids: { Args: never; Returns: string[] }
       member_gym_ids: { Args: never; Returns: string[] }
@@ -1203,9 +1434,11 @@ export type Database = {
       }
       send_ack_reminders: { Args: { as_of?: string }; Returns: number }
       shares_gym_with: { Args: { target_user: string }; Returns: boolean }
+      start_dm: { Args: { target_ids: string[] }; Returns: string }
       tiptap_text: { Args: { doc: Json }; Returns: string }
     }
     Enums: {
+      channel_kind: "gym" | "company" | "custom" | "dm"
       checklist_kind: "opening" | "closing" | "custom"
       content_status: "draft" | "published"
       daily_log_kind: "handover" | "note" | "issue"
@@ -1220,6 +1453,8 @@ export type Database = {
         | "incident_status_changed"
         | "ack_reminder"
         | "invite"
+        | "chat_mention"
+        | "chat_dm"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1347,6 +1582,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      channel_kind: ["gym", "company", "custom", "dm"],
       checklist_kind: ["opening", "closing", "custom"],
       content_status: ["draft", "published"],
       daily_log_kind: ["handover", "note", "issue"],
@@ -1361,6 +1597,8 @@ export const Constants = {
         "incident_status_changed",
         "ack_reminder",
         "invite",
+        "chat_mention",
+        "chat_dm",
       ],
     },
   },
