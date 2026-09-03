@@ -77,7 +77,7 @@ Permission matrix (also the RLS test spec):
 - **Frontend:** Vite + React + TypeScript, React Router, TanStack Query, Tailwind + shadcn/ui, react-i18next (`en`, `da`), Tiptap for rich text (stored as JSON).
 - **Backend:** one Supabase project. Postgres row-level security is the only permission layer. Storage buckets `content` (news/guides), `incidents`, `chat` with storage RLS mirroring table RLS. Realtime (`postgres_changes`, private channels) for checklists, incidents, chat and notifications. Presence for typing indicators.
 - **Server-side jobs:** Edge Functions `invite`, `notify` (web push + email), later `assistant` and `brp-sync`. pg_cron for daily checklist generation. Database webhooks trigger `notify` on `notifications` insert.
-- **Desktop:** Tauri 2 wrapping the built web assets (not a remote URL) with plugins `updater`, `deep-link` (`gymops://`), `notification`, `single-instance`. GitHub Releases as the update feed.
+- **Desktop:** Tauri 2 wrapping the built web assets (not a remote URL) with plugins `updater`, `deep-link` (`gymops://`), `notification`, `single-instance`. GitHub Releases on the public `gymops-releases` repository as the update feed (the source repository is private).
 - **PWA:** `vite-plugin-pwa`, `display: standalone`, service worker handling `push` and `notificationclick`. In-app install guide (iOS needs Add to Home Screen; permission prompt only from a user gesture).
 - **Auth:** Supabase Auth email/password with PKCE. Invite/reset links open the desktop app via deep link with a web fallback page.
 - **AI assistant:** Edge Function using `@anthropic-ai/sdk`, model `claude-opus-5`, adaptive thinking, streaming via SSE. Tool runner with two tools, `search_content` (Postgres full-text search) and `read_content`, both executed with the caller's JWT so RLS applies. Stable system prompt + tool definitions cached with `cache_control`.
@@ -245,6 +245,8 @@ gymops/
 | Registering the service worker in the desktop shell too | The worker is the web's precache and push receiver (P5-05); the desktop ships the build inside the app, updates through the updater and is notified natively (P7-03/04). WKWebView also serves no service worker on the `tauri://` scheme, so it would be a silent no-op on macOS and a second update path on Windows. `main.tsx` skips it when `isDesktop()`. |
 
 | Sending desktop-requested reset links through the web callback page | The page could try `gymops://` itself and explain when nothing opens, but it cannot complete the reset: the PKCE verifier is in the app that asked, and only there. It would add a hop and a hosted-origin setting to the desktop build for a nicer error on the wrong device. The mail redirects straight to `gymops://auth/callback`. |
+
+| GitHub Releases on the private source repository as the update feed | `releases/latest/download/latest.json` on a private repository answers 404 without a token, and an installed app has none to give. The feed and the installers live on the public `gymops-releases` repository instead; the workflow in the private repository publishes there. |
 
 | `supabase-js` in the Playwright fixtures | Creating a client opens a Realtime socket, and Node 20 — the version CI runs — has no native WebSocket. The fixtures need three REST verbs; `fetch` against PostgREST has no such dependency. |
 

@@ -30,17 +30,24 @@
       "desktop": {
         "schemes": ["gymops"]
       }
+    },
+    "updater": {
+      "endpoints": [
+        "https://github.com/spaceface7264/gymops-releases/releases/latest/download/latest.json"
+      ],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDUxMTVEMDJDNjE1QzlFNEYKUldSUG5seGhMTkFWVVk5SkFlaEptUGd5QU5jVFNldlhwTFA2UlI5YmpaUXc2Zm9QQjEwTmFsNHAK"
     }
   },
   "bundle": {
     "active": true,
-    "targets": ["dmg", "msi"],
+    "targets": ["app", "dmg", "msi"],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "createUpdaterArtifacts": true
   }
 }

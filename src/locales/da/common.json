@@ -80,7 +80,13 @@
       "reload": "Genindlæs",
       "title": "Noget gik galt"
     },
-    "name": "GymOps"
+    "name": "GymOps",
+    "update": {
+      "available": "GymOps {{version}} er klar.",
+      "failed": "Opdateringen kunne ikke installeres. Den prøves igen næste gang.",
+      "install": "Genstart for at opdatere",
+      "installing": "Opdaterer…"
+    }
   },
   "auth": {
     "acceptInvite": {

@@ -101,3 +101,17 @@ jobs:
       - name: Format
         working-directory: supabase/functions
         run: deno fmt --check
+
+  desktop:
+    name: Desktop shell compiles
+    # The Rust side has no other gate before a tag (P7-04). macOS needs no
+    # system packages for Tauri, which keeps this to the crate build.
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+      - run: cargo check
+        working-directory: src-tauri

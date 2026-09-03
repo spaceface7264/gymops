@@ -80,7 +80,13 @@
       "reload": "Reload",
       "title": "Something went wrong"
     },
-    "name": "GymOps"
+    "name": "GymOps",
+    "update": {
+      "available": "GymOps {{version}} is ready.",
+      "failed": "The update could not be installed. It will be tried again next time.",
+      "install": "Restart to update",
+      "installing": "Updating…"
+    }
   },
   "auth": {
     "acceptInvite": {

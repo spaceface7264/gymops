@@ -5,6 +5,8 @@ import {
   requestPermission,
   sendNotification,
 } from '@tauri-apps/plugin-notification'
+import { relaunch } from '@tauri-apps/plugin-process'
+import { check } from '@tauri-apps/plugin-updater'
 
 /**
  * Where the app is running (P7-01). The web build and the desktop shell are
@@ -59,4 +61,23 @@ export async function requestDesktopNotifications(): Promise<DesktopPermission> 
 
 export function showDesktopNotification(options: { title: string; body: string }): void {
   sendNotification(options)
+}
+
+/**
+ * The updater (P7-04). The feed is `latest.json` on the public releases
+ * repository, signed with the key whose public half is in `tauri.conf.json`.
+ * Returns what is waiting, or null; `install` downloads and installs it, and
+ * the app has to be relaunched to run it.
+ */
+export type PendingUpdate = { version: string; install: () => Promise<void> }
+
+export async function checkForUpdate(): Promise<PendingUpdate | null> {
+  if (!isDesktop()) return null
+  const update = await check()
+  if (!update) return null
+  return { version: update.version, install: () => update.downloadAndInstall() }
+}
+
+export function relaunchApp(): Promise<void> {
+  return relaunch()
 }
