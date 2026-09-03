@@ -16,3 +16,6 @@ supabase/functions/node_modules
 # Playwright (P5-06)
 test-results
 playwright-report
+
+# Claude Code worktrees (local checkouts, never committed)
+.claude/worktrees/

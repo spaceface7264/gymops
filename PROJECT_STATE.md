@@ -51,6 +51,13 @@ installed for it on 2026-09-03 (rustup, stable 1.98, minimal profile, in
 `~/.cargo`); `npm run tauri dev` is the desktop window against the Vite dev
 server and needs `. ~/.cargo/env` in a shell that has not sourced it.
 
+**Phase 7c, facelift** (P7C-01 … P7C-05) started 2026-09-03 on the `facelift`
+branch, in a git worktree under `.claude/worktrees/` (now gitignored) so it
+does not disturb the checkout the 7b work is on. Direction, palette and
+scope are in `docs/superpowers/specs/2026-09-03-facelift-design.md`: All
+Gravy feel, the icon violet as the one accent, Inter self-hosted, light only,
+layout and routes unchanged. Nothing implemented yet.
+
 Testing Realtime locally needs the full stack: the run screen's live sync does
 not work under the CI-style `supabase start -x …`, which leaves the realtime
 container out. `supabase stop && supabase start` brings it back.
@@ -67,6 +74,7 @@ container out. `supabase stop && supabase start` brings it back.
 | P5 Notifications and PWA | ✅ Complete    | P5-01 to P5-06, merged in PR #7.                |
 | P6 Team chat             | ✅ Complete    | P6-01 … P6-08, merged in PR #8.                 |
 | P7 Desktop and release   | 🔄 In progress | P7-01 … P7-06 done, draft PR #9; P7-07 checklist written, walkthrough pending. |
+| P7C Facelift             | 🔄 In progress | Spec approved 2026-09-03; P7C-01 … P7C-05 on `facelift` (worktree), branched from `main` after PR #9. |
 | P8 AI assistant (V1.5)   | ⬜ Not started | Needs Anthropic API key in Supabase secrets.    |
 
 ## Task status
