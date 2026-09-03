@@ -86,6 +86,22 @@ describe('AccountPage', () => {
     expect(update).not.toHaveBeenCalled()
   })
 
+  it('clears the "saved" message once the name is edited again', async () => {
+    const user = userEvent.setup()
+    renderPage()
+    const name = await screen.findByLabelText('Full name')
+    await waitFor(() => expect(name).toHaveValue('Sam Staff'))
+
+    await user.clear(name)
+    await user.type(name, 'Sam Stone')
+    await user.click(screen.getAllByRole('button', { name: 'Save' })[0]!)
+    expect(await screen.findByText('Name saved.')).toBeInTheDocument()
+
+    await user.type(name, ' Jr')
+
+    expect(screen.queryByText('Name saved.')).not.toBeInTheDocument()
+  })
+
   it('saves a new language', async () => {
     const user = userEvent.setup()
     renderPage()
@@ -96,6 +112,22 @@ describe('AccountPage', () => {
     await user.click(screen.getAllByRole('button', { name: 'Save' })[1]!)
 
     await waitFor(() => expect(update).toHaveBeenCalledWith({ locale: 'da' }))
+  })
+
+  it('clears the "saved" message once the language is changed again', async () => {
+    const user = userEvent.setup()
+    renderPage()
+    const name = await screen.findByLabelText('Full name')
+    await waitFor(() => expect(name).toHaveValue('Sam Staff'))
+
+    const language = screen.getByLabelText('Language')
+    await user.selectOptions(language, 'da')
+    await user.click(screen.getAllByRole('button', { name: 'Save' })[1]!)
+    expect(await screen.findByText('Language saved.')).toBeInTheDocument()
+
+    await user.selectOptions(language, 'en')
+
+    expect(screen.queryByText('Language saved.')).not.toBeInTheDocument()
   })
 
   it('changes the password when the current one is right', async () => {

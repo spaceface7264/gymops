@@ -62,6 +62,10 @@ function NameCard() {
   // null until the person types: the profile arrives after the first render.
   const [typed, setTyped] = useState<string | null>(null)
   const [empty, setEmpty] = useState(false)
+  // The value last written successfully — "saved" only holds while the field
+  // still shows it, so editing further after a save clears the message
+  // instead of implying the new text is persisted.
+  const [lastSaved, setLastSaved] = useState<string | null>(null)
   const value = typed ?? profile?.full_name ?? ''
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -69,7 +73,7 @@ function NameCard() {
     const name = value.trim()
     setEmpty(name === '')
     if (name === '') return
-    updateName.mutate(name)
+    updateName.mutate(name, { onSuccess: () => setLastSaved(name) })
   }
 
   return (
@@ -94,7 +98,7 @@ function NameCard() {
             </p>
           )}
           <Feedback
-            saved={updateName.isSuccess}
+            saved={lastSaved !== null && value === lastSaved}
             failed={updateName.isError}
             savedText={t('auth.account.nameSaved')}
             failedText={t('auth.account.saveFailed')}
@@ -114,6 +118,8 @@ function LanguageCard() {
   const updateLocale = useUpdateLocale()
   // null until the person picks one: the profile arrives after the first render.
   const [picked, setPicked] = useState<Locale | null>(null)
+  // The locale last written successfully — see NameCard's `lastSaved`.
+  const [lastSaved, setLastSaved] = useState<Locale | null>(null)
   const storedLocale =
     profile?.locale && supportedLocales.includes(profile.locale as Locale)
       ? (profile.locale as Locale)
@@ -122,7 +128,7 @@ function LanguageCard() {
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    updateLocale.mutate(locale)
+    updateLocale.mutate(locale, { onSuccess: () => setLastSaved(locale) })
   }
 
   return (
@@ -148,7 +154,7 @@ function LanguageCard() {
             </select>
           </div>
           <Feedback
-            saved={updateLocale.isSuccess}
+            saved={lastSaved !== null && locale === lastSaved}
             failed={updateLocale.isError}
             savedText={t('auth.account.languageSaved')}
             failedText={t('auth.account.saveFailed')}
