@@ -102,6 +102,20 @@ describe('AccountPage', () => {
     expect(screen.queryByText('Name saved.')).not.toBeInTheDocument()
   })
 
+  it('shows "saved" for a name whose only change is surrounding whitespace', async () => {
+    const user = userEvent.setup()
+    renderPage()
+    const name = await screen.findByLabelText('Full name')
+    await waitFor(() => expect(name).toHaveValue('Sam Staff'))
+
+    await user.clear(name)
+    await user.type(name, '  Sam Stone  ')
+    await user.click(screen.getAllByRole('button', { name: 'Save' })[0]!)
+
+    expect(await screen.findByText('Name saved.')).toBeInTheDocument()
+    expect(update).toHaveBeenCalledWith({ full_name: 'Sam Stone' })
+  })
+
   it('saves a new language', async () => {
     const user = userEvent.setup()
     renderPage()
@@ -143,6 +157,23 @@ describe('AccountPage', () => {
 
     expect(await screen.findByText('Password changed.')).toBeInTheDocument()
     expect(updateUser).toHaveBeenCalledWith({ password: 'Bouldering2026' })
+  })
+
+  it('clears the "changed" message once a password field is edited again', async () => {
+    const user = userEvent.setup()
+    renderPage()
+    const name = await screen.findByLabelText('Full name')
+    await waitFor(() => expect(name).toHaveValue('Sam Staff'))
+
+    await user.type(screen.getByLabelText('Current password'), 'Password123')
+    await user.type(screen.getByLabelText('New password'), 'Bouldering2026')
+    await user.type(screen.getByLabelText('Repeat new password'), 'Bouldering2026')
+    await user.click(screen.getAllByRole('button', { name: 'Save' })[2]!)
+    expect(await screen.findByText('Password changed.')).toBeInTheDocument()
+
+    await user.type(screen.getByLabelText('Current password'), 'x')
+
+    expect(screen.queryByText('Password changed.')).not.toBeInTheDocument()
   })
 
   it('says so when the current password is wrong', async () => {

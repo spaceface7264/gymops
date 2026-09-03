@@ -51,7 +51,12 @@ function Feedback({
         {failedText}
       </p>
     )
-  if (saved) return <p className="text-muted-foreground text-sm">{savedText}</p>
+  if (saved)
+    return (
+      <p aria-live="polite" className="text-muted-foreground text-sm">
+        {savedText}
+      </p>
+    )
   return null
 }
 
@@ -66,6 +71,10 @@ function NameCard() {
   // still shows it, so editing further after a save clears the message
   // instead of implying the new text is persisted.
   const [lastSaved, setLastSaved] = useState<string | null>(null)
+  // A failure is a latch on the mutation object — it stays `isError` until
+  // the next `mutate()` call, so without this the message would still show
+  // after the person edited the field to fix the problem.
+  const [dismissed, setDismissed] = useState(false)
   const value = typed ?? profile?.full_name ?? ''
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -73,6 +82,7 @@ function NameCard() {
     const name = value.trim()
     setEmpty(name === '')
     if (name === '') return
+    setDismissed(false)
     updateName.mutate(name, { onSuccess: () => setLastSaved(name) })
   }
 
@@ -89,7 +99,10 @@ function NameCard() {
               id="account-name"
               autoComplete="name"
               value={value}
-              onChange={(event) => setTyped(event.target.value)}
+              onChange={(event) => {
+                setTyped(event.target.value)
+                setDismissed(true)
+              }}
             />
           </div>
           {empty && (
@@ -98,8 +111,8 @@ function NameCard() {
             </p>
           )}
           <Feedback
-            saved={lastSaved !== null && value === lastSaved}
-            failed={updateName.isError}
+            saved={lastSaved !== null && value.trim() === lastSaved}
+            failed={updateName.isError && !dismissed}
             savedText={t('auth.account.nameSaved')}
             failedText={t('auth.account.saveFailed')}
           />
@@ -120,6 +133,8 @@ function LanguageCard() {
   const [picked, setPicked] = useState<Locale | null>(null)
   // The locale last written successfully — see NameCard's `lastSaved`.
   const [lastSaved, setLastSaved] = useState<Locale | null>(null)
+  // See NameCard's `dismissed`: a failure otherwise latches until submit.
+  const [dismissed, setDismissed] = useState(false)
   const storedLocale =
     profile?.locale && supportedLocales.includes(profile.locale as Locale)
       ? (profile.locale as Locale)
@@ -128,6 +143,7 @@ function LanguageCard() {
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    setDismissed(false)
     updateLocale.mutate(locale, { onSuccess: () => setLastSaved(locale) })
   }
 
@@ -144,7 +160,10 @@ function LanguageCard() {
               id="account-locale"
               className="border-input bg-background h-9 w-full rounded-md border px-3 py-1 text-sm shadow-xs"
               value={locale}
-              onChange={(event) => setPicked(event.target.value as Locale)}
+              onChange={(event) => {
+                setPicked(event.target.value as Locale)
+                setDismissed(true)
+              }}
             >
               {supportedLocales.map((option) => (
                 <option key={option} value={option}>
@@ -155,7 +174,7 @@ function LanguageCard() {
           </div>
           <Feedback
             saved={lastSaved !== null && locale === lastSaved}
-            failed={updateLocale.isError}
+            failed={updateLocale.isError && !dismissed}
             savedText={t('auth.account.languageSaved')}
             failedText={t('auth.account.saveFailed')}
           />
@@ -175,13 +194,25 @@ function PasswordCard() {
   const [next, setNext] = useState('')
   const [confirm, setConfirm] = useState('')
   const [problem, setProblem] = useState<PasswordProblem | null>(null)
+  // "Password changed." set on success, like the other cards' `lastSaved` —
+  // cleared by editing any of the three fields, so it does not stay on
+  // screen while the person types a new current password.
+  const [changed, setChanged] = useState(false)
+  // See NameCard's `dismissed`: a failure otherwise latches until submit.
+  const [dismissed, setDismissed] = useState(false)
   const wrongCurrent = changePassword.error?.message === 'wrong_password'
+
+  function clearFeedback() {
+    setChanged(false)
+    setDismissed(true)
+  }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const nextProblem = checkPassword(next, confirm)
     setProblem(nextProblem)
     if (nextProblem) return
+    setDismissed(false)
     changePassword.mutate(
       { current, next },
       {
@@ -189,6 +220,7 @@ function PasswordCard() {
           setCurrent('')
           setNext('')
           setConfirm('')
+          setChanged(true)
         },
       },
     )
@@ -208,7 +240,10 @@ function PasswordCard() {
               type="password"
               autoComplete="current-password"
               value={current}
-              onChange={(event) => setCurrent(event.target.value)}
+              onChange={(event) => {
+                setCurrent(event.target.value)
+                clearFeedback()
+              }}
             />
           </div>
           <PasswordFields
@@ -216,22 +251,31 @@ function PasswordCard() {
             confirmLabel={t('auth.account.repeat')}
             password={next}
             confirm={confirm}
-            onPasswordChange={setNext}
-            onConfirmChange={setConfirm}
+            onPasswordChange={(value) => {
+              setNext(value)
+              clearFeedback()
+            }}
+            onConfirmChange={(value) => {
+              setConfirm(value)
+              clearFeedback()
+            }}
           />
-          {(problem ?? changePassword.isError) && (
+          {problem && (
             <p role="alert" className="text-destructive text-sm">
-              {problem
-                ? t(`auth.${problem}`)
-                : wrongCurrent
-                  ? t('auth.account.wrongPassword')
-                  : t('auth.account.saveFailed')}
+              {t(`auth.${problem}`)}
             </p>
           )}
-          {changePassword.isSuccess && !problem && (
-            <p className="text-muted-foreground text-sm">
-              {t('auth.account.passwordSaved')}
-            </p>
+          {!problem && (
+            <Feedback
+              saved={changed}
+              failed={changePassword.isError && !dismissed}
+              savedText={t('auth.account.passwordSaved')}
+              failedText={
+                wrongCurrent
+                  ? t('auth.account.wrongPassword')
+                  : t('auth.account.saveFailed')
+              }
+            />
           )}
           <Button type="submit" disabled={changePassword.isPending}>
             {changePassword.isPending ? t('auth.account.saving') : t('auth.account.save')}
