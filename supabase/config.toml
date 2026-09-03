@@ -62,7 +62,7 @@ schema_paths = []
 enabled = true
 # Specifies an ordered list of seed files to load during db reset.
 # Supports glob patterns relative to supabase directory: "./seeds/*.sql"
-sql_paths = ["./seeds/test-helpers.sql", "./seed.sql"]
+sql_paths = ["./seeds/test-helpers.sql", "./seeds/local-webhook.sql", "./seed.sql"]
 
 [db.network_restrictions]
 # Enable management of network restrictions.
@@ -379,6 +379,13 @@ allow_dynamic_registration = false
 # P2-03. verify_jwt stays on: the function also reads the caller's profile to
 # decide what they may hand out.
 [functions.invite]
+enabled = true
+verify_jwt = true
+
+# P5-03. Called by the database webhook only, which posts the service role key;
+# the function checks that key itself as well, since the payload names somebody
+# else's inbox.
+[functions.notify]
 enabled = true
 verify_jwt = true
 

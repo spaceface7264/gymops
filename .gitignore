@@ -12,3 +12,7 @@ coverage
 
 # Deno pulls the Edge Functions' npm deps in here when type-checking
 supabase/functions/node_modules
+
+# Playwright (P5-06)
+test-results
+playwright-report

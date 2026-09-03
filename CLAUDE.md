@@ -22,10 +22,23 @@ Requires a Docker-compatible container runtime (OrbStack installed 2026-09-01) f
 | `npm run db:types` | regenerate `src/lib/database.types.ts` (commit it) |
 | `npm run typecheck lint format:check test build` | the gates CI runs |
 
+The notification fan-out (P5-03) runs as an Edge Function with secrets the
+stack's own runtime does not have: serve it with
+`npx supabase functions serve --env-file supabase/functions/.env` (that file is
+local-only and gitignored; it holds a development VAPID pair). The webhook that
+calls it reads `notify_functions_url` and `notify_service_key` from Vault, set
+locally by `supabase/seeds/local-webhook.sql`; with either missing the inbox
+still fills and nothing is pushed or emailed.
+
 Realtime features (checklist live sync, later chat and notifications) need the
 realtime container, which a stack started with `supabase start -x …` does not
 have — `supabase stop && supabase start` brings the full stack back. Node 20 has
 no native WebSocket, so a script that drives a Realtime client needs Node 22+.
+
+End-to-end tests (P5-06) are Playwright against the local stack and its seed
+users: `npm run e2e` uses Playwright's own Chromium, `npm run e2e:chrome` drives
+the Google Chrome already installed on the machine. Both start the dev server
+themselves and reuse one that is already running.
 
 CI is `.github/workflows/ci.yml`: a `web` job running those gates on Node 20, and a `database` job that starts the local stack (minus the services the tests do not need) and runs `db reset` + `test db`.
 

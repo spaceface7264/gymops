@@ -9,6 +9,7 @@ import {
   useSignOut,
 } from '@/features/auth'
 import { GymSwitcher } from '@/features/gyms'
+import { NotificationBell } from '@/features/notifications'
 import { cn } from '@/lib/utils'
 import { visibleNavEntries, type NavEntry } from '@/routes/nav'
 
@@ -59,6 +60,7 @@ export function AppShell() {
         <header className="flex items-center justify-between gap-3 border-b p-3">
           <GymSwitcher />
           <div className="flex items-center gap-3">
+            <NotificationBell />
             {user?.email && (
               <span className="text-muted-foreground hidden text-sm sm:inline">
                 {user.email}

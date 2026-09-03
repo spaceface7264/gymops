@@ -457,6 +457,37 @@
     "unassigned": "Nobody is on this yet.",
     "uploadFailed": "The photo could not be uploaded. Try again."
   },
+  "install": {
+    "title": "Install GymOps",
+    "intro": "GymOps runs in the browser, but installed it opens like an app, keeps you signed in and — on iPhone, only then — can send you push notifications.",
+    "backToPreferences": "Back to preferences",
+    "ios": {
+      "title": "iPhone and iPad (Safari)",
+      "steps": [
+        "Open GymOps in Safari. Chrome on iPhone cannot install it.",
+        "Tap the Share button, then “Add to Home Screen”.",
+        "Open GymOps from the Home Screen icon, not from Safari.",
+        "In Notifications → Preferences, turn push on for this device."
+      ]
+    },
+    "android": {
+      "title": "Android (Chrome)",
+      "steps": [
+        "Open GymOps in Chrome.",
+        "Tap the menu, then “Install app” or “Add to Home screen”.",
+        "In Notifications → Preferences, turn push on for this device."
+      ]
+    },
+    "desktop": {
+      "title": "Windows and Mac",
+      "steps": [
+        "Use the desktop app once it is released; until then, install the browser version.",
+        "In Chrome or Edge, open the install icon at the right of the address bar.",
+        "In Notifications → Preferences, turn push on for this device."
+      ]
+    },
+    "pushNote": "Push is per device and per browser: turning it on here does not turn it on anywhere else, and signing out of a browser leaves its subscription behind until you turn it off."
+  },
   "language": {
     "da": "Danish",
     "en": "English",
@@ -525,5 +556,44 @@
   "notFound": {
     "body": "The page you are looking for does not exist.",
     "title": "Page not found"
+  },
+  "notifications": {
+    "backToInbox": "Back to the inbox",
+    "bell": "Notifications",
+    "bellUnread": "Notifications, {{count}} unread",
+    "channel": {
+      "email": "Email",
+      "in_app": "Inbox",
+      "push": "Push"
+    },
+    "channelFor": "{{channel}} for {{type}}",
+    "empty": "Nothing has happened yet.",
+    "installGuide": "How to install it",
+    "loadFailed": "The notifications could not be loaded.",
+    "loading": "Loading notifications…",
+    "markAllRead": "Mark all read",
+    "markRead": "Mark read",
+    "markUnread": "Mark unread",
+    "open": "Open {{title}}",
+    "preferences": "Preferences",
+    "preferencesHint": "Turning the inbox off for a kind stops it being recorded at all. Email arrives only for the serious ones — a high-severity incident — and never because you asked for it here.",
+    "pushDenied": "This browser is blocking notifications. Turn them back on in its site settings.",
+    "pushDisable": "Turn off on this device",
+    "pushEnable": "Turn on for this device",
+    "pushFailed": "Push could not be set up on this device.",
+    "pushNotSetUp": "Push is not configured for this build.",
+    "pushOff": "This device does not receive push.",
+    "pushOn": "This device receives push.",
+    "pushOnThisDevice": "Push on this device",
+    "pushUnsupported": "This browser cannot receive push. On iPhone it works once GymOps is on the Home Screen.",
+    "saveFailed": "The change could not be saved. Try again.",
+    "title": "Notifications",
+    "type": {
+      "ack_reminder": "Still to confirm",
+      "incident_reported": "New incident",
+      "incident_status_changed": "Incident updated",
+      "invite": "Invitation accepted"
+    },
+    "typeColumn": "Kind"
   }
 }

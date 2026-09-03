@@ -16,6 +16,7 @@ const getSession = vi.fn<() => Promise<SessionResult>>()
 const signOut = vi.fn<() => Promise<{ error: null }>>()
 const single = vi.fn<() => Promise<{ data: Row | null; error: null }>>()
 const gymRows = vi.fn<() => Promise<{ data: Row[]; error: null }>>()
+const unreadCount = vi.fn<() => Promise<{ count: number; error: null }>>()
 let authCallback: AuthCallback | null = null
 
 vi.mock('@/lib/supabase', () => ({
@@ -34,8 +35,15 @@ vi.mock('@/lib/supabase', () => ({
           single: () => single(),
           order: () => (table === 'gyms' ? gymRows() : single()),
         }),
+        // The header's unread badge (P5-04).
+        is: () => unreadCount(),
       }),
     }),
+    channel: () => {
+      const subscription = { on: () => subscription, subscribe: () => subscription }
+      return subscription
+    },
+    removeChannel: vi.fn(),
   },
 }))
 
@@ -80,6 +88,7 @@ beforeEach(async () => {
   })
   single.mockResolvedValue({ data: profile(), error: null })
   gymRows.mockResolvedValue({ data: [aarhus, nord], error: null })
+  unreadCount.mockResolvedValue({ count: 0, error: null })
   await i18next.changeLanguage('en')
 })
 

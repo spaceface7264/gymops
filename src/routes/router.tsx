@@ -15,9 +15,11 @@ import { AdminPage, RequireSuperadmin } from '@/routes/admin-page'
 import { AppShell } from '@/routes/app-shell'
 import { ForgotPasswordPage } from '@/routes/forgot-password-page'
 import { HomePage } from '@/routes/home-page'
+import { InstallPage } from '@/routes/install-page'
 import { LoginPage } from '@/routes/login-page'
 import { GuideDetailPage, GuideEditorPage, GuidesPage } from '@/features/guides'
 import { NewsFeed, PostDetailPage, PostEditorPage } from '@/features/news'
+import { InboxPage, NotificationPreferencesPage } from '@/features/notifications'
 import { ModulePlaceholder } from '@/routes/module-placeholder'
 import { navEntries } from '@/routes/nav'
 import { NotFoundPage } from '@/routes/not-found-page'
@@ -64,6 +66,12 @@ export const router = createBrowserRouter([
             element: <ChecklistTemplateEditorPage />,
           },
           { path: 'daily-log', element: <DailyLogPage /> },
+          { path: 'notifications', element: <InboxPage /> },
+          { path: 'install', element: <InstallPage /> },
+          {
+            path: 'notifications/preferences',
+            element: <NotificationPreferencesPage />,
+          },
           { path: 'incidents', element: <IncidentsPage /> },
           { path: 'incidents/new', element: <IncidentFormPage /> },
           { path: 'incidents/:incidentId', element: <IncidentDetailPage /> },

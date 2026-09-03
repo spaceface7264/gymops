@@ -198,6 +198,26 @@ gymops/
 | Repeating the active check inside `can_publish_content()` | Proposed after misreading the publish gate as unguarded. The check belongs in `managed_gym_ids()`/`member_gym_ids()` where `20260902130000` put it — one place, every caller, gates included. A second copy in the gate would be dead code that reads like a real rule, and the next person would have to prove to themselves which of the two is load-bearing. A test pins it instead (`supabase/tests/120-deactivated-publisher.test.sql`). |
 | One dropdown component for every `<select>` | The 21 of them are three different controls wearing one tag. A form field needs a real form control (`Select`); a filter needs a trigger that reads as the current state (`DropdownMenu` + `DropdownMenuRadioGroup`); and a 400-entry timezone list needs type-to-search (`Combobox`). Using `DropdownMenu` for a form field would drop it out of the form, and a `Select` for the timezone list is unusable at that length. |
 
+| A `notification_prefs` row per user per notification type, written on sign-up | It has to be backfilled by a migration every time the enum gains a type, and P6-08 already adds two. The table is sparse instead: no row means every channel is on, and `notification_pref()` applies the defaults for the one caller that needs them. |
+| A notification that points at the row that caused it, rendering its text on read | The inbox is a record of what somebody was told. An incident that has since been re-titled, re-graded and resolved would render as a message nobody ever sent, and the email and the push — already delivered with the old wording — would disagree with it. `title`/`body`/`url` are written once, at the event. |
+| Letting the recipient's preferences decide that something deserves an email | The grading belongs where the event is raised (`email_requested`, set for a high-severity incident and not for an ordinary one), because it is a property of what happened, not of who is reading. A preference can silence a channel; it cannot promote one. |
+| An admin-wide notification channel, the way `checklists:all` exists | An inbox is per person by definition. One channel carrying 200 users' notifications would hand every admin the whole company's fan-out and make RLS the only thing standing between them, on a stream that exists to update a badge. |
+
+| Notifying people of their own actions, and leaving it to a preference | The reporter of an incident and the manager who resolves it both already know. A switch that has to be found and turned off is not a fix for noise that should never have been sent. |
+| One notification at publish time for content that must be confirmed | It arrives when the feed is already showing the post, and it is useless the moment it is read and not acted on. The nightly pass chases only what is *still* unconfirmed, once a week per item, which is the state a manager actually cares about. |
+| Running the reminder job gym-locally like the checklist job (P4-02) | A checklist run is dated by its gym's own day; a reminder is not, and a company-wide guide has no gym whose clock to follow. One daily schedule at 07:00 UTC. |
+
+| The dashboard's Database Webhooks UI for `notifications` → `notify` | It writes the service role key into a trigger definition that lives only in the hosted project — outside git, invisible to review, and printed by `pg_dump`. The trigger here ships as a migration and reads its URL and key from Vault at call time, so the same schema works locally, in CI and hosted with no fan-out configured. |
+| Making `notify` re-read the notification it was handed | The webhook fires inside the transaction that wrote the row; a re-read is a race with its own trigger. The payload is the message, and only what it cannot carry — the recipient's address, locale and preferences — is looked up. |
+| Hand-rolling RFC 8291 payload encryption instead of `npm:web-push` | It works under the edge runtime's node compatibility, and push encryption is not a thing to implement twice for the sake of one fewer dependency. |
+
+| A Notifications entry in the left nav | The nav lists the modules a shift moves through. An inbox is about the person, not the gym's work, so it sits in the header with the gym switcher and the account — where every app that has one puts it, and where it can carry a badge without competing with the modules. |
+
+| `generateSW` for the service worker | The worker exists for `push` and `notificationclick`; a generated one has neither, and the precaching it does give us is available from `injectManifest` too. |
+| One push subscription per user | A subscription is a browser's, not a person's: the same person's phone and laptop are two endpoints, and a browser that re-subscribes gets a new one. `push_subscriptions.endpoint` is the key, and `notify` deletes a row when the push service answers 404 or 410. |
+
+| `supabase-js` in the Playwright fixtures | Creating a client opens a Realtime socket, and Node 20 — the version CI runs — has no native WebSocket. The fixtures need three REST verbs; `fetch` against PostgREST has no such dependency. |
+
 ## 5. Conventions
 
 - **Language:** TypeScript strict everywhere, including Edge Functions (Deno). No `any`.
