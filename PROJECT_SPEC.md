@@ -252,6 +252,8 @@ gymops/
 
 | `supabase-js` in the Playwright fixtures | Creating a client opens a Realtime socket, and Node 20 — the version CI runs — has no native WebSocket. The fixtures need three REST verbs; `fetch` against PostgREST has no such dependency. |
 
+| Dark mode | Removed 2026-09-03 with the facelift: one theme designed well; front desks and phones in a lit gym. |
+
 ## 5. Conventions
 
 - **Language:** TypeScript strict everywhere, including Edge Functions (Deno). No `any`.
