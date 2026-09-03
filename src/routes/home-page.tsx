@@ -11,7 +11,7 @@ import { UnreadNewsCard } from '@/features/news'
  */
 export function HomePage() {
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <UnreadNewsCard />
       <TodaysChecklistsCard />
       <OpenIncidentsCard />

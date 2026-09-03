@@ -1,6 +1,8 @@
+import { Newspaper } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
-import { Badge } from '@/components/ui/badge'
+import { EmptyState, LoadingState, StatusBadge } from '@/components'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAuth } from '@/features/auth'
 import { useGymScope } from '@/features/gyms'
@@ -27,25 +29,23 @@ export function UnreadNewsCard() {
         <CardTitle>{t('home.news.title')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        {unread.isPending && (
-          <p className="text-muted-foreground text-sm">{t('news.loading')}</p>
-        )}
+        {unread.isPending && <LoadingState rows={3} />}
         {unread.isError && (
           <p role="alert" className="text-destructive text-sm">
             {t('news.loadFailed')}
           </p>
         )}
         {unread.data && posts.length === 0 && (
-          <p className="text-muted-foreground text-sm">{t('home.news.allCaughtUp')}</p>
+          <EmptyState icon={Newspaper} title={t('home.news.allCaughtUp')} />
         )}
 
         <ul className="space-y-2">
           {posts.map((post) => (
             <li key={post.id} className="flex flex-wrap items-center gap-2">
               {post.requires_ack ? (
-                <Badge>{t('home.news.needsConfirmation')}</Badge>
+                <StatusBadge tone="new">{t('home.news.needsConfirmation')}</StatusBadge>
               ) : (
-                <Badge variant="secondary">{t('home.news.unread')}</Badge>
+                <StatusBadge tone="new">{t('home.news.unread')}</StatusBadge>
               )}
               <Link to={`/news/${post.id}`} className="font-medium hover:underline">
                 {post.title}
@@ -58,9 +58,9 @@ export function UnreadNewsCard() {
         </ul>
 
         {posts.length > 0 && (
-          <Link to="/news" className="text-sm underline">
-            {t('home.news.allNews')}
-          </Link>
+          <Button asChild variant="link" className="h-auto p-0">
+            <Link to="/news">{t('home.news.allNews')}</Link>
+          </Button>
         )}
       </CardContent>
     </Card>

@@ -1,6 +1,8 @@
+import { TriangleAlert } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
-import { Badge } from '@/components/ui/badge'
+import { EmptyState, LoadingState, StatusBadge } from '@/components'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useGymScope } from '@/features/gyms'
 import { useIncidents } from './queries'
@@ -29,32 +31,30 @@ export function OpenIncidentsCard() {
         <CardTitle>{t('home.incidents.title')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        {incidents.isPending && (
-          <p className="text-muted-foreground text-sm">{t('incidents.loading')}</p>
-        )}
+        {incidents.isPending && <LoadingState rows={3} />}
         {incidents.isError && (
           <p role="alert" className="text-destructive text-sm">
             {t('incidents.loadFailed')}
           </p>
         )}
         {incidents.data && open.length === 0 && (
-          <p className="text-muted-foreground text-sm">{t('home.incidents.none')}</p>
+          <EmptyState icon={TriangleAlert} title={t('home.incidents.none')} />
         )}
 
         <ul className="space-y-2">
           {open.slice(0, shown).map((incident) => (
             <li key={incident.id} className="flex flex-wrap items-center gap-2">
-              <Badge
-                variant={
+              <StatusBadge
+                tone={
                   incident.severity === 'high'
-                    ? 'destructive'
+                    ? 'danger'
                     : incident.severity === 'medium'
-                      ? 'secondary'
-                      : 'outline'
+                      ? 'warning'
+                      : 'neutral'
                 }
               >
                 {t(`incidents.severity.${incident.severity}`)}
-              </Badge>
+              </StatusBadge>
               <Link
                 to={`/incidents/${incident.id}`}
                 className="font-medium hover:underline"
@@ -74,11 +74,13 @@ export function OpenIncidentsCard() {
         </ul>
 
         {open.length > 0 && (
-          <Link to="/incidents" className="text-sm underline">
-            {open.length > shown
-              ? t('home.incidents.allOpen', { count: open.length })
-              : t('home.incidents.all')}
-          </Link>
+          <Button asChild variant="link" className="h-auto p-0">
+            <Link to="/incidents">
+              {open.length > shown
+                ? t('home.incidents.allOpen', { count: open.length })
+                : t('home.incidents.all')}
+            </Link>
+          </Button>
         )}
       </CardContent>
     </Card>

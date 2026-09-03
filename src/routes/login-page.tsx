@@ -62,7 +62,7 @@ export function LoginPage() {
               : t('auth.signIn.failed')}
           </p>
         )}
-        <Button type="submit" className="w-full" disabled={signIn.isPending}>
+        <Button type="submit" size="lg" className="w-full" disabled={signIn.isPending}>
           {signIn.isPending ? t('auth.signIn.submitting') : t('auth.signIn.submit')}
         </Button>
         <Link
