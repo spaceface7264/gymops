@@ -72,7 +72,7 @@ export function ChecklistHistoryCard() {
 
               return (
                 <li key={run.id} className="flex flex-wrap items-center gap-2 text-sm">
-                  <StatusBadge tone="warning">
+                  <StatusBadge tone="danger">
                     {t('home.checklists.missedBadge')}
                   </StatusBadge>
                   <span className="font-medium">

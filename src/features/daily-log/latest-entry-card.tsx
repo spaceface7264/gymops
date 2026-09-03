@@ -37,7 +37,7 @@ export function LatestLogEntryCard() {
         {entry && (
           <div className="space-y-1">
             <div className="flex flex-wrap items-center gap-2">
-              <StatusBadge tone={entry.kind === 'issue' ? 'new' : 'neutral'}>
+              <StatusBadge tone={entry.kind === 'issue' ? 'warning' : 'neutral'}>
                 {t(`dailyLog.kind.${entry.kind}`)}
               </StatusBadge>
               {gymId === null && entry.gyms && (
