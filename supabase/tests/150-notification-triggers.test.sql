@@ -5,9 +5,11 @@
 -- feature everybody switches off.
 --
 -- `db reset` has already loaded supabase/seed.sql, whose admin is an admin
--- everywhere and so a legitimate recipient of half of this. Every assertion
--- therefore looks only at the users created here, which the `@example.test`
--- domain separates from the seeded `@gymops.test` ones.
+-- everywhere and so a legitimate recipient of half of this — and a local
+-- database also carries whatever the e2e suite (P5-06) reported into it. Every
+-- assertion therefore names its own subject, or looks only at the users created
+-- here, which the `@example.test` domain separates from the seeded
+-- `@gymops.test` ones.
 begin;
 select plan(23);
 
@@ -82,7 +84,8 @@ select results_eq(
 );
 select results_eq(
   $$ select distinct title, url, email_requested, data->>'severity'
-     from public.notifications where type = 'incident_reported' $$,
+     from public.notifications
+     where subject_id = 'cccccccc-0000-0000-0000-000000000001' $$,
   $$ values ('Fall from wall 4', '/incidents/cccccccc-0000-0000-0000-000000000001',
              true, 'high') $$,
   'it carries the incident''s own words, its link, and asks for an email because it is severe'
@@ -116,7 +119,8 @@ update public.incidents set assignee_id = tests.get_user_id('staff_a2')
 where id = 'cccccccc-0000-0000-0000-000000000001';
 select is(
   (select count(*)::int from public.notifications
-   where type = 'incident_status_changed'),
+   where type = 'incident_status_changed'
+     and subject_id = 'cccccccc-0000-0000-0000-000000000001'),
   0,
   'assigning somebody is not a status change'
 );
@@ -128,14 +132,16 @@ reset role;
 select results_eq(
   $$ select p.email from public.notifications n
      join public.profiles p on p.id = n.user_id
-     where n.type = 'incident_status_changed' and p.email like '%@example.test'
+     where n.subject_id = 'cccccccc-0000-0000-0000-000000000001'
+       and n.type = 'incident_status_changed' and p.email like '%@example.test'
      order by p.email collate "C" $$,
   $$ values ('staff_a2@example.test'), ('staff_a@example.test') $$,
   'a status move tells the reporter and the assignee, not the manager who made it, and not the admin who switched it off'
 );
 select results_eq(
   $$ select distinct data->>'from', data->>'status' from public.notifications
-     where type = 'incident_status_changed' $$,
+     where subject_id = 'cccccccc-0000-0000-0000-000000000001'
+       and type = 'incident_status_changed' $$,
   $$ values ('open', 'in_progress') $$,
   'and it records which way the status moved'
 );
@@ -150,14 +156,16 @@ update public.invites set status = 'accepted', accepted_by = tests.get_user_id('
 where id = 'eeeeeeee-0000-0000-0000-000000000001';
 
 select results_eq(
-  $$ select user_id, title, url from public.notifications where type = 'invite' $$,
+  $$ select user_id, title, url from public.notifications
+     where subject_id = 'eeeeeeee-0000-0000-0000-000000000001' $$,
   $$ select tests.get_user_id('manager_a'), 'staff_b@example.test', '/admin/users' $$,
   'accepting an invitation tells whoever sent it, and names who accepted'
 );
 update public.invites set expires_at = now() + interval '1 day'
 where id = 'eeeeeeee-0000-0000-0000-000000000001';
 select is(
-  (select count(*)::int from public.notifications where type = 'invite'),
+  (select count(*)::int from public.notifications
+   where subject_id = 'eeeeeeee-0000-0000-0000-000000000001'),
   1,
   'a later touch of the same accepted row tells nobody a second time'
 );
