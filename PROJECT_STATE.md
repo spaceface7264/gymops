@@ -43,8 +43,10 @@ now — `notify` sends by web push and email when the secrets are set and
 records what it would have sent when they are not, so the whole fan-out is
 testable on this machine and the hosted half stays in "Hosted project cutover".
 
-**Phase 7, desktop and release** (P7-01 … P7-07) is **in progress** on
-`phase-7-desktop`, branched from `main` after PR #8. The Rust toolchain was
+**Phase 7, desktop and release** (P7-01 … P7-07) is on `phase-7-desktop`,
+branched from `main` after PR #8, as draft **PR #9**: P7-01 … P7-06 are done
+and verified by hand in the debug bundle; P7-07 has its checklist in
+`docs/walkthrough.md` and the walkthrough itself is still to be driven. The Rust toolchain was
 installed for it on 2026-09-03 (rustup, stable 1.98, minimal profile, in
 `~/.cargo`); `npm run tauri dev` is the desktop window against the Vite dev
 server and needs `. ~/.cargo/env` in a shell that has not sourced it.
@@ -64,7 +66,7 @@ container out. `supabase stop && supabase start` brings it back.
 | P4 Daily ops             | ✅ Complete    | P4-01 to P4-10 merged in PR #5; P4-11 in PR #6.   |
 | P5 Notifications and PWA | ✅ Complete    | P5-01 to P5-06, merged in PR #7.                |
 | P6 Team chat             | ✅ Complete    | P6-01 … P6-08, merged in PR #8.                 |
-| P7 Desktop and release   | 🔄 In progress | P7-01 … P7-06 done on `phase-7-desktop`; P7-07 next. |
+| P7 Desktop and release   | 🔄 In progress | P7-01 … P7-06 done, draft PR #9; P7-07 checklist written, walkthrough pending. |
 | P8 AI assistant (V1.5)   | ⬜ Not started | Needs Anthropic API key in Supabase secrets.    |
 
 ## Task status
@@ -129,6 +131,7 @@ Update this list as work begins:
 | P7-04 | ✅ done | 2026-09-03 | 2026-09-03 | `tauri-plugin-updater` + `tauri-plugin-process`; `checkForUpdate()`/`relaunchApp()` in `src/lib/platform`, `UpdateBanner` above the shell header: one check per launch, a *Restart to update* button rather than an automatic restart on a front-desk machine, failure reported and retried next launch. Feed: `latest.json` on the **public** `spaceface7264/gymops-releases` repository (created 2026-09-03), because the source repo is private and installed apps carry no token. Updater keypair generated with `tauri signer generate` into `~/.tauri/gymops.key` (no password); public half in `tauri.conf.json`, private half stored as the Actions secret `TAURI_SIGNING_PRIVATE_KEY` — **losing that file means no installed app can ever update again; back it up**. `.github/workflows/release.yml`: a `v*` tag builds a universal `.dmg` and an `.msi` with `tauri-action` and publishes a draft release with `latest.json` to the releases repo; needs `RELEASES_TOKEN` and the hosted `VITE_*` secrets (Blockers). `bundle.createUpdaterArtifacts` on, and `app` among the targets — the first local release build warned that `dmg` alone produces no updater artifact on macOS; `app` yields the signed `GymOps.app.tar.gz` + `.sig`. `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` is set to an explicit empty string in the workflow, since an unset variable makes the signer prompt. Versions synced to 0.1.0. Local `npm run tauri build` with the key produced a 6 MB `.dmg` and the signed updater archive on 2026-09-03; the workflow itself runs on the first tag. CI gained a `desktop` job (`cargo check` on macOS). 3 new unit tests (318 total). |
 | P7-05 | ✅ done | 2026-09-03 | 2026-09-03 | `@sentry/react` in `src/lib/sentry.ts`, imported first in `main.tsx`; inert without `VITE_SENTRY_DSN` (`.env.example`, release.yml secret). Errors via React 19's `createRoot` hooks (`reactErrorHandler`) and the global handlers; tracing at 0.2 with `reactRouterV7BrowserTracingIntegration` + `wrapCreateBrowserRouterV7`, so spans are named by route; `release: gymops@<version>` from a `__APP_VERSION__` define; `sendDefaultPii: false`. One project for both clients, told apart by a `client` tag (`platform` is Sentry's own field and cannot be searched as a tag). The Rust shell is not instrumented — it has no code of its own. Project **boulders/gymops** (EU region, `de.sentry.io`), created by Rami on 2026-09-03: members may not create projects in that org, the MCP got 403. Verified from both clients with a temporary throw: [GYMOPS-1](https://boulders.sentry.io/issues/GYMOPS-1) has the Chrome event (`http://localhost:5173/login`) and the desktop one (`tauri://localhost/auth/callback`, `client: desktop`), release `gymops@0.1.0`, first-party frames readable in dev. Source maps for production builds are not uploaded yet (needs `SENTRY_AUTH_TOKEN` and the Vite plugin — Blockers). |
 | P7-06 | ✅ done | 2026-09-03 | 2026-09-03 | `README.md`: what the app is, setup (Node 20, a Docker runtime, the Supabase CLI, Rust for the shell), the four `VITE_*` variables and where the secrets live, the command table, the desktop workflow and its deep-link gotchas, the tagged release flow with the Actions secrets it needs, and the code-signing/notarization steps for macOS (Developer ID certificate + notarization credentials as the `APPLE_*` secrets `tauri-action` reads) and Windows (certificate thumbprint or `signCommand`). CLAUDE.md stays the agent's short version; the README is the one a new developer reads. |
+| P7-07 | 🔄 in progress | 2026-09-03 | | `docs/walkthrough.md` is the checklist (§2.1 accounts and the permission matrix row by row, every §2.2 module, the three clients). The desktop lines were ticked on 2026-09-03; the rest is to be driven in a later session — Rami's call on 2026-09-03 evening. The update line needs the first tagged release. |
 | P5-02 … P8-06 | ⬜ not started | | | |
 
 Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
