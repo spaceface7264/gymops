@@ -1,5 +1,7 @@
+import { MessageCircle } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { EmptyState, LoadingState } from '@/components'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/features/auth'
 import { Attachments } from './attachments'
@@ -76,8 +78,10 @@ export function MessageList({
         </div>
       )}
 
+      {messages.isPending && <LoadingState rows={5} />}
+
       {!messages.isPending && rows.length === 0 && (
-        <p className="text-muted-foreground text-sm">{t('chat.noMessages')}</p>
+        <EmptyState icon={MessageCircle} title={t('chat.noMessages')} />
       )}
 
       <ol className="space-y-3">

@@ -167,7 +167,7 @@ function ChannelView({ channelId }: { channelId: string }) {
           <ArrowLeft className="size-5" aria-hidden="true" />
         </Link>
         <div className="min-w-0 flex-1">
-          <h1 className="truncate font-semibold">{name}</h1>
+          <h1 className="truncate text-lg font-semibold">{name}</h1>
           {channel?.description && (
             <p className="text-muted-foreground truncate text-sm">
               {channel.description}

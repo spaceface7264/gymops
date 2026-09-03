@@ -1,7 +1,8 @@
-import { Paperclip, SendHorizontal, X } from 'lucide-react'
+import { Paperclip, Send, X } from 'lucide-react'
 import { useRef, useState, type KeyboardEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
 import { useAuth, useProfile } from '@/features/auth'
 import { cn } from '@/lib/utils'
 import { useChannelMembers, useSendMessage, type ChannelMember } from './queries'
@@ -200,12 +201,12 @@ export function Composer({
           <Paperclip className="size-4" aria-hidden="true" />
         </Button>
 
-        <textarea
+        <Textarea
           ref={box}
           aria-label={t('chat.write')}
           placeholder={t('chat.write')}
           rows={1}
-          className="border-input bg-background max-h-32 min-h-9 flex-1 resize-y rounded-md border p-2 text-sm"
+          className="max-h-32 min-h-9 flex-1 py-2 text-sm"
           value={body}
           onChange={(event) => change(event.target.value, event.target.selectionStart)}
           onKeyDown={key}
@@ -213,11 +214,11 @@ export function Composer({
 
         <Button
           type="submit"
-          size="sm"
+          size="icon"
           aria-label={t('chat.send')}
           disabled={send.isPending || (!body.trim() && files.length === 0)}
         >
-          <SendHorizontal className="size-4" aria-hidden="true" />
+          <Send className="size-4" aria-hidden="true" />
         </Button>
       </div>
 
