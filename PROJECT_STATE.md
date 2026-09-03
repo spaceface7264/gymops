@@ -1,6 +1,6 @@
 # GymOps — Project State
 
-Last updated: 2026-09-02
+Last updated: 2026-09-03
 
 ## Currently working on
 
@@ -31,8 +31,10 @@ project before the schema is pushed there.
 events module (P4-11), the shadcn select swap and the deactivated-publisher
 tests follow in PR #6 from the same branch.
 
-**Phase 5, notifications and the PWA** (P5-01 … P5-06) is **complete** on
-`phase-5-notifications` and unmerged. It is where the `notify` function, the VAPID keys and
+**Phase 5, notifications and the PWA** (P5-01 … P5-06) is **merged into `main`**
+as PR #7 (2026-09-03), with all four CI jobs green — including the new
+end-to-end job. Next up: **phase 6, team chat** (P6-01 … P6-09). Branch it from
+`main`. It is where the `notify` function, the VAPID keys and
 Resend finally have to exist, and where P2-03's `invite` gets deployed. The
 VAPID pair and the Resend key are local-only for now — `notify` sends by web
 push and email when the secrets are set and records what it would have sent
@@ -52,7 +54,7 @@ container out. `supabase stop && supabase start` brings it back.
 | P2 Users and gyms admin  | ✅ Complete    | P2-01 to P2-06, merged in PR #2.                |
 | P3 News and guides       | ✅ Complete    | P3-01 to P3-07 (PR #3) and the audit fixes (#4). |
 | P4 Daily ops             | ✅ Complete    | P4-01 to P4-10 merged in PR #5; P4-11 in PR #6.   |
-| P5 Notifications and PWA | ✅ Complete    | P5-01 to P5-06 on `phase-5-notifications`.      |
+| P5 Notifications and PWA | ✅ Complete    | P5-01 to P5-06, merged in PR #7.                |
 | P6 Team chat             | ⬜ Not started |                                                 |
 | P7 Desktop and release   | ⬜ Not started |                                                 |
 | P8 AI assistant (V1.5)   | ⬜ Not started | Needs Anthropic API key in Supabase secrets.    |
