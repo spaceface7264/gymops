@@ -77,7 +77,7 @@ Permission matrix (also the RLS test spec):
 - **Frontend:** Vite + React + TypeScript, React Router, TanStack Query, Tailwind + shadcn/ui, react-i18next (`en`, `da`), Tiptap for rich text (stored as JSON).
 - **Backend:** one Supabase project. Postgres row-level security is the only permission layer. Storage buckets `content` (news/guides), `incidents`, `chat` with storage RLS mirroring table RLS. Realtime (`postgres_changes`, private channels) for checklists, incidents, chat and notifications. Presence for typing indicators.
 - **Server-side jobs:** Edge Functions `invite`, `notify` (web push + email), later `assistant` and `brp-sync`. pg_cron for daily checklist generation. Database webhooks trigger `notify` on `notifications` insert.
-- **Desktop:** Tauri 2 wrapping the built web assets (not a remote URL) with plugins `updater`, `deep-link` (`gymops://`), `notification`, `single-instance`. GitHub Releases on the public `gymops-releases` repository as the update feed (the source repository is private).
+- **Desktop:** Tauri 2 wrapping the built web assets (not a remote URL) with plugins `updater` (+ `process` for the relaunch), `deep-link` (`gymops://`), `notification`, `single-instance`. GitHub Releases on the public `gymops-releases` repository as the update feed (the source repository is private).
 - **PWA:** `vite-plugin-pwa`, `display: standalone`, service worker handling `push` and `notificationclick`. In-app install guide (iOS needs Add to Home Screen; permission prompt only from a user gesture).
 - **Auth:** Supabase Auth email/password with PKCE. Invite/reset links open the desktop app via deep link with a web fallback page.
 - **AI assistant:** Edge Function using `@anthropic-ai/sdk`, model `claude-opus-5`, adaptive thinking, streaming via SSE. Tool runner with two tools, `search_content` (Postgres full-text search) and `read_content`, both executed with the caller's JWT so RLS applies. Stable system prompt + tool definitions cached with `cache_control`.
@@ -115,8 +115,10 @@ gymops/
     tests/                  pgTAP RLS tests (every .sql here is run as a test)
     functions/              invite, notify, assistant, brp-sync
     seed.sql
-  src-tauri/                desktop shell
-  .github/workflows/        CI: web gates + migrations/pgTAP on every push and PR
+  src-tauri/                desktop shell (Tauri 2; icons, capabilities, the Rust entry point)
+  docs/                     the P7-07 manual walkthrough checklist
+  .github/workflows/        ci.yml: web gates, migrations/pgTAP, e2e, Edge Functions, cargo check;
+                            release.yml: tagged desktop builds to gymops-releases
   PROJECT_SPEC.md  PROJECT_TASKS.md  PROJECT_STATE.md  CLAUDE.md
 ```
 
