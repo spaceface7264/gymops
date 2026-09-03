@@ -19,3 +19,6 @@ playwright-report
 
 # Claude Code worktrees (local checkouts, never committed)
 .claude/worktrees/
+
+# Subagent-driven-development scratch (ledger, briefs, review packages)
+.superpowers/
