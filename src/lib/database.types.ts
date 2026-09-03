@@ -1373,6 +1373,11 @@ export type Database = {
       can_read_channel: { Args: { target_channel: string }; Returns: boolean }
       can_read_content: { Args: { target_gym_id: string }; Returns: boolean }
       can_read_event: { Args: { target_event_id: string }; Returns: boolean }
+      chat_audience: {
+        Args: { excluding: string; target_channel: string }
+        Returns: string[]
+      }
+      chat_author_name: { Args: { author: string }; Returns: string }
       chat_object_channel: { Args: { object_name: string }; Returns: string }
       chat_overview: {
         Args: never
@@ -1383,6 +1388,7 @@ export type Database = {
           unread: number
         }[]
       }
+      chat_topic_channel: { Args: { topic: string }; Returns: string }
       content_audience: { Args: { target_gym: string }; Returns: string[] }
       content_object_gym: { Args: { object_name: string }; Returns: string }
       content_search_vector: {
@@ -1445,6 +1451,8 @@ export type Database = {
         | "incident_status_changed"
         | "ack_reminder"
         | "invite"
+        | "chat_mention"
+        | "chat_dm"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1587,6 +1595,8 @@ export const Constants = {
         "incident_status_changed",
         "ack_reminder",
         "invite",
+        "chat_mention",
+        "chat_dm",
       ],
     },
   },

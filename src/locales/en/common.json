@@ -158,6 +158,7 @@
     "loadOlder": "Load older",
     "loadingOlder": "Loading…",
     "mentionSomebody": "Mention somebody",
+    "mute": "Mute this channel",
     "muted": "Muted",
     "navUnread": "Chat, {{count}} unread",
     "noMessages": "Nothing has been said here yet.",
@@ -170,6 +171,7 @@
     "title": "Chat",
     "typing": "{{names}} is typing…",
     "typing_other": "{{names}} are typing…",
+    "unmute": "Unmute this channel",
     "unread": "{{count}} unread",
     "write": "Write a message"
   },
@@ -628,6 +630,8 @@
     "title": "Notifications",
     "type": {
       "ack_reminder": "Still to confirm",
+      "chat_dm": "New message",
+      "chat_mention": "You were mentioned",
       "incident_reported": "New incident",
       "incident_status_changed": "Incident updated",
       "invite": "Invitation accepted"

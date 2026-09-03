@@ -506,3 +506,45 @@ describe('attachments on a message', () => {
     )
   })
 })
+
+describe('muting a channel', () => {
+  it('silences it from the channel it is open in', async () => {
+    openChannel()
+
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Mute this channel' }),
+    )
+
+    await waitFor(() =>
+      expect(
+        updated.mock.calls.some(
+          ([table, values]) =>
+            table === 'channel_members' && (values as { muted?: boolean }).muted === true,
+        ),
+      ).toBe(true),
+    )
+  })
+
+  it('offers to unmute one that is already silenced', async () => {
+    channelRows.mockReturnValue([
+      channel({
+        channel_members: [{ muted: true, last_read_at: '2026-09-03T08:00:00Z' }],
+      }),
+    ])
+    openChannel()
+
+    const button = await screen.findByRole('button', { name: 'Unmute this channel' })
+    expect(button).toHaveAttribute('aria-pressed', 'true')
+
+    await userEvent.click(button)
+    await waitFor(() =>
+      expect(
+        updated.mock.calls.some(
+          ([table, values]) =>
+            table === 'channel_members' &&
+            (values as { muted?: boolean }).muted === false,
+        ),
+      ).toBe(true),
+    )
+  })
+})

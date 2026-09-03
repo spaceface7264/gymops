@@ -18,6 +18,7 @@ export {
   useMarkChannelRead,
   useMessages,
   useSendMessage,
+  useSetChannelMuted,
   useSignedAttachmentUrl,
   type Channel,
   type ChannelActivity,

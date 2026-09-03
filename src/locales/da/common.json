@@ -158,6 +158,7 @@
     "loadOlder": "Hent ældre",
     "loadingOlder": "Henter…",
     "mentionSomebody": "Nævn nogen",
+    "mute": "Slå lyden fra",
     "muted": "Lyd slået fra",
     "navUnread": "Chat, {{count}} ulæste",
     "noMessages": "Der er ikke sagt noget her endnu.",
@@ -170,6 +171,7 @@
     "title": "Chat",
     "typing": "{{names}} skriver…",
     "typing_other": "{{names}} skriver…",
+    "unmute": "Slå lyden til",
     "unread": "{{count}} ulæste",
     "write": "Skriv en besked"
   },
@@ -628,6 +630,8 @@
     "title": "Notifikationer",
     "type": {
       "ack_reminder": "Mangler bekræftelse",
+      "chat_dm": "Ny besked",
+      "chat_mention": "Du blev nævnt",
       "incident_reported": "Ny hændelse",
       "incident_status_changed": "Hændelse opdateret",
       "invite": "Invitation accepteret"

@@ -5,6 +5,8 @@ import {
   InboxPage,
   NotificationBell,
   NotificationPreferencesPage,
+  notificationChannels,
+  notificationTypes,
 } from '@/features/notifications'
 import { renderWithProviders } from '@/test/render'
 
@@ -169,8 +171,9 @@ describe('preferences', () => {
     renderWithProviders(<NotificationPreferencesPage />)
 
     const boxes = await screen.findAllByRole('checkbox')
-    // Four types, three channels.
-    expect(boxes).toHaveLength(12)
+    // Every type the enum carries, times the three channels — counted rather
+    // than written down, so adding a type (P6-08 added two) is not a failure.
+    expect(boxes).toHaveLength(notificationTypes.length * notificationChannels.length)
     expect(boxes.every((box) => (box as HTMLInputElement).checked)).toBe(true)
   })
 

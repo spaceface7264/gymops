@@ -38,10 +38,15 @@ end-to-end job.
 **Phase 6, team chat** (P6-01 … P6-08) is under way on `phase-6-chat`. P6-01
 (schema, RLS, storage and the Realtime topic), P6-02 (the automatic gym and
 `#company` channels) P6-03 (the channel list, the layout and the badges) and
-P6-04 (the message list) and P6-05 (the composer) are done — the chat is
-writable from the app itself. Next are **P6-06** (DMs), **P6-07** (custom
-channels) and **P6-08** (mention and DM notifications), which finish the
-phase. Phase 6 is also where the `notify` function, the VAPID keys and
+P6-04 (the message list), P6-05 (the composer) and P6-08 (mention and DM
+notifications, per-channel mute) are done. **P6-06** (DMs) and **P6-07**
+(custom channels) finish the phase.
+
+The branch is pushed and open as **draft PR #8**, which is where the first CI
+run found what only ever shows up off this machine: `database.types.ts` had
+not been regenerated after P6-05's `chat_topic_channel()`, and the drift guard
+added on 2026-09-02 caught it. Three of the four jobs were green; the types are
+regenerated in the P6-08 commit. Phase 6 is also where the `notify` function, the VAPID keys and
 Resend finally have to exist, and where P2-03's `invite` gets deployed. The
 VAPID pair and the Resend key are local-only for now — `notify` sends by web
 push and email when the secrets are set and records what it would have sent
@@ -62,7 +67,7 @@ container out. `supabase stop && supabase start` brings it back.
 | P3 News and guides       | ✅ Complete    | P3-01 to P3-07 (PR #3) and the audit fixes (#4). |
 | P4 Daily ops             | ✅ Complete    | P4-01 to P4-10 merged in PR #5; P4-11 in PR #6.   |
 | P5 Notifications and PWA | ✅ Complete    | P5-01 to P5-06, merged in PR #7.                |
-| P6 Team chat             | 🟡 In progress | P6-01 … P6-05 done on `phase-6-chat`.           |
+| P6 Team chat             | 🟡 In progress | P6-01 … P6-05 and P6-08 done; PR #8 (draft).    |
 | P7 Desktop and release   | ⬜ Not started |                                                 |
 | P8 AI assistant (V1.5)   | ⬜ Not started | Needs Anthropic API key in Supabase secrets.    |
 
@@ -119,6 +124,7 @@ Update this list as work begins:
 | P6-03 | ✅ done | 2026-09-03 | 2026-09-03 | `src/features/chat`: the channel list grouped into gyms, custom channels and DMs, each row badged with what has been said since `last_read_at`, and `/chat` + `/chat/:channelId` rendering one screen — side by side from `md`, one pane at a time on a phone with a way back. A DM is named by whoever else is in it (`channelName()`), which takes a second query for the DM member lists only. `20260903110000_chat_overview.sql` answers the counts: `chat_overview()` returns unread, last activity and mute per channel in one call, excluding your own messages and deleted ones — the nav badge sums the unmuted ones, and a muted channel still shows its own count. The shell gained a full-bleed mode (`fullBleedRoutes` in `routes/nav.ts`) so chat scrolls its own panes instead of the page; a react-router `handle` would have been neater but `useMatches()` throws in the `MemoryRouter` every component test uses (spec §4). Deliberately **not** filtered by the gym switcher. 9 new pgTAP assertions (409) and 8 new unit tests (272). Verified in Chrome as `staff@`: two seeded messages badged the gym channel 2, a muted `#company` showed 1 on its row and nothing in the nav total; the phone layout was driven at 390×844 with Playwright, since the browser window would not resize. |
 | P6-04 | ✅ done | 2026-09-03 | 2026-09-03 | `message-list.tsx` + `markdown.tsx` + `use-message-stream.ts`: one channel's conversation, oldest at the bottom, 30 to a page with "load older", live over the `chat:<channel id>` private topic (an edit and a delete are both UPDATEs, so one subscription covers all three), your own message editable in place with an `edited` marker, and delete for your own or — in a non-DM channel you publish in — anybody's. The light markdown of §2.2 (`**bold**`, `*italic*`, `` `code` ``, bare links) is 60 lines returning React nodes rather than a library returning HTML: a chat message is the one thing here rendered verbatim from another user. **Two defects the browser found and the unit tests could not:** two messages written in one statement share `now()`, so paging on `created_at` alone ordered a tie arbitrarily and would drop one that straddled a page boundary — the cursor is now the pair `(created_at, id)`; and the read marker only moved when the route changed, so a message arriving while the channel was open badged a line already on screen — it now follows the newest message. 15 unit tests in the chat suite (281 total). Driven end to end in Chrome with Playwright: markdown, a message inserted by another user appearing without a reload, edit, and delete. |
 | P6-05 | ✅ done | 2026-09-03 | 2026-09-03 | `composer.tsx`: Enter sends and shift+Enter starts a line, `@` opens the channel's own member list (arrow keys, Enter or click) and the chosen people are stored as ids in `messages.mentions` — an `@name` is a string, a mention is a person, and P6-08 has to aim at one. Files go to the `chat` bucket under `<channel id>/<uuid>.<ext>` after the message row exists, and render as images or as named links from signed URLs; `useSendMessage()` is the first thing in the app that writes a message. Typing presence rides the message stream's own topic (`use-channel-live.ts` replaces `use-message-stream.ts`) and carries a `typing_until` window rather than an on/off pair. `20260903120000_chat_presence.sql` is what lets it: presence *writes* to `realtime.messages`, which P6-01 only granted read on, and the new INSERT policy is `is_channel_member()` — speaking on a topic takes membership, not mere access. **Two defects found while testing:** the file input's `onChange` read `event.target.files` inside a state updater, which runs after the input is cleared, so nothing was ever attached (caught by the unit test); and the typing indicator hung on the last keystroke because presence only fires when state changes — expired entries are now dropped by a timer (caught in the browser). 21 chat unit tests (287 total), 4 new pgTAP assertions (413). Verified in two browser sessions at once: staff typing showed as "Sam Staff is typing…" to the manager and cleared on its own, and a mention plus a PNG arrived at the other end without a reload. |
+| P6-08 | ✅ done | 2026-09-03 | 2026-09-03 | `20260903140000_chat_notifications.sql` adds `chat_mention` and `chat_dm` to the enum and `20260903140100_chat_notification_trigger.sql` raises them — two migrations because Postgres refuses a new enum label in the transaction that created it. `notify_chat_message()` tells the people a message names in an ordinary channel, and everybody else in a DM (named or not, so a mention inside a DM is not a second event), through `raise_notification()` — so the per-type switch, the active check and the fan-out to push and email come for free. `chat_audience()` drops anyone who muted the channel: mute is "not from here", a stronger no than the per-type preference. The DM branch de-duplicates per channel over five minutes; the mention branch does not. Neither asks for email. The mute switch itself is now in the channel header (`useSetChannelMuted`) — the list has been showing the marker since P6-03 with no way to set it — and the preferences screen, the inbox icons and `notify`'s push/email headings all learned the two types in `en` and `da`. 12 new pgTAP assertions (430) and 2 unit tests (289); the preferences test now counts the enum rather than hard-coding twelve checkboxes. Verified in two browser sessions: a mention reached the manager's inbox as "You were mentioned / Sam Staff — Copenhagen Nord" with the words that were typed, and a second one after muting raised nothing. |
 | P5-02 … P8-06 | ⬜ not started | | | |
 
 Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
@@ -400,6 +406,9 @@ of truth; nothing in config.toml applies to a hosted project)
 | 2026-09-03 | P6-05: `realtime.messages` gained an INSERT policy for chat topics, gated on `is_channel_member()` rather than `can_read_channel()`: speaking on a channel's topic is posting in it, and posting takes membership. |
 | 2026-09-03 | P6-05: mentions are resolved by the composer from the channel's own member list and stored as profile ids, never parsed out of the text. |
 | 2026-09-03 | P6-05 follow-up: a soft-deleted message's attachments are unreadable, row and object alike — the `chat` bucket's read policy now goes through the message rather than the object's path, because hiding the row leaves a remembered path signable. |
+| 2026-09-03 | P6-08: a DM is told as a DM even when it names somebody, and is de-duplicated per channel over five minutes; a mention in an ordinary channel is told every time, because somebody typed a name on purpose. |
+| 2026-09-03 | P6-08: mute lives on `channel_members`, not in the preferences screen — a type switch silences a kind of event everywhere, mute silences one conversation whatever the type. |
+| 2026-09-03 | P6-08: chat raises no email. The grading belongs where the event is raised (P5-02), and a chat line is not email-worthy; push and the inbox still follow the recipient's preferences. |
 
 ## How to update this file
 

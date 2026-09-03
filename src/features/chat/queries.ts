@@ -260,6 +260,32 @@ export function useDeleteMessage(channelId: string) {
 }
 
 /**
+ * Mute is per person per channel: it silences the notifications P6-08 raises
+ * and takes the channel out of the shell's badge, while the channel keeps its
+ * own count in the list. Being interrupted and being kept in the dark are
+ * different things.
+ */
+export function useSetChannelMuted() {
+  const queryClient = useQueryClient()
+  const { user } = useAuth()
+
+  return useMutation({
+    mutationFn: async ({ channelId, muted }: { channelId: string; muted: boolean }) => {
+      if (!user) throw new Error('not signed in')
+
+      const { error } = await supabase
+        .from('channel_members')
+        .update({ muted })
+        .eq('channel_id', channelId)
+        .eq('user_id', user.id)
+
+      if (error) throw error
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: chatKeys.all }),
+  })
+}
+
+/**
  * Opening a channel is reading it. The marker is only ever moved forward, so
  * a second tab that is behind cannot un-read what this one has seen.
  */

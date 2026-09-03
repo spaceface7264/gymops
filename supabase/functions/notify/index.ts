@@ -34,12 +34,16 @@ const HEADINGS: Record<Locale, Record<NotificationType, string>> = {
     incident_status_changed: 'Incident updated',
     ack_reminder: 'Still to confirm',
     invite: 'Invitation accepted',
+    chat_mention: 'You were mentioned',
+    chat_dm: 'New message',
   },
   da: {
     incident_reported: 'Ny hændelse',
     incident_status_changed: 'Hændelse opdateret',
     ack_reminder: 'Mangler bekræftelse',
     invite: 'Invitation accepteret',
+    chat_mention: 'Du blev nævnt',
+    chat_dm: 'Ny besked',
   },
 }
 

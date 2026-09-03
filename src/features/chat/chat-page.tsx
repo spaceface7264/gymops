@@ -1,6 +1,7 @@
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Bell, BellOff } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router'
+import { Button } from '@/components/ui/button'
 import { useAuth } from '@/features/auth'
 import { usePublishScope } from '@/features/content'
 import { cn } from '@/lib/utils'
@@ -9,7 +10,7 @@ import { ChannelList } from './channel-list'
 import { Composer } from './composer'
 import { MessageList } from './message-list'
 import { useChannelLive } from './use-channel-live'
-import { useChannels, useChannelMembers } from './queries'
+import { useChannels, useChannelMembers, useSetChannelMuted } from './queries'
 
 /**
  * `/chat` and `/chat/:channelId` are the same screen. On desktop the list and
@@ -66,6 +67,7 @@ function ChannelView({ channelId }: { channelId: string }) {
 
   // One subscription for the channel: the messages and who is typing.
   const { typing, startTyping } = useChannelLive(channelId)
+  const setMuted = useSetChannelMuted()
 
   const name = channel ? channelName(channel, dmMembers.data ?? [], user?.id) : ''
 
@@ -79,7 +81,7 @@ function ChannelView({ channelId }: { channelId: string }) {
         >
           <ArrowLeft className="size-5" aria-hidden="true" />
         </Link>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <h1 className="truncate font-semibold">{name}</h1>
           {channel?.description && (
             <p className="text-muted-foreground truncate text-sm">
@@ -87,6 +89,26 @@ function ChannelView({ channelId }: { channelId: string }) {
             </p>
           )}
         </div>
+
+        {/* The mute switch the channel list has been marking since P6-03. */}
+        {channel && (
+          <Button
+            variant="ghost"
+            size="sm"
+            aria-pressed={channel.muted}
+            aria-label={channel.muted ? t('chat.unmute') : t('chat.mute')}
+            disabled={setMuted.isPending}
+            onClick={() =>
+              setMuted.mutate({ channelId: channel.id, muted: !channel.muted })
+            }
+          >
+            {channel.muted ? (
+              <BellOff className="size-4" aria-hidden="true" />
+            ) : (
+              <Bell className="size-4" aria-hidden="true" />
+            )}
+          </Button>
+        )}
       </header>
 
       {channel && <MessageList channel={channel} canModerate={canModerate} />}
