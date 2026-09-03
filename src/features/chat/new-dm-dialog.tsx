@@ -10,11 +10,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { useDmCandidates, useStartDm, type DmCandidate } from './queries'
-
-/** What a colleague is called in the picker, as in the composer's mentions. */
-const candidateName = (person: DmCandidate) => person.full_name?.trim() || person.email
+import { PeoplePicker } from './people-picker'
+import { useColleagues, useStartDm } from './queries'
 
 /**
  * Starting a conversation. Several people can be picked, because §2.2's DMs
@@ -43,15 +40,10 @@ export function NewDmDialog({
 function NewDmForm({ onDone }: { onDone: () => void }) {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const candidates = useDmCandidates()
+  const colleagues = useColleagues()
   const start = useStartDm()
 
-  const [query, setQuery] = useState('')
   const [chosen, setChosen] = useState<string[]>([])
-
-  const people = (candidates.data ?? []).filter((person) =>
-    candidateName(person).toLowerCase().includes(query.trim().toLowerCase()),
-  )
 
   const toggle = (id: string) =>
     setChosen((already) =>
@@ -77,33 +69,12 @@ function NewDmForm({ onDone }: { onDone: () => void }) {
         <DialogDescription>{t('chat.newDmHint')}</DialogDescription>
       </DialogHeader>
 
-      <Input
-        type="search"
-        value={query}
-        aria-label={t('chat.findSomebody')}
-        placeholder={t('chat.findSomebody')}
-        onChange={(event) => setQuery(event.target.value)}
+      <PeoplePicker
+        people={colleagues.data ?? []}
+        chosen={chosen}
+        onToggle={toggle}
+        empty={t('chat.noCandidates')}
       />
-
-      <ul className="max-h-64 space-y-1 overflow-y-auto">
-        {people.map((person) => (
-          <li key={person.id}>
-            <label className="hover:bg-accent/60 flex items-center gap-2 rounded-md px-2 py-2 text-sm">
-              <input
-                type="checkbox"
-                className="size-4"
-                checked={chosen.includes(person.id)}
-                onChange={() => toggle(person.id)}
-              />
-              <span className="min-w-0 flex-1 truncate">{candidateName(person)}</span>
-            </label>
-          </li>
-        ))}
-      </ul>
-
-      {!candidates.isPending && people.length === 0 && (
-        <p className="text-muted-foreground text-sm">{t('chat.noCandidates')}</p>
-      )}
 
       {start.isError && (
         <p role="alert" className="text-destructive text-sm">

@@ -53,8 +53,8 @@ export type ChatAttachment = {
   size_bytes: number | null
 }
 
-/** Somebody a DM can be started with: the colleagues `profiles_select` shows. */
-export type DmCandidate = {
+/** Somebody who can be messaged or put in a channel: what `profiles_select` shows. */
+export type Colleague = {
   id: string
   full_name: string | null
   email: string
@@ -72,7 +72,8 @@ export const chatKeys = {
   channels: ['chat', 'channels'] as const,
   overview: ['chat', 'overview'] as const,
   members: (channelIds: string[]) => ['chat', 'members', channelIds.join(',')] as const,
-  candidates: ['chat', 'dm-candidates'] as const,
+  colleagues: ['chat', 'colleagues'] as const,
+  joinable: ['chat', 'joinable'] as const,
   messages: (channelId: string) => ['chat', 'messages', channelId] as const,
   signedUrl: (path: string) => ['chat', 'signed-url', path] as const,
 }
@@ -181,19 +182,20 @@ export function useChannelMembers(channelIds: string[]) {
 }
 
 /**
- * Who this person can start a DM with: every active colleague but themselves.
+ * The people this person can name: every active colleague but themselves.
  * `profiles_select` is the whole of the filter — staff see the people they
  * share a gym with, a manager their gyms, an admin everybody — and `start_dm()`
- * asks the same question again on the way in.
+ * asks the same question again on the way in. It fills the DM picker and the
+ * channel's member list alike.
  */
-export function useDmCandidates() {
+export function useColleagues() {
   const { user } = useAuth()
   const userId = user?.id
 
   return useQuery({
-    queryKey: [...chatKeys.candidates, userId],
+    queryKey: [...chatKeys.colleagues, userId],
     enabled: Boolean(userId),
-    queryFn: async (): Promise<DmCandidate[]> => {
+    queryFn: async (): Promise<Colleague[]> => {
       const { data, error } = await supabase
         .from('profiles')
         .select('id, full_name, email')
@@ -224,6 +226,194 @@ export function useStartDm() {
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: chatKeys.all }),
   })
+}
+
+/** What a custom channel is made of, as the create and edit dialog holds it. */
+export type ChannelInput = {
+  name: string
+  description: string | null
+  gymId: string | null
+  isPrivate: boolean
+}
+
+/** A channel this person could be in but is not, with how many people are. */
+export type JoinableChannel = Pick<
+  Channel,
+  'id' | 'gym_id' | 'name' | 'description' | 'is_private'
+> & { members: number }
+
+/**
+ * The custom channels this person may see and has not joined: `channels_select`
+ * decides the list — a public one in a gym they read, or a private one they
+ * moderate — and the ones they are already in are dropped here, because the
+ * sidebar is already showing those.
+ */
+export function useJoinableChannels() {
+  const { user } = useAuth()
+  const userId = user?.id
+
+  return useQuery({
+    queryKey: [...chatKeys.joinable, userId],
+    enabled: Boolean(userId),
+    queryFn: async (): Promise<JoinableChannel[]> => {
+      const { data, error } = await supabase
+        .from('channels')
+        .select('id, gym_id, name, description, is_private, channel_members(user_id)')
+        .eq('kind', 'custom')
+        .order('name')
+
+      if (error) throw error
+
+      return data
+        .filter((channel) => !channel.channel_members.some((m) => m.user_id === userId))
+        .map(({ channel_members: members, ...channel }) => ({
+          ...channel,
+          members: members.length,
+        }))
+    },
+  })
+}
+
+/** Everything a channel write invalidates: the list, the badges, the browse. */
+function useChannelWrite<TVariables, TData = void>(
+  mutationFn: (variables: TVariables) => Promise<TData>,
+) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: chatKeys.all }),
+  })
+}
+
+/**
+ * A custom channel and its first member: whoever made it. The two statements
+ * are the same shape as a DM's (P6-06) minus the dedupe — there is nothing to
+ * deduplicate, two channels of the same name being two channels — and the
+ * id *can* be read back here, because `can_moderate_channel()` shows the
+ * creator a channel with no members yet.
+ */
+export function useCreateChannel() {
+  const { user } = useAuth()
+
+  return useChannelWrite(async (input: ChannelInput): Promise<string> => {
+    if (!user) throw new Error('not signed in')
+
+    const { data, error } = await supabase
+      .from('channels')
+      .insert({
+        kind: 'custom',
+        name: input.name,
+        description: input.description,
+        gym_id: input.gymId,
+        is_private: input.isPrivate,
+      })
+      .select('id')
+      .single()
+
+    if (error) throw error
+
+    const seated = await supabase
+      .from('channel_members')
+      .insert({ channel_id: data.id, user_id: user.id })
+
+    if (seated.error) throw seated.error
+    return data.id
+  })
+}
+
+/**
+ * Renaming and describing. Not the scope and not the privacy: both are what
+ * the people in the channel joined, and `channels_update`'s check is on the
+ * new row, so moving one out of a gym would be a channel its own manager can
+ * no longer administer.
+ */
+export function useUpdateChannel() {
+  return useChannelWrite(
+    async ({
+      id,
+      name,
+      description,
+    }: {
+      id: string
+      name: string
+      description: string | null
+    }) => {
+      const { error } = await supabase
+        .from('channels')
+        .update({ name, description })
+        .eq('id', id)
+
+      if (error) throw error
+    },
+  )
+}
+
+/** Deleting takes the messages with it: `messages.channel_id` cascades. */
+export function useDeleteChannel() {
+  return useChannelWrite(async (id: string) => {
+    const { error } = await supabase.from('channels').delete().eq('id', id)
+    if (error) throw error
+  })
+}
+
+/** Joining a channel you can see, which is what makes you able to post in it. */
+export function useJoinChannel() {
+  const { user } = useAuth()
+
+  return useChannelWrite(async (channelId: string) => {
+    if (!user) throw new Error('not signed in')
+
+    const { error } = await supabase
+      .from('channel_members')
+      .insert({ channel_id: channelId, user_id: user.id })
+
+    if (error) throw error
+  })
+}
+
+/** Leaving one. A gym channel and a DM have no such button (P6-01). */
+export function useLeaveChannel() {
+  const { user } = useAuth()
+
+  return useChannelWrite(async (channelId: string) => {
+    if (!user) throw new Error('not signed in')
+
+    const { error } = await supabase
+      .from('channel_members')
+      .delete()
+      .eq('channel_id', channelId)
+      .eq('user_id', user.id)
+
+    if (error) throw error
+  })
+}
+
+/** Seating people in a channel you manage; removing one again is below. */
+export function useAddChannelMembers() {
+  return useChannelWrite(
+    async ({ channelId, userIds }: { channelId: string; userIds: string[] }) => {
+      const { error } = await supabase
+        .from('channel_members')
+        .insert(userIds.map((userId) => ({ channel_id: channelId, user_id: userId })))
+
+      if (error) throw error
+    },
+  )
+}
+
+export function useRemoveChannelMember() {
+  return useChannelWrite(
+    async ({ channelId, userId }: { channelId: string; userId: string }) => {
+      const { error } = await supabase
+        .from('channel_members')
+        .delete()
+        .eq('channel_id', channelId)
+        .eq('user_id', userId)
+
+      if (error) throw error
+    },
+  )
 }
 
 /** Where a page of messages stopped: the last row on it, not an offset. */

@@ -1,4 +1,8 @@
-import type { Channel, ChannelMember } from './queries'
+import type { Channel, ChannelMember, Colleague } from './queries'
+
+/** What a colleague is called in a picker: their name, or the email they signed
+ *  up with until they have filled one in. */
+export const personName = (person: Colleague) => person.full_name?.trim() || person.email
 
 /**
  * What a channel is called in the list. Everything but a DM carries its own

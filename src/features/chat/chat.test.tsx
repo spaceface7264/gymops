@@ -14,15 +14,21 @@ const startedDm = vi.fn<(args: Row) => void>()
 const messageRows = vi.fn<(cursor: string | null) => Row[]>()
 const updated = vi.fn<(table: string, values: Row) => void>()
 const inserted = vi.fn<(table: string, values: Row) => void>()
+const deleted = vi.fn<(table: string, filters: [string, unknown][]) => void>()
 const uploaded = vi.fn<(bucket: string, path: string) => void>()
 const tracked = vi.fn<(state: Row) => void>()
 
 function builder(table: string) {
   let cursor: string | null = null
+  let deleting = false
+  const filters: [string, unknown][] = []
 
   const chain = {
     select: () => chain,
-    eq: () => chain,
+    eq: (column: string, value: unknown) => {
+      filters.push([column, value])
+      return chain
+    },
     in: () => chain,
     order: () => chain,
     limit: () => chain,
@@ -39,9 +45,15 @@ function builder(table: string) {
       inserted(table, values)
       return chain
     },
-    single: () => Promise.resolve({ data: { id: 'message-new' }, error: null }),
-    then: (resolve: (value: unknown) => unknown) =>
-      Promise.resolve({ data: rowsFor(table, cursor), error: null }).then(resolve),
+    delete: () => {
+      deleting = true
+      return chain
+    },
+    single: () => Promise.resolve({ data: { id: `${table}-new` }, error: null }),
+    then: (resolve: (value: unknown) => unknown) => {
+      if (deleting) deleted(table, filters)
+      return Promise.resolve({ data: rowsFor(table, cursor), error: null }).then(resolve)
+    },
   }
   return chain
 }
@@ -108,7 +120,11 @@ const channel = (overrides: Row = {}): Row => ({
   name: 'Copenhagen Nord',
   description: null,
   is_private: false,
-  channel_members: [{ muted: false, last_read_at: '2026-09-03T08:00:00Z' }],
+  // `user_id` is what tells "the channels I am in" from "the ones I could
+  // join" (P6-07); the membership flags are P6-03's.
+  channel_members: [
+    { user_id: 'user-sam', muted: false, last_read_at: '2026-09-03T08:00:00Z' },
+  ],
   ...overrides,
 })
 
@@ -479,7 +495,7 @@ describe('the composer', () => {
     expect(path.endsWith('.png')).toBe(true)
     expect(inserted).toHaveBeenCalledWith(
       'message_attachments',
-      expect.objectContaining({ message_id: 'message-new', path }),
+      expect.objectContaining({ message_id: 'messages-new', path }),
     )
   })
 })
@@ -600,5 +616,147 @@ describe('starting a conversation', () => {
 
     expect(await screen.findByLabelText('Mette Holm')).toBeInTheDocument()
     expect(screen.queryByLabelText('Sam Ruiz')).not.toBeInTheDocument()
+  })
+})
+
+describe('custom channels', () => {
+  const asManager = () =>
+    profile.mockReturnValue({
+      id: 'user-sam',
+      full_name: 'Sam Ruiz',
+      is_admin: false,
+      is_superadmin: false,
+      gym_memberships: [
+        { role: 'manager', gyms: { id: 'gym-nord', name: 'Copenhagen Nord' } },
+      ],
+    })
+
+  it('offers the channel button to a manager and not to staff', async () => {
+    renderChat()
+    expect(await screen.findByRole('button', { name: 'Browse' })).toBeInTheDocument()
+    // Staff by default: creating a channel is `can_publish_content()` (§2.1).
+    expect(screen.queryByRole('button', { name: 'New channel' })).not.toBeInTheDocument()
+
+    asManager()
+    renderChat()
+    expect(
+      await screen.findAllByRole('button', { name: 'New channel' }),
+    ).not.toHaveLength(0)
+  })
+
+  it('creates the channel in the chosen scope and seats whoever made it', async () => {
+    asManager()
+    renderWithProviders(<ChatPage />, {
+      path: '/chat',
+      initialEntries: ['/chat'],
+      routes: [{ path: '/chat/:channelId', element: <p>the new channel</p> }],
+    })
+
+    await userEvent.click(await screen.findByRole('button', { name: 'New channel' }))
+    await userEvent.type(screen.getByLabelText('Name'), 'Route setting')
+    await userEvent.click(screen.getByLabelText(/Private channel/))
+    await userEvent.click(screen.getByRole('button', { name: 'Create' }))
+
+    await waitFor(() =>
+      expect(inserted).toHaveBeenCalledWith(
+        'channels',
+        expect.objectContaining({
+          kind: 'custom',
+          name: 'Route setting',
+          gym_id: 'gym-nord',
+          is_private: true,
+        }),
+      ),
+    )
+    // The channel exists and nobody is in it: the creator is its first member.
+    expect(inserted).toHaveBeenCalledWith('channel_members', {
+      channel_id: 'channels-new',
+      user_id: 'user-sam',
+    })
+    expect(await screen.findByText('the new channel')).toBeInTheDocument()
+  })
+
+  it('joins one from the browse list', async () => {
+    channelRows.mockReturnValue([
+      channel(),
+      channel({
+        id: 'channel-setting',
+        kind: 'custom',
+        name: 'Route setting',
+        description: null,
+        channel_members: [],
+      }),
+    ])
+    renderChat()
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Browse' }))
+    // The one this person is already in is not offered again.
+    const rows = await screen.findAllByRole('button', { name: 'Join' })
+    expect(rows).toHaveLength(1)
+
+    await userEvent.click(rows[0]!)
+    await waitFor(() =>
+      expect(inserted).toHaveBeenCalledWith('channel_members', {
+        channel_id: 'channel-setting',
+        user_id: 'user-sam',
+      }),
+    )
+  })
+
+  it('lets a member leave, and only a manager take somebody out', async () => {
+    channelRows.mockReturnValue([
+      channel({ id: 'channel-setting', kind: 'custom', name: 'Route setting' }),
+    ])
+    memberRows.mockReturnValue([
+      {
+        channel_id: 'channel-setting',
+        user_id: 'user-mette',
+        profiles: { full_name: 'Mette Holm', email: 'mette@gymops.test' },
+      },
+    ])
+    renderChat('/chat/channel-setting', '/chat/:channelId')
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Members' }))
+    expect(await screen.findByText('Mette Holm')).toBeInTheDocument()
+    // Staff read the list; they do not seat or unseat anybody.
+    expect(
+      screen.queryByRole('button', { name: 'Remove Mette Holm' }),
+    ).not.toBeInTheDocument()
+    // Escape rather than the Close button: the vendored dialog ships one of
+    // its own, and two buttons of that name is the known gap, not this test's.
+    await userEvent.keyboard('{Escape}')
+
+    await userEvent.click(screen.getByRole('button', { name: 'Leave this channel' }))
+    await waitFor(() =>
+      expect(deleted).toHaveBeenCalledWith('channel_members', [
+        ['channel_id', 'channel-setting'],
+        ['user_id', 'user-sam'],
+      ]),
+    )
+  })
+
+  it('renames one, without offering to move or unhide it', async () => {
+    asManager()
+    channelRows.mockReturnValue([
+      channel({ id: 'channel-setting', kind: 'custom', name: 'Route setting' }),
+    ])
+    renderChat('/chat/channel-setting', '/chat/:channelId')
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Channel settings' }))
+    // The scope and the privacy are what the people in it joined (P6-07).
+    expect(screen.queryByLabelText('Who it belongs to')).not.toBeInTheDocument()
+    expect(screen.queryByLabelText(/Private channel/)).not.toBeInTheDocument()
+
+    const name = screen.getByLabelText('Name')
+    await userEvent.clear(name)
+    await userEvent.type(name, 'Route setting & strip')
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+    await waitFor(() =>
+      expect(updated).toHaveBeenCalledWith('channels', {
+        name: 'Route setting & strip',
+        description: null,
+      }),
+    )
   })
 })
