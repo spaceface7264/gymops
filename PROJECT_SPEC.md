@@ -20,6 +20,7 @@ A single internal system for a chain of 10+ bouldering gyms in Denmark (200+ use
 - Events are the one exception to "managers publish in their own gyms": the calendar is run centrally, so `events_insert`/`events_update` are `is_admin()`, not `can_publish_content()`. Everyone in the audience reads them.
 - Events are also the one record whose scope is a *set* of gyms rather than one nullable `gym_id`: an event runs at any number of gyms (`event_gyms`), and one with no rows there is company-wide.
 - An acknowledgement is the database's record, not the client's claim: timestamps and the acknowledged guide version are stamped server-side, and you can only confirm content you are allowed to read.
+- Every active person can see the active admins and superadmins (name, email, phone); gym members see each other; managers see their gyms' members; admins see everyone.
 
 Permission matrix (also the RLS test spec):
 
