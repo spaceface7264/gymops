@@ -136,6 +136,10 @@
     "signingOut": "Signing out…"
   },
   "chat": {
+    "attach": "Attach a file",
+    "attachmentAlt": "Attachment",
+    "attachmentFailed": "This file could not be opened.",
+    "attachmentLoading": "Loading…",
     "back": "All channels",
     "cancel": "Cancel",
     "delete": "Delete",
@@ -153,14 +157,21 @@
     "loadMessagesFail": "The messages could not be loaded.",
     "loadOlder": "Load older",
     "loadingOlder": "Loading…",
+    "mentionSomebody": "Mention somebody",
     "muted": "Muted",
     "navUnread": "Chat, {{count}} unread",
     "noMessages": "Nothing has been said here yet.",
     "pickChannel": "Pick a channel to read it.",
+    "removeFile": "Remove {{name}}",
     "save": "Save",
+    "send": "Send",
+    "sendFailed": "The message could not be sent.",
     "someone": "Somebody",
     "title": "Chat",
-    "unread": "{{count}} unread"
+    "typing": "{{names}} is typing…",
+    "typing_other": "{{names}} are typing…",
+    "unread": "{{count}} unread",
+    "write": "Write a message"
   },
   "checklists": {
     "activate": "Activate",

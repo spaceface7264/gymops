@@ -1,4 +1,4 @@
-import type { Channel, DmMember } from './queries'
+import type { Channel, ChannelMember } from './queries'
 
 /**
  * What a channel is called in the list. Everything but a DM carries its own
@@ -7,7 +7,7 @@ import type { Channel, DmMember } from './queries'
  */
 export function channelName(
   channel: Pick<Channel, 'id' | 'kind' | 'name'>,
-  dmMembers: DmMember[],
+  dmMembers: ChannelMember[],
   currentUserId: string | undefined,
 ): string {
   if (channel.kind !== 'dm') return channel.name ?? ''

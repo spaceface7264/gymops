@@ -6,8 +6,10 @@ import { usePublishScope } from '@/features/content'
 import { cn } from '@/lib/utils'
 import { channelName } from './channel-name'
 import { ChannelList } from './channel-list'
+import { Composer } from './composer'
 import { MessageList } from './message-list'
-import { useChannels, useDmMembers } from './queries'
+import { useChannelLive } from './use-channel-live'
+import { useChannels, useChannelMembers } from './queries'
 
 /**
  * `/chat` and `/chat/:channelId` are the same screen. On desktop the list and
@@ -52,7 +54,7 @@ function ChannelView({ channelId }: { channelId: string }) {
   const { user } = useAuth()
   const channels = useChannels()
   const channel = (channels.data ?? []).find((row) => row.id === channelId)
-  const dmMembers = useDmMembers(channel?.kind === 'dm' ? [channel.id] : [])
+  const dmMembers = useChannelMembers(channel?.kind === 'dm' ? [channel.id] : [])
 
   // "Delete any chat message (non-DM)" (§2.1) — the same rule the database
   // enforces in `can_moderate_channel()`, asked here only to decide what to
@@ -61,6 +63,9 @@ function ChannelView({ channelId }: { channelId: string }) {
   const canModerate = Boolean(
     channel && channel.kind !== 'dm' && canPublishIn(channel.gym_id),
   )
+
+  // One subscription for the channel: the messages and who is typing.
+  const { typing, startTyping } = useChannelLive(channelId)
 
   const name = channel ? channelName(channel, dmMembers.data ?? [], user?.id) : ''
 
@@ -85,6 +90,14 @@ function ChannelView({ channelId }: { channelId: string }) {
       </header>
 
       {channel && <MessageList channel={channel} canModerate={canModerate} />}
+
+      {typing.length > 0 && (
+        <p aria-live="polite" className="text-muted-foreground px-4 text-xs">
+          {t('chat.typing', { names: typing.join(', '), count: typing.length })}
+        </p>
+      )}
+
+      {channel && <Composer channelId={channel.id} onTyping={startTyping} />}
     </>
   )
 }

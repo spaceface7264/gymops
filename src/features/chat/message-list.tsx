@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/features/auth'
+import { Attachments } from './attachments'
 import { ChatMarkdown } from './markdown'
 import {
   useDeleteMessage,
@@ -11,7 +12,6 @@ import {
   type Channel,
   type Message,
 } from './queries'
-import { useMessageStream } from './use-message-stream'
 
 /**
  * One channel's conversation, oldest at the bottom. The pages arrive
@@ -27,7 +27,6 @@ export function MessageList({
 }) {
   const { t } = useTranslation()
   const messages = useMessages(channel.id)
-  useMessageStream(channel.id)
 
   const markRead = useMarkChannelRead()
   const mark = markRead.mutate
@@ -149,7 +148,10 @@ function MessageRow({
           }
         />
       ) : (
-        <ChatMarkdown body={message.body} />
+        <>
+          <ChatMarkdown body={message.body} />
+          <Attachments attachments={message.message_attachments} />
+        </>
       )}
 
       {!editing && (mine || canModerate) && (

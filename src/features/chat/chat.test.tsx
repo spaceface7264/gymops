@@ -11,6 +11,9 @@ const memberRows = vi.fn<() => Row[]>()
 const overviewRows = vi.fn<() => Row[]>()
 const messageRows = vi.fn<(cursor: string | null) => Row[]>()
 const updated = vi.fn<(table: string, values: Row) => void>()
+const inserted = vi.fn<(table: string, values: Row) => void>()
+const uploaded = vi.fn<(bucket: string, path: string) => void>()
+const tracked = vi.fn<(state: Row) => void>()
 
 function builder(table: string) {
   let cursor: string | null = null
@@ -30,6 +33,11 @@ function builder(table: string) {
       updated(table, values)
       return chain
     },
+    insert: (values: Row) => {
+      inserted(table, values)
+      return chain
+    },
+    single: () => Promise.resolve({ data: { id: 'message-new' }, error: null }),
     then: (resolve: (value: unknown) => unknown) =>
       Promise.resolve({ data: rowsFor(table, cursor), error: null }).then(resolve),
   }
@@ -46,12 +54,30 @@ vi.mock('@/lib/supabase', () => ({
   supabase: {
     from: (table: string) => builder(table),
     rpc: () => Promise.resolve({ data: overviewRows(), error: null }),
-    // The live sync (P6-04); what it does when a row changes is its own test.
+    // The live sync and the typing presence (P6-04, P6-05).
     channel: () => {
-      const subscription = { on: () => subscription, subscribe: () => subscription }
+      const subscription = {
+        on: () => subscription,
+        subscribe: () => subscription,
+        track: (state: Row) => {
+          tracked(state)
+          return Promise.resolve('ok')
+        },
+        presenceState: () => ({}),
+      }
       return subscription
     },
     removeChannel: vi.fn(),
+    storage: {
+      from: (bucket: string) => ({
+        upload: (path: string) => {
+          uploaded(bucket, path)
+          return Promise.resolve({ error: null })
+        },
+        createSignedUrl: (path: string) =>
+          Promise.resolve({ data: { signedUrl: `https://signed/${path}` }, error: null }),
+      }),
+    },
   },
 }))
 
@@ -94,6 +120,7 @@ beforeEach(() => {
   messageRows.mockReturnValue([])
   profile.mockReturnValue({
     id: 'user-sam',
+    full_name: 'Sam Ruiz',
     is_admin: false,
     is_superadmin: false,
     gym_memberships: [
@@ -216,6 +243,7 @@ const message = (overrides: Row = {}): Row => ({
   deleted_at: null,
   created_by: 'user-mette',
   author: { full_name: 'Mette Holm', email: 'mette@gymops.test' },
+  message_attachments: [],
   ...overrides,
 })
 
@@ -350,5 +378,131 @@ describe('editing and deleting', () => {
     expect(await screen.findByRole('button', { name: 'Delete' })).toBeInTheDocument()
     // Somebody else's words stay theirs, moderator or not.
     expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument()
+  })
+})
+
+describe('the composer', () => {
+  it('sends what was typed, on Enter', async () => {
+    openChannel()
+
+    await userEvent.type(
+      await screen.findByRole('textbox', { name: 'Write a message' }),
+      'Wall 4 is open{Enter}',
+    )
+
+    await waitFor(() =>
+      expect(inserted).toHaveBeenCalledWith('messages', {
+        channel_id: 'channel-nord',
+        body: 'Wall 4 is open',
+        mentions: [],
+      }),
+    )
+  })
+
+  it('starts a line on shift+Enter instead of sending', async () => {
+    openChannel()
+
+    const box = await screen.findByRole('textbox', { name: 'Write a message' })
+    await userEvent.type(box, 'One{Shift>}{Enter}{/Shift}Two')
+
+    expect(box).toHaveValue('One\nTwo')
+    expect(inserted).not.toHaveBeenCalled()
+  })
+
+  it('mentions a colleague by name, and sends the person rather than the string', async () => {
+    memberRows.mockReturnValue([
+      {
+        channel_id: 'channel-nord',
+        user_id: 'user-mette',
+        profiles: { full_name: 'Mette Holm', email: 'mette@gymops.test' },
+      },
+    ])
+    openChannel()
+
+    const box = await screen.findByRole('textbox', { name: 'Write a message' })
+    await userEvent.type(box, 'Ping @Met')
+
+    const option = await screen.findByRole('option', { name: 'Mette Holm' })
+    await userEvent.click(option)
+    expect(box).toHaveValue('Ping @Mette Holm ')
+
+    await userEvent.type(box, '{Enter}')
+    await waitFor(() =>
+      expect(inserted).toHaveBeenCalledWith('messages', {
+        channel_id: 'channel-nord',
+        body: 'Ping @Mette Holm',
+        mentions: ['user-mette'],
+      }),
+    )
+  })
+
+  it('says somebody is typing while they type', async () => {
+    openChannel()
+
+    await userEvent.type(
+      await screen.findByRole('textbox', { name: 'Write a message' }),
+      'W',
+    )
+
+    await waitFor(() => expect(tracked).toHaveBeenCalled())
+    const [state] = tracked.mock.calls[0] as [{ name: string; typing_until: string }]
+    expect(state.name).toBe('Sam Ruiz')
+    expect(new Date(state.typing_until).getTime()).toBeGreaterThan(Date.now())
+  })
+
+  it('carries a file into the chat bucket, and records it against the message', async () => {
+    openChannel()
+
+    await screen.findByRole('textbox', { name: 'Write a message' })
+
+    const file = new File(['topo'], 'wall4.png', { type: 'image/png' })
+    await userEvent.upload(screen.getByTestId('chat-files'), file)
+    expect(await screen.findByText('wall4.png')).toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Send' }))
+
+    await waitFor(() => expect(uploaded).toHaveBeenCalled())
+    const [bucket, path] = uploaded.mock.calls[0] as [string, string]
+    expect(bucket).toBe('chat')
+    // The channel first: the storage policies resolve the permission from it.
+    expect(path.startsWith('channel-nord/')).toBe(true)
+    expect(path.endsWith('.png')).toBe(true)
+    expect(inserted).toHaveBeenCalledWith(
+      'message_attachments',
+      expect.objectContaining({ message_id: 'message-new', path }),
+    )
+  })
+})
+
+describe('attachments on a message', () => {
+  it('shows an image, and links anything else by name', async () => {
+    messageRows.mockReturnValue([
+      message({
+        message_attachments: [
+          {
+            id: 'a1',
+            path: 'channel-nord/topo.png',
+            mime_type: 'image/png',
+            size_bytes: 10,
+          },
+          {
+            id: 'a2',
+            path: 'channel-nord/rota.pdf',
+            mime_type: 'application/pdf',
+            size_bytes: 20,
+          },
+        ],
+      }),
+    ])
+    openChannel()
+
+    expect(await screen.findByRole('img', { name: 'Attachment' })).toHaveAttribute(
+      'src',
+      'https://signed/channel-nord/topo.png',
+    )
+    expect(screen.getByRole('link', { name: /rota.pdf/ })).toHaveAttribute(
+      'href',
+      'https://signed/channel-nord/rota.pdf',
+    )
   })
 })

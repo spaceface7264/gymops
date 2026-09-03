@@ -4,7 +4,7 @@ import { NavLink } from 'react-router'
 import { useAuth } from '@/features/auth'
 import { cn } from '@/lib/utils'
 import { channelName } from './channel-name'
-import { useChannels, useChatOverview, useDmMembers, type Channel } from './queries'
+import { useChannels, useChatOverview, useChannelMembers, type Channel } from './queries'
 
 /** The three groups the sidebar shows, in the order they matter on a shift. */
 const groups = ['gyms', 'channels', 'dms'] as const
@@ -24,7 +24,7 @@ export function ChannelList({ activeId }: { activeId?: string }) {
   const overview = useChatOverview()
 
   const rows = channels.data ?? []
-  const dmMembers = useDmMembers(
+  const dmMembers = useChannelMembers(
     rows.filter((row) => row.kind === 'dm').map((row) => row.id),
   )
 

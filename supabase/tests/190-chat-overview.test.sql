@@ -8,7 +8,7 @@
 --
 -- Tested against supabase/migrations/20260903110000_chat_overview.sql.
 begin;
-select plan(9);
+select plan(13);
 
 -- ---------------------------------------------------------------- fixtures --
 insert into public.gyms (id, name, slug)
@@ -130,6 +130,31 @@ select is(
   (select count(*)::int from public.chat_overview()),
   0,
   'a deactivated colleague sees nothing, definer function or not'
+);
+
+-- ------------------------------------------------------ the chat topic (P6-05) --
+select tests.authenticate_as('writer');
+select is(
+  public.chat_topic_channel('chat:cccccccc-0000-0000-0000-000000000001'),
+  'cccccccc-0000-0000-0000-000000000001'::uuid,
+  'a chat topic names its channel'
+);
+select is(
+  public.chat_topic_channel('chat:cccccccc-0000-0000-0000-000000000001:typing'),
+  '00000000-0000-0000-0000-000000000000'::uuid,
+  'and anything with more in it than that names none'
+);
+select ok(
+  public.can_listen_to_chat('chat:cccccccc-0000-0000-0000-000000000001'),
+  'a member may listen to their channel'
+);
+-- Typing is speaking: it takes membership, which is what the insert policy on
+-- realtime.messages asks (P6-05).
+select ok(
+  public.is_channel_member(
+    public.chat_topic_channel('chat:cccccccc-0000-0000-0000-000000000001')
+  ),
+  'and may say they are typing in it'
 );
 
 select * from finish();

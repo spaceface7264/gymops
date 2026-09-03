@@ -136,6 +136,10 @@
     "signingOut": "Logger ud…"
   },
   "chat": {
+    "attach": "Vedhæft en fil",
+    "attachmentAlt": "Vedhæftet fil",
+    "attachmentFailed": "Filen kunne ikke åbnes.",
+    "attachmentLoading": "Henter…",
     "back": "Alle kanaler",
     "cancel": "Annullér",
     "delete": "Slet",
@@ -153,14 +157,21 @@
     "loadMessagesFail": "Beskederne kunne ikke hentes.",
     "loadOlder": "Hent ældre",
     "loadingOlder": "Henter…",
+    "mentionSomebody": "Nævn nogen",
     "muted": "Lyd slået fra",
     "navUnread": "Chat, {{count}} ulæste",
     "noMessages": "Der er ikke sagt noget her endnu.",
     "pickChannel": "Vælg en kanal for at læse den.",
+    "removeFile": "Fjern {{name}}",
     "save": "Gem",
+    "send": "Send",
+    "sendFailed": "Beskeden kunne ikke sendes.",
     "someone": "Nogen",
     "title": "Chat",
-    "unread": "{{count}} ulæste"
+    "typing": "{{names}} skriver…",
+    "typing_other": "{{names}} skriver…",
+    "unread": "{{count}} ulæste",
+    "write": "Skriv en besked"
   },
   "checklists": {
     "activate": "Aktivér",
