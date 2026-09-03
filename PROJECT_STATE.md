@@ -43,10 +43,11 @@ now — `notify` sends by web push and email when the secrets are set and
 records what it would have sent when they are not, so the whole fan-out is
 testable on this machine and the hosted half stays in "Hosted project cutover".
 
-**Phase 7, desktop and release** (P7-01 … P7-07) is on `phase-7-desktop`,
-branched from `main` after PR #8, as draft **PR #9**: P7-01 … P7-06 are done
-and verified by hand in the debug bundle; P7-07 has its checklist in
-`docs/walkthrough.md` and the walkthrough itself is still to be driven. The Rust toolchain was
+**Phase 7, desktop and release** (P7-01 … P7-06) is **merged into `main`** as
+PR #9 (2026-09-03), verified by hand in the debug bundle; P7-07 has its
+checklist in `docs/walkthrough.md` and the walkthrough itself is still to be
+driven. Next: the **basics pass** (P7B-01 … P7B-03) on
+`basics-account-search-dm`, spec and plan under `docs/superpowers/`. The Rust toolchain was
 installed for it on 2026-09-03 (rustup, stable 1.98, minimal profile, in
 `~/.cargo`); `npm run tauri dev` is the desktop window against the Vite dev
 server and needs `. ~/.cargo/env` in a shell that has not sourced it.
@@ -66,7 +67,8 @@ container out. `supabase stop && supabase start` brings it back.
 | P4 Daily ops             | ✅ Complete    | P4-01 to P4-10 merged in PR #5; P4-11 in PR #6.   |
 | P5 Notifications and PWA | ✅ Complete    | P5-01 to P5-06, merged in PR #7.                |
 | P6 Team chat             | ✅ Complete    | P6-01 … P6-08, merged in PR #8.                 |
-| P7 Desktop and release   | 🔄 In progress | P7-01 … P7-06 done, draft PR #9; P7-07 checklist written, walkthrough pending. |
+| P7 Desktop and release   | ✅ Complete    | P7-01 … P7-06 merged in PR #9; P7-07 walkthrough pending (checklist in `docs/`). |
+| P7b Basics pass          | ⬜ Not started | P7B-01 … P7B-03, `basics-account-search-dm`.  |
 | P8 AI assistant (V1.5)   | ⬜ Not started | Needs Anthropic API key in Supabase secrets.    |
 
 ## Task status
