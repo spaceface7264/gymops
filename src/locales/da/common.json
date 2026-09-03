@@ -135,6 +135,22 @@
     "signOut": "Log ud",
     "signingOut": "Logger ud…"
   },
+  "chat": {
+    "back": "Alle kanaler",
+    "empty": "Du er ikke med i nogen kanaler endnu.",
+    "group": {
+      "channels": "Kanaler",
+      "dms": "Beskeder",
+      "gyms": "Centre"
+    },
+    "loadFail": "Kanalerne kunne ikke hentes.",
+    "messagesNotYet": "Beskederne vises ikke her endnu.",
+    "muted": "Lyd slået fra",
+    "navUnread": "Chat, {{count}} ulæste",
+    "pickChannel": "Vælg en kanal for at læse den.",
+    "title": "Chat",
+    "unread": "{{count}} ulæste"
+  },
   "checklists": {
     "activate": "Aktivér",
     "active": "Genererer opgaver",

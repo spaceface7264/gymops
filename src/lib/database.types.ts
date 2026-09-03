@@ -1374,6 +1374,15 @@ export type Database = {
       can_read_content: { Args: { target_gym_id: string }; Returns: boolean }
       can_read_event: { Args: { target_event_id: string }; Returns: boolean }
       chat_object_channel: { Args: { object_name: string }; Returns: string }
+      chat_overview: {
+        Args: never
+        Returns: {
+          channel_id: string
+          last_message_at: string
+          muted: boolean
+          unread: number
+        }[]
+      }
       content_audience: { Args: { target_gym: string }; Returns: string[] }
       content_object_gym: { Args: { object_name: string }; Returns: string }
       content_search_vector: {

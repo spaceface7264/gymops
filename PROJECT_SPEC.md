@@ -93,7 +93,7 @@ Events: `events` (`event_type`, `starts_on`/`start_time`/`ends_on`/`end_time`, g
 Notifications: `notifications`, `notification_prefs`, `push_subscriptions`.
 Chat: `channels` (kind gym/company/custom/dm, `member_hash` for DM dedupe), `channel_members` (`last_read_at`, `muted`), `messages` (`mentions uuid[]`, soft delete), `message_attachments`.
 Assistant (V1.5): `assistant_conversations`, `assistant_messages`, `assistant_usage`.
-RLS helpers: `is_superadmin()`, `is_admin()`, `member_gym_ids()`, `managed_gym_ids()`, `can_read_event(event_id)`, `is_channel_member(channel_id)`.
+RLS helpers: `is_superadmin()`, `is_admin()`, `member_gym_ids()`, `managed_gym_ids()`, `can_read_event(event_id)`, `is_channel_member(channel_id)`, `can_read_channel(channel_id)`, `can_moderate_channel(channel_id)`.
 
 ### 3.2 Repository layout
 
@@ -211,6 +211,10 @@ gymops/
 | Treating a private chat channel as private *from admins too* | §2.1 draws the line at the DM — "delete any chat message (non-DM)" is an admin right, and a channel an admin may moderate but not read is a rule that cannot be enforced coherently. So a DM is the one record in this project with no admin override, and a private custom channel is hidden from colleagues, not from the people answerable for it (`can_read_channel()` includes `can_moderate_channel()`). |
 | A client-supplied `member_hash` on DMs | The fingerprint is what stops "message these three people" from opening a second channel, so it is derived server-side from the sorted member ids by a trigger on `channel_members`, the way acknowledgements are stamped rather than posted. It is null until the channel has members — the hash is of a member set that does not exist at the insert creating the channel — and a partial unique index makes the collision the error it should be. |
 | Auto-creating a gym's channel and its roster from the client | A channel that exists only once somebody opened the chat screen, and a roster that drifts every time a membership is granted elsewhere in the app. `gyms`, `gym_memberships` and `profiles.active` carry the triggers instead (P6-02), and the migration backfills what predates them. |
+| Filtering the chat list by the gym switcher | Somebody who works at two gyms is in both channels at once, and a conversation does not belong to whichever gym they happen to be looking at. News and checklists are scoped because they are *about* a gym; a channel list is about a person. |
+| Counting unread per channel from the client | One query per channel, on every screen the badge appears on. `chat_overview()` answers the whole list — count, last activity and mute — in one call, and the shell's badge reads the same rows the list does. |
+| A muted channel that shows no count | Mute is about being interrupted, not about being kept in the dark. The channel keeps its badge in the list; only the shell's total leaves it out, which is what the nav badge is for. |
+| Marking a route full-bleed with a react-router `handle` | It reads better and it needs `useMatches()`, which throws outside a data router — and `renderWithProviders` mounts every component test in a `MemoryRouter`. `fullBleedRoutes` in `routes/nav.ts` keeps the knowledge next to the route table without making the shell untestable. |
 | Making `notify` re-read the notification it was handed | The webhook fires inside the transaction that wrote the row; a re-read is a race with its own trigger. The payload is the message, and only what it cannot carry — the recipient's address, locale and preferences — is looked up. |
 | Hand-rolling RFC 8291 payload encryption instead of `npm:web-push` | It works under the edge runtime's node compatibility, and push encryption is not a thing to implement twice for the sake of one fewer dependency. |
 

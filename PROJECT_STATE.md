@@ -36,9 +36,9 @@ as PR #7 (2026-09-03), with all four CI jobs green — including the new
 end-to-end job.
 
 **Phase 6, team chat** (P6-01 … P6-08) is under way on `phase-6-chat`. P6-01
-(schema, RLS, storage and the Realtime topic) and P6-02 (the automatic gym and
-`#company` channels) are done; the database half of chat is complete and the UI
-(P6-03 …) is next. Phase 6 is also where the `notify` function, the VAPID keys and
+(schema, RLS, storage and the Realtime topic), P6-02 (the automatic gym and
+`#company` channels) and P6-03 (the channel list, the layout and the badges)
+are done. Next is **P6-04**, the message list itself. Phase 6 is also where the `notify` function, the VAPID keys and
 Resend finally have to exist, and where P2-03's `invite` gets deployed. The
 VAPID pair and the Resend key are local-only for now — `notify` sends by web
 push and email when the secrets are set and records what it would have sent
@@ -59,7 +59,7 @@ container out. `supabase stop && supabase start` brings it back.
 | P3 News and guides       | ✅ Complete    | P3-01 to P3-07 (PR #3) and the audit fixes (#4). |
 | P4 Daily ops             | ✅ Complete    | P4-01 to P4-10 merged in PR #5; P4-11 in PR #6.   |
 | P5 Notifications and PWA | ✅ Complete    | P5-01 to P5-06, merged in PR #7.                |
-| P6 Team chat             | 🟡 In progress | P6-01, P6-02 done on `phase-6-chat`.            |
+| P6 Team chat             | 🟡 In progress | P6-01 … P6-03 done on `phase-6-chat`.           |
 | P7 Desktop and release   | ⬜ Not started |                                                 |
 | P8 AI assistant (V1.5)   | ⬜ Not started | Needs Anthropic API key in Supabase secrets.    |
 
@@ -113,6 +113,7 @@ Update this list as work begins:
 | P5-06 | ✅ done | 2026-09-03 | 2026-09-03 | Playwright against the local stack: signing in (and surviving a reload), a refused password, ticking a checklist item, and reporting an incident — which also asserts the P5-02 trigger wrote the manager's notification. `e2e/fixtures.ts` talks to PostgREST with `fetch` rather than `supabase-js`, whose client opens a Realtime socket that Node 20 has no WebSocket for; it builds today's run the way pg_cron would (P4-02's function is revoked from every client role) and deletes the run before the template, which is `on delete restrict`. Two projects: `chromium` for CI, `chrome` for the machine that has no room for a second browser. New CI job `e2e` starting the stack **with** realtime, since the run screen subscribes to it. 4 e2e tests, all passing locally against Chrome. |
 | P6-01 | ✅ done | 2026-09-03 | 2026-09-03 | `20260903090000_chat_schema.sql`: `channels` (kind gym/company/custom/dm, one per gym and one `#company` by partial unique index), `channel_members` (`last_read_at`, `muted`), `messages` (soft delete, `mentions`), `message_attachments`, the `chat` bucket's storage policies and the `chat:<channel id>` Realtime topic. Helpers `is_channel_member()`, `can_read_channel()`, `can_moderate_channel()`. The guard trigger empties a deleted message's body — a "deleted" message the API still returns is not deleted — and refuses to undelete; a moderator may take a message away but not rewrite it. DM `member_hash` is derived by a trigger from the sorted member ids, so dedupe is the database's. **The tests found two things:** a DM cannot satisfy "hash not null" at the insert that creates it (the constraint is now `member_hash is null or kind = 'dm'`), and a superadmin could *moderate* a private custom channel while being unable to read it — §2.1 draws privacy at the DM, so `can_read_channel()` now includes `can_moderate_channel()` (spec §4). 49 new pgTAP assertions (387 total). |
 | P6-02 | ✅ done | 2026-09-03 | 2026-09-03 | `20260903100000_chat_channel_triggers.sql`: `#company` is created by the migration, a gym arrives with its channel (and a renamed gym renames it), a membership seats the person in their gym channel and revoking it empties the seat, and `profiles.active` moves people in and out of `#company`. All four functions are `security definer` — the writers have no rights of their own on `channels`, which is the point: P6-01 lets nobody hand-write a gym channel. The migration backfills the gyms, people and memberships that predate it, which is what the hosted cutover will need. 13 new pgTAP assertions (400 total). `supabase/tests/170-*` was adapted to take the automatic channels as given. |
+| P6-03 | ✅ done | 2026-09-03 | 2026-09-03 | `src/features/chat`: the channel list grouped into gyms, custom channels and DMs, each row badged with what has been said since `last_read_at`, and `/chat` + `/chat/:channelId` rendering one screen — side by side from `md`, one pane at a time on a phone with a way back. A DM is named by whoever else is in it (`channelName()`), which takes a second query for the DM member lists only. `20260903110000_chat_overview.sql` answers the counts: `chat_overview()` returns unread, last activity and mute per channel in one call, excluding your own messages and deleted ones — the nav badge sums the unmuted ones, and a muted channel still shows its own count. The shell gained a full-bleed mode (`fullBleedRoutes` in `routes/nav.ts`) so chat scrolls its own panes instead of the page; a react-router `handle` would have been neater but `useMatches()` throws in the `MemoryRouter` every component test uses (spec §4). Deliberately **not** filtered by the gym switcher. 9 new pgTAP assertions (409) and 8 new unit tests (272). Verified in Chrome as `staff@`: two seeded messages badged the gym channel 2, a muted `#company` showed 1 on its row and nothing in the nav total; the phone layout was driven at 390×844 with Playwright, since the browser window would not resize. |
 | P5-02 … P8-06 | ⬜ not started | | | |
 
 Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
@@ -382,6 +383,9 @@ of truth; nothing in config.toml applies to a hosted project)
 | 2026-09-03 | P6-01: a DM's `member_hash` is derived by a trigger from its sorted member ids and is null until the channel has members; the partial unique index turns "message these three people" twice into a collision rather than a second channel. |
 | 2026-09-03 | P6-01: deleting a message empties its body in the guard trigger and cannot be undone. A soft delete the API still answers with the text is not a delete, and a moderator who may take a message away may not rewrite it. |
 | 2026-09-03 | P6-02: the gym channels, `#company` and their rosters are triggers on `gyms`, `gym_memberships` and `profiles.active`, with a backfill in the migration — not something the chat screen creates on first open. |
+| 2026-09-03 | P6-03: the chat list ignores the gym switcher — somebody who works at two gyms is in both channels at once, and a conversation does not belong to the gym they are currently looking at. |
+| 2026-09-03 | P6-03: unread is one `chat_overview()` call for every channel rather than a count query per channel, and it carries `muted` so the shell's badge and the list read the same rows. Mute silences the nav total, not the channel's own count. |
+| 2026-09-03 | P6-03: full-bleed screens are listed in `routes/nav.ts` instead of carried on a route `handle`, because `useMatches()` throws outside a data router and every component test mounts in a `MemoryRouter`. |
 
 ## How to update this file
 

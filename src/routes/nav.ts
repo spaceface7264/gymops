@@ -47,10 +47,24 @@ export const navEntries: NavEntry[] = [
   { to: '/checklists', labelKey: 'nav.checklists', icon: ListChecks },
   { to: '/daily-log', labelKey: 'nav.dailyLog', icon: NotebookPen },
   { to: '/incidents', labelKey: 'nav.incidents', icon: TriangleAlert },
-  { to: '/chat', labelKey: 'nav.chat', icon: MessagesSquare, phase: '6' },
+  { to: '/chat', labelKey: 'nav.chat', icon: MessagesSquare },
   { to: '/admin', labelKey: 'nav.admin', icon: Settings, adminOnly: true },
 ]
 
 export function visibleNavEntries(canAdminister: boolean): NavEntry[] {
   return navEntries.filter((entry) => !entry.adminOnly || canAdminister)
+}
+
+/**
+ * Screens that take the whole frame instead of the shell's centred column,
+ * because they scroll their own panes: the chat list and conversation would
+ * otherwise move the composer off the bottom of a phone. Kept here rather than
+ * in the shell so the routes stay the one place that knows about routes.
+ */
+export const fullBleedRoutes = ['/chat']
+
+export function isFullBleed(pathname: string): boolean {
+  return fullBleedRoutes.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`),
+  )
 }

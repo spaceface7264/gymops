@@ -135,6 +135,22 @@
     "signOut": "Sign out",
     "signingOut": "Signing out…"
   },
+  "chat": {
+    "back": "All channels",
+    "empty": "You are not in any channels yet.",
+    "group": {
+      "channels": "Channels",
+      "dms": "Direct messages",
+      "gyms": "Gyms"
+    },
+    "loadFail": "The channels could not be loaded.",
+    "messagesNotYet": "The messages are not shown here yet.",
+    "muted": "Muted",
+    "navUnread": "Chat, {{count}} unread",
+    "pickChannel": "Pick a channel to read it.",
+    "title": "Chat",
+    "unread": "{{count}} unread"
+  },
   "checklists": {
     "activate": "Activate",
     "active": "Generates runs",

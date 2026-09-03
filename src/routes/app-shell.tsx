@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { NavLink, Outlet } from 'react-router'
+import { NavLink, Outlet, useLocation } from 'react-router'
 import { Button } from '@/components/ui/button'
 import {
   DeactivatedNotice,
@@ -8,10 +8,11 @@ import {
   useProfile,
   useSignOut,
 } from '@/features/auth'
+import { useChatUnread } from '@/features/chat'
 import { GymSwitcher } from '@/features/gyms'
 import { NotificationBell } from '@/features/notifications'
 import { cn } from '@/lib/utils'
-import { visibleNavEntries, type NavEntry } from '@/routes/nav'
+import { isFullBleed, visibleNavEntries, type NavEntry } from '@/routes/nav'
 
 /**
  * Frame for every signed-in screen: a sidebar on desktop, a bottom bar on
@@ -23,7 +24,13 @@ export function AppShell() {
   const { user } = useAuth()
   const { data: profile } = useProfile()
   const signOut = useSignOut()
+  const chatUnread = useChatUnread()
   useLocaleSync()
+
+  // A screen may ask for the whole frame instead of the centred column: chat
+  // scrolls its own panes, and a page that scrolls as well would move the
+  // composer off the bottom of a phone.
+  const fullBleed = isFullBleed(useLocation().pathname)
 
   // Managers administer their own gyms' staff, so the admin section is theirs
   // as well; only staff never see it.
@@ -39,7 +46,12 @@ export function AppShell() {
   if (profile?.active === false) return <DeactivatedNotice />
 
   return (
-    <div className="bg-background text-foreground min-h-dvh md:flex">
+    <div
+      className={cn(
+        'bg-background text-foreground min-h-dvh md:flex',
+        fullBleed && 'md:h-dvh md:overflow-hidden',
+      )}
+    >
       <nav
         aria-label={t('nav.label')}
         className={cn(
@@ -52,11 +64,15 @@ export function AppShell() {
           {t('app.name')}
         </span>
         {entries.map((entry) => (
-          <NavItem key={entry.to} entry={entry} />
+          <NavItem
+            key={entry.to}
+            entry={entry}
+            unread={entry.to === '/chat' ? chatUnread : 0}
+          />
         ))}
       </nav>
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className={cn('flex min-w-0 flex-1 flex-col', fullBleed && 'md:min-h-0')}>
         <header className="flex items-center justify-between gap-3 border-b p-3">
           <GymSwitcher />
           <div className="flex items-center gap-3">
@@ -77,8 +93,16 @@ export function AppShell() {
           </div>
         </header>
 
-        {/* Bottom padding keeps the last content clear of the phone nav bar. */}
-        <main className="mx-auto w-full max-w-3xl flex-1 p-4 pb-24 md:p-6 md:pb-6">
+        {/* Bottom padding keeps the last content clear of the phone nav bar;
+            a full-bleed screen takes care of its own. */}
+        <main
+          className={cn(
+            'flex-1',
+            fullBleed
+              ? 'flex min-h-0 flex-col'
+              : 'mx-auto w-full max-w-3xl p-4 pb-24 md:p-6 md:pb-6',
+          )}
+        >
           <Outlet />
         </main>
       </div>
@@ -86,7 +110,7 @@ export function AppShell() {
   )
 }
 
-function NavItem({ entry }: { entry: NavEntry }) {
+function NavItem({ entry, unread }: { entry: NavEntry; unread: number }) {
   const { t } = useTranslation()
   const Icon = entry.icon
 
@@ -106,6 +130,14 @@ function NavItem({ entry }: { entry: NavEntry }) {
     >
       <Icon className="size-5 md:size-4" aria-hidden="true" />
       {t(entry.labelKey)}
+      {unread > 0 && (
+        <span
+          className="bg-primary text-primary-foreground min-w-5 rounded-full px-1.5 text-center text-xs font-medium md:ml-auto"
+          aria-label={t('chat.navUnread', { count: unread })}
+        >
+          {unread > 99 ? '99+' : unread}
+        </span>
+      )}
     </NavLink>
   )
 }
