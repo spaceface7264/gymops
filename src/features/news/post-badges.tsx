@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components'
 import type { NewsPost } from './queries'
 
 /**
@@ -16,10 +16,14 @@ export function PostBadges({
 
   return (
     <div className="flex flex-wrap items-center gap-1.5">
-      <Badge variant="outline">{post.gyms?.name ?? t('news.companyWide')}</Badge>
-      {post.status === 'draft' && <Badge variant="secondary">{t('news.draft')}</Badge>}
-      {post.pinned && <Badge variant="secondary">{t('news.pinned')}</Badge>}
-      {post.requires_ack && <Badge>{t('news.acknowledgementRequired')}</Badge>}
+      <StatusBadge tone="neutral">{post.gyms?.name ?? t('news.companyWide')}</StatusBadge>
+      {post.status === 'draft' && (
+        <StatusBadge tone="warning">{t('news.draft')}</StatusBadge>
+      )}
+      {post.pinned && <StatusBadge tone="info">{t('news.pinned')}</StatusBadge>}
+      {post.requires_ack && (
+        <StatusBadge tone="new">{t('news.acknowledgementRequired')}</StatusBadge>
+      )}
     </div>
   )
 }

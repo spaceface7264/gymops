@@ -2,6 +2,7 @@ import { ChevronDown, Plus } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router'
+import { PageHeader } from '@/components'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -62,17 +63,16 @@ export function EventsPage() {
 
   const typeLabel = type === 'all' ? t('events.allTypes') : t(`events.type.${type}`)
 
+  const newEventAction = canManageEvents && (
+    <Button size="sm" onClick={openCreate}>
+      <Plus className="size-4" />
+      {t('events.new')}
+    </Button>
+  )
+
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-2xl font-semibold">{t('events.title')}</h1>
-        {canManageEvents && (
-          <Button size="sm" onClick={openCreate}>
-            <Plus className="size-4" />
-            {t('events.new')}
-          </Button>
-        )}
-      </div>
+      <PageHeader title={t('events.title')} action={newEventAction} />
 
       <div className="flex flex-wrap items-center gap-2">
         <div className="flex flex-wrap gap-1">

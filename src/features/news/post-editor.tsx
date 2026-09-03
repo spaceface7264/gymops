@@ -2,6 +2,7 @@ import type { JSONContent } from '@tiptap/react'
 import { useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router'
+import { LoadingState, PageHeader } from '@/components'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -37,7 +38,7 @@ export function PostEditorPage() {
   const existing = useNewsPost(postId)
 
   if (postId && existing.isPending) {
-    return <p className="text-muted-foreground text-sm">{t('news.loading')}</p>
+    return <LoadingState rows={5} />
   }
   if (postId && !existing.data) {
     return (
@@ -111,9 +112,7 @@ function PostEditor({ post }: { post?: NewsPost }) {
         submit(post?.status ?? 'draft')
       }}
     >
-      <h1 className="text-2xl font-semibold">
-        {post ? t('news.editTitle') : t('news.createTitle')}
-      </h1>
+      <PageHeader title={post ? t('news.editTitle') : t('news.createTitle')} />
 
       <div className="space-y-2">
         <Label htmlFor={`${fieldId}-scope`}>{t('news.scope')}</Label>

@@ -2,6 +2,7 @@ import { ArrowLeft, Pencil, Pin, PinOff, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useParams } from 'react-router'
+import { LoadingState, PageHeader } from '@/components'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -31,8 +32,7 @@ export function PostDetailPage() {
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   useTrackPostRead(post.data)
 
-  if (post.isPending)
-    return <p className="text-muted-foreground text-sm">{t('news.loading')}</p>
+  if (post.isPending) return <LoadingState rows={5} />
   if (!post.data) {
     return (
       <p role="alert" className="text-destructive text-sm">
@@ -54,7 +54,7 @@ export function PostDetailPage() {
 
       <header className="space-y-2">
         <PostBadges post={post.data} />
-        <h1 className="text-2xl font-semibold">{post.data.title}</h1>
+        <PageHeader title={post.data.title} />
         <p className="text-muted-foreground text-sm">
           {postDate(post.data, i18n.language)}
         </p>

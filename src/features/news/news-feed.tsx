@@ -1,6 +1,7 @@
-import { Pin, PinOff, Plus } from 'lucide-react'
+import { Newspaper, Pin, PinOff, Plus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
+import { EmptyState, LoadingState, PageHeader } from '@/components'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { ContentSearch, excerpt, toDoc, usePublishScope } from '@/features/content'
@@ -20,32 +21,29 @@ export function NewsFeed() {
   const feed = useNewsFeed(gymId)
   const setPinned = useSetPostPinned()
 
+  const newPostAction = scope.canPublishSomewhere && (
+    <Button asChild>
+      <Link to="/news/new">
+        <Plus className="size-4" />
+        {t('news.newPost')}
+      </Link>
+    </Button>
+  )
+
   return (
     <div className="space-y-4">
-      <header className="flex items-center justify-between gap-4">
-        <h1 className="text-2xl font-semibold">{t('news.title')}</h1>
-        {scope.canPublishSomewhere && (
-          <Button asChild>
-            <Link to="/news/new">
-              <Plus className="size-4" />
-              {t('news.newPost')}
-            </Link>
-          </Button>
-        )}
-      </header>
+      <PageHeader title={t('news.title')} action={newPostAction} />
 
       <ContentSearch />
 
-      {feed.isPending && (
-        <p className="text-muted-foreground text-sm">{t('news.loading')}</p>
-      )}
+      {feed.isPending && <LoadingState rows={5} />}
       {feed.isError && (
         <p role="alert" className="text-destructive text-sm">
           {t('news.loadFailed')}
         </p>
       )}
       {feed.data?.length === 0 && (
-        <p className="text-muted-foreground text-sm">{t('news.empty')}</p>
+        <EmptyState icon={Newspaper} title={t('news.empty')} action={newPostAction} />
       )}
 
       <ul className="space-y-3">
