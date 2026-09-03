@@ -12,6 +12,7 @@ pub fn run() {
       }
     }))
     .plugin(tauri_plugin_deep_link::init())
+    .plugin(tauri_plugin_notification::init())
     .setup(|app| {
       // macOS registers the scheme from Info.plist; Windows and Linux do it
       // in the installer, which a plain `tauri dev` binary has not run.

@@ -648,6 +648,10 @@
       "push": "Push"
     },
     "channelFor": "{{channel}} for {{type}}",
+    "desktopDenied": "The system is blocking notifications for GymOps. Turn them on in its notification settings.",
+    "desktopOff": "This computer does not show notifications.",
+    "desktopOn": "This computer shows notifications.",
+    "desktopOnThisDevice": "Notifications on this computer",
     "empty": "Nothing has happened yet.",
     "installGuide": "How to install it",
     "loadFailed": "The notifications could not be loaded.",

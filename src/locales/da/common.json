@@ -648,6 +648,10 @@
       "push": "Push"
     },
     "channelFor": "{{channel}} for {{type}}",
+    "desktopDenied": "Systemet blokerer notifikationer fra GymOps. Slå dem til i systemets notifikationsindstillinger.",
+    "desktopOff": "Denne computer viser ikke notifikationer.",
+    "desktopOn": "Denne computer viser notifikationer.",
+    "desktopOnThisDevice": "Notifikationer på denne computer",
     "empty": "Der er ikke sket noget endnu.",
     "installGuide": "Sådan installerer du den",
     "loadFailed": "Notifikationerne kunne ikke hentes.",

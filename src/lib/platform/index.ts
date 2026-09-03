@@ -1,5 +1,10 @@
 import { isTauri } from '@tauri-apps/api/core'
 import { onOpenUrl } from '@tauri-apps/plugin-deep-link'
+import {
+  isPermissionGranted,
+  requestPermission,
+  sendNotification,
+} from '@tauri-apps/plugin-notification'
 
 /**
  * Where the app is running (P7-01). The web build and the desktop shell are
@@ -33,4 +38,25 @@ export function onDeepLink(handler: (url: string) => void): () => void {
     active = false
     unlisten?.()
   }
+}
+
+/**
+ * Native notifications (P7-03). The desktop has no service worker and no web
+ * push; what `notify` would push at a phone, the app shows itself from the
+ * Realtime stream. The OS owns the permission — once refused, it is turned
+ * back on in system settings, not here.
+ */
+export type DesktopPermission = 'granted' | 'denied' | 'default'
+
+export async function desktopNotificationsGranted(): Promise<boolean> {
+  return isDesktop() && (await isPermissionGranted())
+}
+
+export async function requestDesktopNotifications(): Promise<DesktopPermission> {
+  if (!isDesktop()) return 'denied'
+  return requestPermission()
+}
+
+export function showDesktopNotification(options: { title: string; body: string }): void {
+  sendNotification(options)
 }
