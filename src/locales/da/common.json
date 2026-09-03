@@ -137,6 +137,12 @@
   },
   "chat": {
     "back": "Alle kanaler",
+    "cancel": "Annullér",
+    "delete": "Slet",
+    "deletedMessage": "Denne besked er slettet.",
+    "edit": "Redigér",
+    "editMessage": "Redigér beskeden",
+    "edited": "redigeret",
     "empty": "Du er ikke med i nogen kanaler endnu.",
     "group": {
       "channels": "Kanaler",
@@ -144,10 +150,15 @@
       "gyms": "Centre"
     },
     "loadFail": "Kanalerne kunne ikke hentes.",
-    "messagesNotYet": "Beskederne vises ikke her endnu.",
+    "loadMessagesFail": "Beskederne kunne ikke hentes.",
+    "loadOlder": "Hent ældre",
+    "loadingOlder": "Henter…",
     "muted": "Lyd slået fra",
     "navUnread": "Chat, {{count}} ulæste",
+    "noMessages": "Der er ikke sagt noget her endnu.",
     "pickChannel": "Vælg en kanal for at læse den.",
+    "save": "Gem",
+    "someone": "Nogen",
     "title": "Chat",
     "unread": "{{count}} ulæste"
   },

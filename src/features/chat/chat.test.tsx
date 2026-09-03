@@ -1,4 +1,5 @@
-import { screen, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ChatPage } from '@/features/chat'
 import { renderWithProviders } from '@/test/render'
@@ -8,31 +9,62 @@ type Row = Record<string, unknown>
 const channelRows = vi.fn<() => Row[]>()
 const memberRows = vi.fn<() => Row[]>()
 const overviewRows = vi.fn<() => Row[]>()
+const messageRows = vi.fn<(cursor: string | null) => Row[]>()
+const updated = vi.fn<(table: string, values: Row) => void>()
 
 function builder(table: string) {
+  let cursor: string | null = null
+
   const chain = {
     select: () => chain,
     eq: () => chain,
     in: () => chain,
+    order: () => chain,
+    limit: () => chain,
+    // The keyset cursor: the last row already on screen, as PostgREST sees it.
+    or: (filter: string) => {
+      cursor = filter
+      return chain
+    },
+    update: (values: Row) => {
+      updated(table, values)
+      return chain
+    },
     then: (resolve: (value: unknown) => unknown) =>
-      Promise.resolve({
-        data: table === 'channels' ? channelRows() : memberRows(),
-        error: null,
-      }).then(resolve),
+      Promise.resolve({ data: rowsFor(table, cursor), error: null }).then(resolve),
   }
   return chain
+}
+
+function rowsFor(table: string, cursor: string | null): Row[] {
+  if (table === 'channels') return channelRows()
+  if (table === 'messages') return messageRows(cursor)
+  return memberRows()
 }
 
 vi.mock('@/lib/supabase', () => ({
   supabase: {
     from: (table: string) => builder(table),
     rpc: () => Promise.resolve({ data: overviewRows(), error: null }),
+    // The live sync (P6-04); what it does when a row changes is its own test.
+    channel: () => {
+      const subscription = { on: () => subscription, subscribe: () => subscription }
+      return subscription
+    },
+    removeChannel: vi.fn(),
   },
 }))
 
 vi.mock('@/features/auth', () => ({
   useAuth: () => ({ user: { id: 'user-sam' } }),
+  useProfile: () => ({ data: profile() }),
 }))
+vi.mock('@/features/gyms', () => ({
+  useGyms: () => ({ data: [] }),
+}))
+
+// Staff by default: what a manager may take away is its own test below.
+const profile = vi.fn<() => Row>()
 
 const channel = (overrides: Row = {}): Row => ({
   id: 'channel-nord',
@@ -59,6 +91,15 @@ function renderChat(path = '/chat', route = '/chat') {
 
 beforeEach(() => {
   vi.clearAllMocks()
+  messageRows.mockReturnValue([])
+  profile.mockReturnValue({
+    id: 'user-sam',
+    is_admin: false,
+    is_superadmin: false,
+    gym_memberships: [
+      { role: 'staff', gyms: { id: 'gym-nord', name: 'Copenhagen Nord' } },
+    ],
+  })
   channelRows.mockReturnValue([channel()])
   memberRows.mockReturnValue([])
   overviewRows.mockReturnValue([activity()])
@@ -162,5 +203,152 @@ describe('picking a channel', () => {
     renderChat()
 
     expect(await screen.findByText('Pick a channel to read it.')).toBeInTheDocument()
+  })
+})
+
+const message = (overrides: Row = {}): Row => ({
+  id: 'message-1',
+  channel_id: 'channel-nord',
+  body: 'Wall 4 is taped off',
+  mentions: [],
+  created_at: '2026-09-03T09:00:00Z',
+  edited_at: null,
+  deleted_at: null,
+  created_by: 'user-mette',
+  author: { full_name: 'Mette Holm', email: 'mette@gymops.test' },
+  ...overrides,
+})
+
+const openChannel = () => renderChat('/chat/channel-nord', '/chat/:channelId')
+
+describe('the message list', () => {
+  it('reads oldest at the bottom, with who said it', async () => {
+    messageRows.mockReturnValue([
+      message({ id: 'message-2', body: 'Thanks', created_at: '2026-09-03T09:05:00Z' }),
+      message(),
+    ])
+    openChannel()
+
+    const rows = await screen.findAllByRole('listitem')
+    expect(rows).toHaveLength(2)
+    expect(rows[0]).toHaveTextContent('Wall 4 is taped off')
+    expect(rows[0]).toHaveTextContent('Mette Holm')
+    expect(rows[1]).toHaveTextContent('Thanks')
+  })
+
+  it('renders the light markdown, and nothing else', async () => {
+    messageRows.mockReturnValue([
+      message({ body: '**Wall 4** is `taped` https://gymops.test/guides' }),
+    ])
+    openChannel()
+
+    expect((await screen.findByText('Wall 4')).tagName).toBe('STRONG')
+    expect(screen.getByText('taped').tagName).toBe('CODE')
+    expect(
+      screen.getByRole('link', { name: 'https://gymops.test/guides' }),
+    ).toHaveAttribute('href', 'https://gymops.test/guides')
+  })
+
+  it('says a deleted message is gone rather than showing an empty line', async () => {
+    messageRows.mockReturnValue([
+      message({ body: '', deleted_at: '2026-09-03T10:00:00Z' }),
+    ])
+    openChannel()
+
+    expect(await screen.findByText('This message was deleted.')).toBeInTheDocument()
+  })
+
+  it('offers older messages only when a full page came back, and pages by cursor', async () => {
+    // A page arrives newest-first, as PostgREST returns it; the cursor for the
+    // next one is therefore its last row.
+    const page = Array.from({ length: 30 }, (_, index) =>
+      message({
+        id: `message-${index}`,
+        created_at: `2026-09-03T09:${String(29 - index).padStart(2, '0')}:00Z`,
+      }),
+    )
+    messageRows.mockImplementation((cursor) =>
+      cursor ? [message({ id: 'older' })] : page,
+    )
+    openChannel()
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Load older' }))
+
+    // Both halves of the keyset: older than that timestamp, or the same
+    // timestamp with a lower id — a tie must not fall between two pages.
+    await waitFor(() =>
+      expect(messageRows).toHaveBeenCalledWith(
+        'created_at.lt."2026-09-03T09:00:00Z",and(created_at.eq."2026-09-03T09:00:00Z",id.lt.message-29)',
+      ),
+    )
+    expect(await screen.findAllByRole('listitem')).toHaveLength(31)
+  })
+
+  it('marks the channel read when it is opened', async () => {
+    openChannel()
+
+    await waitFor(() => expect(updated).toHaveBeenCalled())
+    const [table, values] = updated.mock.calls[0] as [string, { last_read_at: string }]
+    expect(table).toBe('channel_members')
+    expect(typeof values.last_read_at).toBe('string')
+  })
+})
+
+describe('editing and deleting', () => {
+  it('lets somebody rewrite their own message', async () => {
+    messageRows.mockReturnValue([message({ created_by: 'user-sam' })])
+    openChannel()
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Edit' }))
+    const box = screen.getByRole('textbox', { name: 'Edit the message' })
+    await userEvent.clear(box)
+    await userEvent.type(box, 'Wall 4 is open again')
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+    await waitFor(() =>
+      expect(updated).toHaveBeenCalledWith('messages', { body: 'Wall 4 is open again' }),
+    )
+  })
+
+  it('deletes by stamping deleted_at, which is what the trigger acts on', async () => {
+    messageRows.mockReturnValue([message({ created_by: 'user-sam' })])
+    openChannel()
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Delete' }))
+
+    await waitFor(() =>
+      expect(updated.mock.calls.some(([table]) => table === 'messages')).toBe(true),
+    )
+    const [, values] = updated.mock.calls.find(([table]) => table === 'messages') as [
+      string,
+      { deleted_at: string },
+    ]
+    expect(typeof values.deleted_at).toBe('string')
+  })
+
+  it('offers staff neither on a colleague’s message', async () => {
+    messageRows.mockReturnValue([message()])
+    openChannel()
+
+    expect(await screen.findByText('Wall 4 is taped off')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument()
+  })
+
+  it('offers a manager the delete, in their own gym’s channel', async () => {
+    profile.mockReturnValue({
+      id: 'user-sam',
+      is_admin: false,
+      is_superadmin: false,
+      gym_memberships: [
+        { role: 'manager', gyms: { id: 'gym-nord', name: 'Copenhagen Nord' } },
+      ],
+    })
+    messageRows.mockReturnValue([message()])
+    openChannel()
+
+    expect(await screen.findByRole('button', { name: 'Delete' })).toBeInTheDocument()
+    // Somebody else's words stay theirs, moderator or not.
+    expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument()
   })
 })

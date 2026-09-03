@@ -1,9 +1,15 @@
-import { useQuery } from '@tanstack/react-query'
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query'
 import { useAuth } from '@/features/auth'
 import type { Database } from '@/lib/database.types'
 import { supabase } from '@/lib/supabase'
 
 type ChannelRow = Database['public']['Tables']['channels']['Row']
+type MessageRow = Database['public']['Tables']['messages']['Row']
 
 export type ChannelKind = Database['public']['Enums']['channel_kind']
 
@@ -24,6 +30,21 @@ export type ChannelActivity = {
   muted: boolean
 }
 
+/** A message with the name to put above it. */
+export type Message = Pick<
+  MessageRow,
+  | 'id'
+  | 'channel_id'
+  | 'body'
+  | 'mentions'
+  | 'created_at'
+  | 'edited_at'
+  | 'deleted_at'
+  | 'created_by'
+> & {
+  author: { full_name: string | null; email: string } | null
+}
+
 export type DmMember = {
   channel_id: string
   user_id: string
@@ -37,7 +58,14 @@ export const chatKeys = {
   overview: ['chat', 'overview'] as const,
   dmMembers: (channelIds: string[]) =>
     ['chat', 'dm-members', channelIds.join(',')] as const,
+  messages: (channelId: string) => ['chat', 'messages', channelId] as const,
 }
+
+/** How many messages a page of the list holds, and asks for again. */
+export const messagePageSize = 30
+
+const messageColumns =
+  'id, channel_id, body, mentions, created_at, edited_at, deleted_at, created_by, author:created_by(full_name, email)'
 
 /**
  * The channels this person is *in*, not every channel they may read: a gym
@@ -128,5 +156,118 @@ export function useDmMembers(channelIds: string[]) {
         email: member.profiles?.email ?? '',
       }))
     },
+  })
+}
+
+/** Where a page of messages stopped: the last row on it, not an offset. */
+export type MessageCursor = { createdAt: string; id: string }
+
+/**
+ * One channel's messages, newest first, a page at a time.
+ *
+ * The cursor is a row rather than an offset — a message arriving while
+ * somebody is reading would shift every offset under them and show a line
+ * twice — and it is the *pair* `(created_at, id)`, because two messages can
+ * share a timestamp: `now()` is the transaction's, so anything written in one
+ * statement lands on the same microsecond. Ordered on `created_at` alone, a
+ * tie has no defined order, and a tie straddling a page boundary drops out of
+ * the list altogether.
+ */
+export function useMessages(channelId: string) {
+  return useInfiniteQuery({
+    queryKey: chatKeys.messages(channelId),
+    initialPageParam: null as MessageCursor | null,
+    queryFn: async ({ pageParam }): Promise<Message[]> => {
+      let query = supabase
+        .from('messages')
+        .select(messageColumns)
+        .eq('channel_id', channelId)
+        .order('created_at', { ascending: false })
+        .order('id', { ascending: false })
+        .limit(messagePageSize)
+
+      if (pageParam) {
+        query = query.or(
+          `created_at.lt."${pageParam.createdAt}",` +
+            `and(created_at.eq."${pageParam.createdAt}",id.lt.${pageParam.id})`,
+        )
+      }
+
+      const { data, error } = await query
+      if (error) throw error
+      return data
+    },
+    getNextPageParam: (page): MessageCursor | undefined => {
+      const last = page.at(-1)
+      return page.length < messagePageSize || !last
+        ? undefined
+        : { createdAt: last.created_at, id: last.id }
+    },
+  })
+}
+
+function useMessageWrite<TVariables>(
+  channelId: string,
+  mutationFn: (variables: TVariables) => Promise<void>,
+) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn,
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: chatKeys.messages(channelId) }),
+  })
+}
+
+/** Your own words, and only the body: the guard trigger holds the rest (P6-01). */
+export function useEditMessage(channelId: string) {
+  return useMessageWrite(
+    channelId,
+    async ({ id, body }: { id: string; body: string }) => {
+      const { error } = await supabase.from('messages').update({ body }).eq('id', id)
+      if (error) throw error
+    },
+  )
+}
+
+/**
+ * Deleting is setting `deleted_at`; the trigger empties the body. A manager
+ * may do it to anybody's message in a channel they publish in, which is the
+ * §2.1 row "delete any chat message (non-DM)".
+ */
+export function useDeleteMessage(channelId: string) {
+  return useMessageWrite(channelId, async (id: string) => {
+    const { error } = await supabase
+      .from('messages')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', id)
+
+    if (error) throw error
+  })
+}
+
+/**
+ * Opening a channel is reading it. The marker is only ever moved forward, so
+ * a second tab that is behind cannot un-read what this one has seen.
+ */
+export function useMarkChannelRead() {
+  const queryClient = useQueryClient()
+  const { user } = useAuth()
+
+  return useMutation({
+    mutationFn: async (channelId: string) => {
+      if (!user) throw new Error('not signed in')
+
+      const now = new Date().toISOString()
+      const { error } = await supabase
+        .from('channel_members')
+        .update({ last_read_at: now })
+        .eq('channel_id', channelId)
+        .eq('user_id', user.id)
+        .lt('last_read_at', now)
+
+      if (error) throw error
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: chatKeys.overview }),
   })
 }

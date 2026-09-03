@@ -137,6 +137,12 @@
   },
   "chat": {
     "back": "All channels",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "deletedMessage": "This message was deleted.",
+    "edit": "Edit",
+    "editMessage": "Edit the message",
+    "edited": "edited",
     "empty": "You are not in any channels yet.",
     "group": {
       "channels": "Channels",
@@ -144,10 +150,15 @@
       "gyms": "Gyms"
     },
     "loadFail": "The channels could not be loaded.",
-    "messagesNotYet": "The messages are not shown here yet.",
+    "loadMessagesFail": "The messages could not be loaded.",
+    "loadOlder": "Load older",
+    "loadingOlder": "Loading…",
     "muted": "Muted",
     "navUnread": "Chat, {{count}} unread",
+    "noMessages": "Nothing has been said here yet.",
     "pickChannel": "Pick a channel to read it.",
+    "save": "Save",
+    "someone": "Somebody",
     "title": "Chat",
     "unread": "{{count}} unread"
   },

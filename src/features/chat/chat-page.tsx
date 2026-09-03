@@ -2,9 +2,11 @@ import { ArrowLeft } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router'
 import { useAuth } from '@/features/auth'
+import { usePublishScope } from '@/features/content'
 import { cn } from '@/lib/utils'
 import { channelName } from './channel-name'
 import { ChannelList } from './channel-list'
+import { MessageList } from './message-list'
 import { useChannels, useDmMembers } from './queries'
 
 /**
@@ -44,17 +46,21 @@ export function ChatPage() {
   )
 }
 
-/**
- * The conversation. P6-03 builds its frame — the header, the way back and the
- * scroll container the message list will live in; the messages themselves,
- * their pagination and their live sync are P6-04.
- */
+/** The conversation: its header, and the messages under it. */
 function ChannelView({ channelId }: { channelId: string }) {
   const { t } = useTranslation()
   const { user } = useAuth()
   const channels = useChannels()
   const channel = (channels.data ?? []).find((row) => row.id === channelId)
   const dmMembers = useDmMembers(channel?.kind === 'dm' ? [channel.id] : [])
+
+  // "Delete any chat message (non-DM)" (§2.1) — the same rule the database
+  // enforces in `can_moderate_channel()`, asked here only to decide what to
+  // put on screen.
+  const { canPublishIn } = usePublishScope()
+  const canModerate = Boolean(
+    channel && channel.kind !== 'dm' && canPublishIn(channel.gym_id),
+  )
 
   const name = channel ? channelName(channel, dmMembers.data ?? [], user?.id) : ''
 
@@ -78,9 +84,7 @@ function ChannelView({ channelId }: { channelId: string }) {
         </div>
       </header>
 
-      <div className="min-h-0 flex-1 overflow-y-auto p-4 pb-20 md:pb-4">
-        <p className="text-muted-foreground text-sm">{t('chat.messagesNotYet')}</p>
-      </div>
+      {channel && <MessageList channel={channel} canModerate={canModerate} />}
     </>
   )
 }
