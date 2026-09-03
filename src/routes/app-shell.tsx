@@ -1,6 +1,15 @@
 import { useTranslation } from 'react-i18next'
-import { NavLink, Outlet, useLocation } from 'react-router'
-import { Button } from '@/components/ui/button'
+import { Link, NavLink, Outlet, useLocation } from 'react-router'
+import { Logo } from '@/components'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import {
   DeactivatedNotice,
   useAuth,
@@ -14,6 +23,20 @@ import { NotificationBell } from '@/features/notifications'
 import { cn } from '@/lib/utils'
 import { isFullBleed, visibleNavEntries, type NavEntry } from '@/routes/nav'
 import { UpdateBanner } from '@/routes/update-banner'
+
+/** The letters shown on the account avatar: initials from a name, or the
+ * first letter of the email when there is no name to draw from. */
+export function initials(
+  name: string | null | undefined,
+  email: string | undefined,
+): string {
+  const parts = (name ?? '').trim().split(/\s+/).filter(Boolean)
+  const first = parts[0] ?? ''
+  const last = parts[parts.length - 1] ?? ''
+  if (parts.length >= 2) return (first.charAt(0) + last.charAt(0)).toUpperCase()
+  if (parts.length === 1) return first.charAt(0).toUpperCase()
+  return (email?.charAt(0) ?? '?').toUpperCase()
+}
 
 /**
  * Frame for every signed-in screen: a sidebar on desktop, a bottom bar on
@@ -56,14 +79,11 @@ export function AppShell() {
       <nav
         aria-label={t('nav.label')}
         className={cn(
-          // Bottom bar on phones, sidebar from md up.
-          'bg-background fixed inset-x-0 bottom-0 z-10 flex gap-1 overflow-x-auto border-t p-2',
-          'md:static md:h-dvh md:w-56 md:shrink-0 md:flex-col md:gap-1 md:overflow-y-auto md:border-t-0 md:border-r md:p-3',
+          'bg-card fixed inset-x-0 bottom-0 z-10 flex gap-1 overflow-x-auto border-t px-2 pt-1.5 pb-[calc(env(safe-area-inset-bottom)+0.375rem)]',
+          'md:static md:h-dvh md:w-60 md:shrink-0 md:flex-col md:gap-1 md:overflow-y-auto md:border-t-0 md:border-r md:p-3',
         )}
       >
-        <span className="hidden px-2 pb-3 font-semibold tracking-tight md:block">
-          {t('app.name')}
-        </span>
+        <Logo wordmark className="hidden px-3 pt-1 pb-4 text-base md:inline-flex" />
         {entries.map((entry) => (
           <NavItem
             key={entry.to}
@@ -75,23 +95,53 @@ export function AppShell() {
 
       <div className={cn('flex min-w-0 flex-1 flex-col', fullBleed && 'md:min-h-0')}>
         <UpdateBanner />
-        <header className="flex items-center justify-between gap-3 border-b p-3">
+        <header className="bg-card flex items-center justify-between gap-3 border-b px-3 py-2 md:px-5">
           <GymSwitcher />
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1">
             <NotificationBell />
-            {user?.email && (
-              <span className="text-muted-foreground hidden text-sm sm:inline">
-                {user.email}
-              </span>
-            )}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => signOut.mutate()}
-              disabled={signOut.isPending}
-            >
-              {signOut.isPending ? t('auth.signingOut') : t('auth.signOut')}
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  aria-label={t('auth.account.menu')}
+                  className="focus-visible:ring-ring/40 flex size-11 items-center justify-center rounded-full outline-none focus-visible:ring-[3px]"
+                >
+                  <Avatar className="size-9">
+                    <AvatarFallback>
+                      {initials(profile?.full_name, user?.email)}
+                    </AvatarFallback>
+                  </Avatar>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-60">
+                <DropdownMenuLabel className="truncate font-normal">
+                  <span className="block font-semibold">
+                    {profile?.full_name ?? user?.email}
+                  </span>
+                  {profile?.full_name && (
+                    <span className="text-muted-foreground block text-xs">
+                      {user?.email}
+                    </span>
+                  )}
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link to="/account">{t('auth.account.title')}</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/notifications/preferences">
+                    {t('auth.account.preferences')}
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onSelect={() => signOut.mutate()}
+                  disabled={signOut.isPending}
+                >
+                  {signOut.isPending ? t('auth.signingOut') : t('auth.signOut')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </header>
 
@@ -102,7 +152,7 @@ export function AppShell() {
             'flex-1',
             fullBleed
               ? 'flex min-h-0 flex-col'
-              : 'mx-auto w-full max-w-3xl p-4 pb-24 md:p-6 md:pb-6',
+              : 'mx-auto w-full max-w-3xl p-4 pb-28 md:p-6 md:pb-8',
           )}
         >
           <Outlet />
@@ -122,19 +172,20 @@ function NavItem({ entry, unread }: { entry: NavEntry; unread: number }) {
       end={entry.to === '/'}
       className={({ isActive }) =>
         cn(
-          'flex shrink-0 flex-col items-center gap-1 rounded-md px-3 py-2 text-xs',
-          'md:w-full md:flex-row md:gap-3 md:text-sm',
+          // 44px tall on the phone bar; a pill in the sidebar.
+          'relative flex min-h-11 shrink-0 flex-col items-center justify-center gap-0.5 rounded-xl px-3 py-1.5 text-[11px] font-medium transition-colors duration-150',
+          'md:min-h-0 md:w-full md:flex-row md:justify-start md:gap-3 md:rounded-full md:px-3.5 md:py-2.5 md:text-sm',
           isActive
-            ? 'bg-accent text-accent-foreground font-medium'
-            : 'text-muted-foreground hover:bg-accent/60',
+            ? 'bg-accent text-accent-foreground font-semibold'
+            : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground',
         )
       }
     >
-      <Icon className="size-5 md:size-4" aria-hidden="true" />
+      <Icon className="size-5" aria-hidden="true" />
       {t(entry.labelKey)}
       {unread > 0 && (
         <span
-          className="bg-primary text-primary-foreground min-w-5 rounded-full px-1.5 text-center text-xs font-medium md:ml-auto"
+          className="bg-primary text-primary-foreground absolute top-1 right-2 min-w-5 rounded-full px-1.5 text-center text-[11px] font-semibold md:static md:ml-auto"
           aria-label={t('chat.navUnread', { count: unread })}
         >
           {unread > 99 ? '99+' : unread}

@@ -257,6 +257,8 @@ gymops/
 
 | Dark mode | Removed 2026-09-03 with the facelift: one theme designed well; front desks and phones in a lit gym. |
 
+| A standing Sign out button in the header | Moved into the account menu 2026-09-03: on a shared front-desk machine an always-visible sign-out invited accidental taps; the menu is one tap further and names who is signed in. |
+
 ## 5. Conventions
 
 - **Language:** TypeScript strict everywhere, including Edge Functions (Deno). No `any`.

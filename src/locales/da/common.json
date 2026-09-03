@@ -101,6 +101,11 @@
       "submitting": "Opretter konto…",
       "title": "Velkommen til GymOps"
     },
+    "account": {
+      "menu": "Kontomenu",
+      "preferences": "Notifikationsindstillinger",
+      "title": "Din konto"
+    },
     "callback": {
       "continueInBrowser": "Fortsæt i browseren",
       "description": "Din invitation er klar. Gør din konto færdig i skrivebordsappen eller her i browseren.",

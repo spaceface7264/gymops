@@ -101,6 +101,11 @@
       "submitting": "Creating account…",
       "title": "Welcome to GymOps"
     },
+    "account": {
+      "menu": "Account menu",
+      "preferences": "Notification preferences",
+      "title": "Your account"
+    },
     "callback": {
       "continueInBrowser": "Continue in the browser",
       "description": "Your invite is ready. Finish creating your account in the desktop app, or here in the browser.",
