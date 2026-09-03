@@ -9,6 +9,8 @@ type Row = Record<string, unknown>
 const channelRows = vi.fn<() => Row[]>()
 const memberRows = vi.fn<() => Row[]>()
 const overviewRows = vi.fn<() => Row[]>()
+const profileRows = vi.fn<() => Row[]>()
+const startedDm = vi.fn<(args: Row) => void>()
 const messageRows = vi.fn<(cursor: string | null) => Row[]>()
 const updated = vi.fn<(table: string, values: Row) => void>()
 const inserted = vi.fn<(table: string, values: Row) => void>()
@@ -47,13 +49,20 @@ function builder(table: string) {
 function rowsFor(table: string, cursor: string | null): Row[] {
   if (table === 'channels') return channelRows()
   if (table === 'messages') return messageRows(cursor)
+  if (table === 'profiles') return profileRows()
   return memberRows()
 }
 
 vi.mock('@/lib/supabase', () => ({
   supabase: {
     from: (table: string) => builder(table),
-    rpc: () => Promise.resolve({ data: overviewRows(), error: null }),
+    rpc: (name: string, args: Row) => {
+      if (name === 'start_dm') {
+        startedDm(args)
+        return Promise.resolve({ data: 'channel-dm-new', error: null })
+      }
+      return Promise.resolve({ data: overviewRows(), error: null })
+    },
     // The live sync and the typing presence (P6-04, P6-05).
     channel: () => {
       const subscription = {
@@ -129,6 +138,7 @@ beforeEach(() => {
   })
   channelRows.mockReturnValue([channel()])
   memberRows.mockReturnValue([])
+  profileRows.mockReturnValue([])
   overviewRows.mockReturnValue([activity()])
 })
 
@@ -546,5 +556,49 @@ describe('muting a channel', () => {
         ),
       ).toBe(true),
     )
+  })
+})
+
+describe('starting a conversation', () => {
+  const person = (id: string, name: string): Row => ({
+    id,
+    full_name: name,
+    email: `${name.toLowerCase().replace(' ', '.')}@gymops.test`,
+  })
+
+  it('opens the conversation with the people picked and goes to it', async () => {
+    profileRows.mockReturnValue([
+      person('user-mette', 'Mette Holm'),
+      person('user-jonas', 'Jonas Berg'),
+    ])
+    renderWithProviders(<ChatPage />, {
+      path: '/chat',
+      initialEntries: ['/chat'],
+      routes: [{ path: '/chat/:channelId', element: <p>the conversation</p> }],
+    })
+
+    await userEvent.click(await screen.findByRole('button', { name: 'New conversation' }))
+    await userEvent.click(await screen.findByLabelText('Mette Holm'))
+    await userEvent.click(screen.getByRole('button', { name: 'Start' }))
+
+    // The channel is the database's to find or create; the client only names
+    // the people, and follows the id it is given.
+    await waitFor(() =>
+      expect(startedDm).toHaveBeenCalledWith({ target_ids: ['user-mette'] }),
+    )
+    expect(await screen.findByText('the conversation')).toBeInTheDocument()
+  })
+
+  it('does not offer to message yourself', async () => {
+    profileRows.mockReturnValue([
+      person('user-sam', 'Sam Ruiz'),
+      person('user-mette', 'Mette Holm'),
+    ])
+    renderChat()
+
+    await userEvent.click(await screen.findByRole('button', { name: 'New conversation' }))
+
+    expect(await screen.findByLabelText('Mette Holm')).toBeInTheDocument()
+    expect(screen.queryByLabelText('Sam Ruiz')).not.toBeInTheDocument()
   })
 })

@@ -1373,6 +1373,7 @@ export type Database = {
       can_read_channel: { Args: { target_channel: string }; Returns: boolean }
       can_read_content: { Args: { target_gym_id: string }; Returns: boolean }
       can_read_event: { Args: { target_event_id: string }; Returns: boolean }
+      can_seat_in_dm: { Args: { target_channel: string }; Returns: boolean }
       chat_audience: {
         Args: { excluding: string; target_channel: string }
         Returns: string[]
@@ -1433,6 +1434,7 @@ export type Database = {
       }
       send_ack_reminders: { Args: { as_of?: string }; Returns: number }
       shares_gym_with: { Args: { target_user: string }; Returns: boolean }
+      start_dm: { Args: { target_ids: string[] }; Returns: string }
       tiptap_text: { Args: { doc: Json }; Returns: string }
     }
     Enums: {

@@ -53,6 +53,13 @@ export type ChatAttachment = {
   size_bytes: number | null
 }
 
+/** Somebody a DM can be started with: the colleagues `profiles_select` shows. */
+export type DmCandidate = {
+  id: string
+  full_name: string | null
+  email: string
+}
+
 export type ChannelMember = {
   channel_id: string
   user_id: string
@@ -65,6 +72,7 @@ export const chatKeys = {
   channels: ['chat', 'channels'] as const,
   overview: ['chat', 'overview'] as const,
   members: (channelIds: string[]) => ['chat', 'members', channelIds.join(',')] as const,
+  candidates: ['chat', 'dm-candidates'] as const,
   messages: (channelId: string) => ['chat', 'messages', channelId] as const,
   signedUrl: (path: string) => ['chat', 'signed-url', path] as const,
 }
@@ -169,6 +177,52 @@ export function useChannelMembers(channelIds: string[]) {
         email: member.profiles?.email ?? '',
       }))
     },
+  })
+}
+
+/**
+ * Who this person can start a DM with: every active colleague but themselves.
+ * `profiles_select` is the whole of the filter — staff see the people they
+ * share a gym with, a manager their gyms, an admin everybody — and `start_dm()`
+ * asks the same question again on the way in.
+ */
+export function useDmCandidates() {
+  const { user } = useAuth()
+  const userId = user?.id
+
+  return useQuery({
+    queryKey: [...chatKeys.candidates, userId],
+    enabled: Boolean(userId),
+    queryFn: async (): Promise<DmCandidate[]> => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, full_name, email')
+        .eq('active', true)
+        .order('full_name', { nullsFirst: false })
+
+      if (error) throw error
+      return data.filter((profile) => profile.id !== userId)
+    },
+  })
+}
+
+/**
+ * Opening a conversation with these people, or reopening the one that is
+ * already there: the dedupe is `start_dm()`'s, because the fingerprint that
+ * answers "is this the same conversation" is derived from the member set after
+ * the fact and a browser cannot compute it (P6-06).
+ */
+export function useStartDm() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (userIds: string[]): Promise<string> => {
+      const { data, error } = await supabase.rpc('start_dm', { target_ids: userIds })
+
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: chatKeys.all }),
   })
 }
 

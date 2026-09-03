@@ -1,4 +1,5 @@
-import { ArrowLeft, Bell, BellOff } from 'lucide-react'
+import { ArrowLeft, Bell, BellOff, SquarePen } from 'lucide-react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router'
 import { Button } from '@/components/ui/button'
@@ -9,6 +10,7 @@ import { channelName } from './channel-name'
 import { ChannelList } from './channel-list'
 import { Composer } from './composer'
 import { MessageList } from './message-list'
+import { NewDmDialog } from './new-dm-dialog'
 import { useChannelLive } from './use-channel-live'
 import { useChannels, useChannelMembers, useSetChannelMuted } from './queries'
 
@@ -22,6 +24,7 @@ import { useChannels, useChannelMembers, useSetChannelMuted } from './queries'
 export function ChatPage() {
   const { t } = useTranslation()
   const { channelId } = useParams()
+  const [newDm, setNewDm] = useState(false)
 
   return (
     <div className="flex min-h-0 flex-1 flex-col md:flex-row">
@@ -33,8 +36,21 @@ export function ChatPage() {
           channelId && 'hidden md:block',
         )}
       >
+        <div className="p-3 pb-0">
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full"
+            onClick={() => setNewDm(true)}
+          >
+            <SquarePen className="size-4" aria-hidden="true" />
+            {t('chat.newDm')}
+          </Button>
+        </div>
         <ChannelList activeId={channelId} />
       </aside>
+
+      <NewDmDialog open={newDm} onOpenChange={setNewDm} />
 
       <section
         className={cn('flex min-w-0 flex-1 flex-col', !channelId && 'hidden md:flex')}
