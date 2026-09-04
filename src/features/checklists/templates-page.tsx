@@ -1,5 +1,6 @@
 import { LayoutTemplate, Plus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 import { Link } from 'react-router'
 import { EmptyState, LoadingState, PageHeader, StatusBadge } from '@/components'
 import { Button } from '@/components/ui/button'
@@ -86,7 +87,10 @@ export function ChecklistTemplatesPage() {
                       variant="ghost"
                       disabled={setActive.isPending}
                       onClick={() =>
-                        setActive.mutate({ id: template.id, active: !template.active })
+                        setActive.mutate(
+                          { id: template.id, active: !template.active },
+                          { onError: () => toast.error(t('checklists.saveFailed')) },
+                        )
                       }
                     >
                       {template.active

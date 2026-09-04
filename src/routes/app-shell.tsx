@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { Link, NavLink, Outlet, useLocation } from 'react-router'
-import { Logo } from '@/components'
+import { Logo, UnreadCount } from '@/components'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -76,6 +76,12 @@ export function AppShell() {
         fullBleed && 'md:h-dvh md:overflow-hidden',
       )}
     >
+      <a
+        href="#main"
+        className="bg-card text-foreground focus-visible:ring-ring/40 sr-only rounded-full px-4 py-2 font-semibold focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus-visible:ring-[3px]"
+      >
+        {t('app.skipToContent')}
+      </a>
       <nav
         aria-label={t('nav.label')}
         className={cn(
@@ -148,11 +154,13 @@ export function AppShell() {
         {/* Bottom padding keeps the last content clear of the phone nav bar;
             a full-bleed screen takes care of its own. */}
         <main
+          id="main"
+          tabIndex={-1}
           className={cn(
-            'flex-1',
+            'flex-1 outline-none',
             fullBleed
               ? 'flex min-h-0 flex-col'
-              : 'mx-auto w-full max-w-3xl p-4 pb-28 md:p-6 md:pb-8',
+              : 'mx-auto w-full max-w-3xl p-4 pb-[calc(var(--nav-bar-clearance)+2rem)] md:p-6 md:pb-8',
           )}
         >
           <Outlet />
@@ -183,14 +191,11 @@ function NavItem({ entry, unread }: { entry: NavEntry; unread: number }) {
     >
       <Icon className="size-5" aria-hidden="true" />
       {t(entry.labelKey)}
-      {unread > 0 && (
-        <span
-          className="bg-primary text-primary-foreground absolute top-1 right-2 min-w-5 rounded-full px-1.5 text-center text-[11px] font-semibold md:static md:ml-auto"
-          aria-label={t('chat.navUnread', { count: unread })}
-        >
-          {unread > 99 ? '99+' : unread}
-        </span>
-      )}
+      <UnreadCount
+        count={unread}
+        className="absolute top-1 right-2 md:static md:ml-auto"
+        aria-label={t('chat.navUnread', { count: unread })}
+      />
     </NavLink>
   )
 }

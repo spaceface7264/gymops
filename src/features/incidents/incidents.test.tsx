@@ -131,8 +131,8 @@ describe('the incident list', () => {
 
     await screen.findByText('Hold broke on wall 4')
     expect(filters).toHaveBeenCalledWith('neq', ['status', 'resolved'])
-    expect(screen.getByRole('button', { name: 'Still open' })).toHaveAttribute(
-      'aria-pressed',
+    expect(screen.getByRole('radio', { name: 'Still open' })).toHaveAttribute(
+      'aria-checked',
       'true',
     )
   })
@@ -150,7 +150,7 @@ describe('the incident list', () => {
     renderWithProviders(<IncidentsPage />)
 
     await screen.findByText('Hold broke on wall 4')
-    await userEvent.click(screen.getByRole('button', { name: 'Resolved' }))
+    await userEvent.click(screen.getByRole('radio', { name: 'Resolved' }))
     await waitFor(() =>
       expect(filters).toHaveBeenCalledWith('eq', ['status', 'resolved']),
     )
@@ -285,7 +285,7 @@ describe('one incident', () => {
     })
     renderDetail()
 
-    await userEvent.click(await screen.findByRole('button', { name: 'In progress' }))
+    await userEvent.click(await screen.findByRole('radio', { name: 'In progress' }))
     await waitFor(() =>
       expect(update).toHaveBeenCalledWith('incidents', { status: 'in_progress' }),
     )

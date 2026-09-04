@@ -1,5 +1,6 @@
 import { useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -84,8 +85,12 @@ function CategoryForm({
 
   const submit = (event: React.FormEvent) => {
     event.preventDefault()
-    if (category) rename.mutate({ id: category.id, name }, { onSuccess: onDone })
-    else create.mutate({ gymId, parentId, name }, { onSuccess: onDone })
+    const saved = () => {
+      toast.success(t('guides.categorySaved'))
+      onDone()
+    }
+    if (category) rename.mutate({ id: category.id, name }, { onSuccess: saved })
+    else create.mutate({ gymId, parentId, name }, { onSuccess: saved })
   }
 
   return (

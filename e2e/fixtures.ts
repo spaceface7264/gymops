@@ -23,7 +23,7 @@ const headers = {
   'content-type': 'application/json',
 }
 
-async function rest<T>(path: string, init?: RequestInit): Promise<T> {
+export async function rest<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${url}/rest/v1/${path}`, {
     ...init,
     headers: { ...headers, ...init?.headers },

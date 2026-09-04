@@ -1,17 +1,10 @@
 import { ArrowLeft, Check, Pencil, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 import { Link, useNavigate, useParams } from 'react-router'
-import { LoadingState, PageHeader, StatusBadge } from '@/components'
+import { ConfirmDialog, LoadingState, PageHeader, StatusBadge } from '@/components'
 import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import { useAuth } from '@/features/auth'
 import { RichText, toDoc, usePublishScope } from '@/features/content'
 import {
@@ -86,10 +79,21 @@ export function GuideDetailPage() {
             variant="outline"
             size="sm"
             onClick={() =>
-              setStatus.mutate({
-                id: guide.data.id,
-                status: guide.data.status === 'published' ? 'draft' : 'published',
-              })
+              setStatus.mutate(
+                {
+                  id: guide.data.id,
+                  status: guide.data.status === 'published' ? 'draft' : 'published',
+                },
+                {
+                  onSuccess: () =>
+                    toast.success(
+                      guide.data.status === 'published'
+                        ? t('guides.draftSaved')
+                        : t('guides.published'),
+                    ),
+                  onError: () => toast.error(t('guides.saveFailed')),
+                },
+              )
             }
           >
             {guide.data.status === 'published'
@@ -107,30 +111,23 @@ export function GuideDetailPage() {
 
       <GuideAcknowledgement guide={guide.data} />
 
-      <Dialog open={confirmingDelete} onOpenChange={setConfirmingDelete}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('guides.deleteTitle')}</DialogTitle>
-            <DialogDescription>{t('guides.deleteDescription')}</DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmingDelete(false)}>
-              {t('guides.cancel')}
-            </Button>
-            <Button
-              variant="destructive"
-              disabled={remove.isPending}
-              onClick={() =>
-                remove.mutate(guide.data.id, {
-                  onSuccess: () => void navigate('/guides'),
-                })
-              }
-            >
-              {t('guides.delete')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ConfirmDialog
+        open={confirmingDelete}
+        onOpenChange={setConfirmingDelete}
+        title={t('guides.deleteTitle')}
+        body={t('guides.deleteDescription')}
+        confirmLabel={t('guides.delete')}
+        pending={remove.isPending}
+        error={remove.isError ? t('guides.deleteFailed') : undefined}
+        onConfirm={() =>
+          remove.mutate(guide.data.id, {
+            onSuccess: () => {
+              toast.success(t('guides.deleted'))
+              void navigate('/guides')
+            },
+          })
+        }
+      />
     </article>
   )
 }

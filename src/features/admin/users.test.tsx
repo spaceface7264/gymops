@@ -123,7 +123,12 @@ describe('UsersPanel', () => {
     const own = (await screen.findByText('Anders Admin')).closest('tr') as HTMLElement
     const button = within(own).getByRole('button', { name: 'Deactivate' })
     expect(button).toBeDisabled()
-    expect(button).toHaveAttribute('title', 'You cannot deactivate your own account.')
+    // The reason is a tooltip on the wrapper (a disabled button hears no
+    // pointer), reachable from the keyboard as well.
+    await userEvent.hover(button.parentElement as HTMLElement)
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(
+      'You cannot deactivate your own account.',
+    )
   })
 
   it('says why inviting is unavailable when there is no gym to invite into', async () => {

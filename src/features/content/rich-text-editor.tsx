@@ -83,7 +83,7 @@ export function RichTextEditor({
   }
 
   return (
-    <div className="rounded-md border">
+    <div className="border-input bg-card rounded-xl border">
       <div className="flex flex-wrap items-center gap-1 border-b p-1">
         <ToolbarButton
           editor={editor}

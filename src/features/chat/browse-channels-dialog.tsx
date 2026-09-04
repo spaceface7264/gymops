@@ -1,5 +1,6 @@
 import { Hash, Lock } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { EmptyState, LoadingState } from '@/components'
 import { useNavigate } from 'react-router'
 import { Button } from '@/components/ui/button'
 import {
@@ -43,7 +44,7 @@ export function BrowseChannelsDialog({
           {rows.map((channel) => (
             <li
               key={channel.id}
-              className="flex items-center gap-2 rounded-md px-2 py-2 text-sm"
+              className="flex min-h-11 items-center gap-2 rounded-lg px-2 py-2 text-sm"
             >
               {channel.is_private ? (
                 <Lock className="size-4 shrink-0" aria-hidden="true" />
@@ -76,8 +77,9 @@ export function BrowseChannelsDialog({
           ))}
         </ul>
 
+        {channels.isPending && <LoadingState rows={3} />}
         {!channels.isPending && rows.length === 0 && (
-          <p className="text-muted-foreground text-sm">{t('chat.nothingToJoin')}</p>
+          <EmptyState bordered={false} title={t('chat.nothingToJoin')} as="p" />
         )}
 
         {join.isError && (

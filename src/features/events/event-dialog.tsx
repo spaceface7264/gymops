@@ -1,15 +1,21 @@
 import { useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { Toggle } from '@/components/ui/toggle'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import {
   Dialog,
   DialogContent,
   DialogFooter,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { NativeSelect } from '@/components/ui/native-select'
+import { Textarea } from '@/components/ui/textarea'
 import { MissingRequirements } from '@/features/content'
 import type { Gym } from '@/features/gyms'
 import { formatTime } from './event-date'
@@ -20,9 +26,6 @@ import {
   type EventInput,
   type GymEvent,
 } from './queries'
-
-const selectClassName =
-  'border-input bg-card focus-visible:border-ring focus-visible:ring-ring/40 h-11 w-full rounded-xl border px-3.5 py-1 text-base outline-none focus-visible:ring-[3px]'
 
 const linkPattern = /^https?:\/\/\S+$/
 
@@ -128,10 +131,14 @@ function EventForm({
 
     const input: EventInput = multiDay ? values : { ...values, endsOn: '' }
 
+    const saved = () => {
+      toast.success(t('events.saved'))
+      onDone()
+    }
     if (event) {
-      update.mutate({ id: event.id, ...input }, { onSuccess: onDone })
+      update.mutate({ id: event.id, ...input }, { onSuccess: saved })
     } else {
-      create.mutate(input, { onSuccess: onDone })
+      create.mutate(input, { onSuccess: saved })
     }
   }
 
@@ -141,6 +148,7 @@ function EventForm({
         <DialogTitle>
           {event ? t('events.editTitle') : t('events.createTitle')}
         </DialogTitle>
+        <DialogDescription>{t('events.formHint')}</DialogDescription>
       </DialogHeader>
 
       <div className="space-y-2">
@@ -154,10 +162,9 @@ function EventForm({
 
       <div className="space-y-2">
         <Label htmlFor={`${fieldId}-description`}>{t('events.description')}</Label>
-        <textarea
+        <Textarea
           id={`${fieldId}-description`}
           rows={3}
-          className={`${selectClassName} h-auto py-1.5`}
           value={values.description}
           onChange={(input) => set({ description: input.target.value })}
         />
@@ -165,9 +172,9 @@ function EventForm({
 
       <div className="space-y-2">
         <Label htmlFor={`${fieldId}-type`}>{t('events.typeLabel')}</Label>
-        <select
+        <NativeSelect
           id={`${fieldId}-type`}
-          className={selectClassName}
+          className="w-full"
           value={values.eventType}
           onChange={(input) =>
             set({ eventType: input.target.value as EventInput['eventType'] })
@@ -178,7 +185,7 @@ function EventForm({
               {t(`events.type.${option}`)}
             </option>
           ))}
-        </select>
+        </NativeSelect>
       </div>
 
       {/* One event, any number of gyms. "Company-wide" is the absence of a
@@ -186,38 +193,27 @@ function EventForm({
           per gym that would then have to keep up as gyms open and close. */}
       <fieldset className="space-y-2">
         <legend className="text-sm font-medium">{t('events.scope')}</legend>
-        <div className="flex flex-wrap gap-1">
-          <Button
-            type="button"
-            size="sm"
-            variant={values.gymIds.length === 0 ? 'default' : 'outline'}
-            aria-pressed={values.gymIds.length === 0}
-            onClick={() => set({ gymIds: [] })}
+        <div className="flex flex-wrap items-center gap-2">
+          <Toggle
+            variant="outline"
+            pressed={values.gymIds.length === 0}
+            onPressedChange={() => set({ gymIds: [] })}
           >
             {t('events.companyWide')}
-          </Button>
-          {gyms.map((gym) => {
-            const picked = values.gymIds.includes(gym.id)
-
-            return (
-              <Button
-                key={gym.id}
-                type="button"
-                size="sm"
-                variant={picked ? 'default' : 'outline'}
-                aria-pressed={picked}
-                onClick={() =>
-                  set({
-                    gymIds: picked
-                      ? values.gymIds.filter((id) => id !== gym.id)
-                      : [...values.gymIds, gym.id],
-                  })
-                }
-              >
+          </Toggle>
+          <ToggleGroup
+            type="multiple"
+            variant="outline"
+            aria-label={t('events.scope')}
+            value={values.gymIds}
+            onValueChange={(gymIds) => set({ gymIds })}
+          >
+            {gyms.map((gym) => (
+              <ToggleGroupItem key={gym.id} value={gym.id}>
                 {gym.name}
-              </Button>
-            )
-          })}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
         </div>
       </fieldset>
 
@@ -242,18 +238,16 @@ function EventForm({
         </div>
       </div>
 
-      <Button
-        type="button"
-        size="sm"
-        variant={multiDay ? 'default' : 'outline'}
-        aria-pressed={multiDay}
-        onClick={() => {
-          setMultiDay(!multiDay)
-          if (multiDay) set({ endsOn: '' })
+      <Toggle
+        variant="outline"
+        pressed={multiDay}
+        onPressedChange={(pressed) => {
+          setMultiDay(pressed)
+          if (!pressed) set({ endsOn: '' })
         }}
       >
         {t('events.multiDay')}
-      </Button>
+      </Toggle>
 
       {multiDay && (
         <div className="space-y-2">

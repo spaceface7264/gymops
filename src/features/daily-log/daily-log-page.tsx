@@ -2,7 +2,8 @@ import { NotebookPen } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { EmptyState, LoadingState, PageHeader } from '@/components'
-import { Button } from '@/components/ui/button'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import { NativeSelect } from '@/components/ui/native-select'
 import { useCompletionScope, localDate } from '@/features/checklists'
 import { usePublishScope } from '@/features/content'
 import { useGymScope } from '@/features/gyms'
@@ -50,24 +51,25 @@ export function DailyLogPage() {
       )}
 
       <div className="flex flex-wrap items-center gap-2">
-        <div className="flex flex-wrap gap-1">
+        <ToggleGroup
+          type="single"
+          aria-label={t('dailyLog.allKinds')}
+          value={kind}
+          onValueChange={(option) => {
+            if (option) setKind(option as typeof kind)
+          }}
+        >
           {(['all', ...dailyLogKinds] as const).map((option) => (
-            <Button
-              key={option}
-              size="sm"
-              variant={kind === option ? 'default' : 'outline'}
-              aria-pressed={kind === option}
-              onClick={() => setKind(option)}
-            >
+            <ToggleGroupItem key={option} value={option}>
               {option === 'all' ? t('dailyLog.allKinds') : t(`dailyLog.kind.${option}`)}
-            </Button>
+            </ToggleGroupItem>
           ))}
-        </div>
+        </ToggleGroup>
 
         {(tags.length > 0 || tag) && (
-          <select
+          <NativeSelect
             aria-label={t('dailyLog.filterByTag')}
-            className="border-input bg-card focus-visible:border-ring focus-visible:ring-ring/40 h-11 rounded-xl border px-3.5 py-1 text-base outline-none focus-visible:ring-[3px]"
+
             value={tag ?? ''}
             onChange={(event) => setTag(event.target.value || null)}
           >
@@ -77,7 +79,7 @@ export function DailyLogPage() {
                 #{option}
               </option>
             ))}
-          </select>
+          </NativeSelect>
         )}
       </div>
 

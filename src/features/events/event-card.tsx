@@ -1,15 +1,10 @@
 import { ExternalLink, MoreHorizontal } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { ConfirmDialog } from '@/components'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -60,7 +55,7 @@ export function EventCard({
         )}
       </div>
 
-      <h3 className="font-medium">{event.title}</h3>
+      <h3 className="text-lg font-semibold">{event.title}</h3>
       <p className="text-muted-foreground text-sm">
         {formatEventWhen(event, i18n.language)}
       </p>
@@ -72,44 +67,33 @@ export function EventCard({
       {event.link && (
         // Outward, user-supplied links: a new tab, and no window handle or
         // referrer handed to whatever is on the other end.
-        <a
-          href={event.link}
-          target="_blank"
-          rel="noopener noreferrer nofollow"
-          title={event.link}
-          className="text-primary inline-flex items-center gap-1 text-sm underline"
-        >
-          {linkLabel(event.link)}
-          <ExternalLink className="size-3" aria-label={t('events.opensInNewTab')} />
-        </a>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <a
+              href={event.link}
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              className="text-accent-foreground inline-flex min-h-11 items-center gap-1 text-sm underline"
+            >
+              {linkLabel(event.link)}
+              <ExternalLink className="size-3" aria-label={t('events.opensInNewTab')} />
+            </a>
+          </TooltipTrigger>
+          <TooltipContent>{event.link}</TooltipContent>
+        </Tooltip>
       )}
 
-      <Dialog open={confirming} onOpenChange={setConfirming}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('events.deleteConfirm')}</DialogTitle>
-          </DialogHeader>
-          {remove.isError && (
-            <p role="alert" className="text-destructive text-sm">
-              {t('events.deleteFailed')}
-            </p>
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirming(false)}>
-              {t('events.cancel')}
-            </Button>
-            <Button
-              variant="destructive"
-              disabled={remove.isPending}
-              onClick={() =>
-                remove.mutate(event.id, { onSuccess: () => setConfirming(false) })
-              }
-            >
-              {t('events.delete')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ConfirmDialog
+        open={confirming}
+        onOpenChange={setConfirming}
+        title={t('events.deleteConfirm')}
+        confirmLabel={t('events.delete')}
+        pending={remove.isPending}
+        error={remove.isError ? t('events.deleteFailed') : undefined}
+        onConfirm={() =>
+          remove.mutate(event.id, { onSuccess: () => setConfirming(false) })
+        }
+      />
     </Card>
   )
 }

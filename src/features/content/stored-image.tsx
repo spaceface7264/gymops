@@ -15,14 +15,14 @@ export function StoredImage({ node }: NodeViewProps) {
   return (
     <NodeViewWrapper className="my-4">
       {isError ? (
-        <p className="text-muted-foreground rounded-md border border-dashed p-4 text-sm">
+        <p className="text-muted-foreground rounded-xl border border-dashed p-4 text-sm">
           {t('content.imageUnavailable')}
         </p>
       ) : (
         <img
           src={url ?? undefined}
           alt={alt}
-          className="max-h-96 rounded-md border object-contain"
+          className="max-h-96 rounded-xl border object-contain"
         />
       )}
     </NodeViewWrapper>

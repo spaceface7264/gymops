@@ -1,6 +1,7 @@
 import { X } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { ConfirmDialog } from '@/components'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -17,6 +18,7 @@ import {
   useColleagues,
   useRemoveChannelMember,
   type Channel,
+  type ChannelMember,
 } from './queries'
 
 /**
@@ -42,6 +44,7 @@ export function ChannelMembersDialog({
   const remove = useRemoveChannelMember()
 
   const [chosen, setChosen] = useState<string[]>([])
+  const [removing, setRemoving] = useState<ChannelMember | undefined>()
 
   const seated = members.data ?? []
   const seatedIds = new Set(seated.map((member) => member.user_id))
@@ -66,28 +69,48 @@ export function ChannelMembersDialog({
           {seated.map((member) => (
             <li
               key={member.user_id}
-              className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm"
+              className="flex min-h-11 items-center gap-2 rounded-lg px-2 py-1 text-sm"
             >
               <span className="min-w-0 flex-1 truncate">
                 {member.full_name?.trim() || member.email || t('chat.someone')}
               </span>
               {canModerate && (
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="icon-sm"
                   aria-label={t('chat.removeMember', {
                     name: member.full_name?.trim() || member.email,
                   })}
-                  disabled={remove.isPending}
-                  onClick={() =>
-                    remove.mutate({ channelId: channel.id, userId: member.user_id })
-                  }
+                  onClick={() => setRemoving(member)}
                 >
                   <X className="size-4" aria-hidden="true" />
-                </button>
+                </Button>
               )}
             </li>
           ))}
         </ul>
+
+        <ConfirmDialog
+          open={removing !== undefined}
+          onOpenChange={(open) => {
+            if (!open) setRemoving(undefined)
+          }}
+          title={t('chat.removeMemberConfirm', {
+            name: removing?.full_name?.trim() || removing?.email || t('chat.someone'),
+          })}
+          body={t('chat.removeMemberDescription')}
+          confirmLabel={t('chat.remove')}
+          pending={remove.isPending}
+          error={remove.isError ? t('chat.membersFailed') : undefined}
+          onConfirm={() => {
+            if (!removing) return
+            remove.mutate(
+              { channelId: channel.id, userId: removing.user_id },
+              { onSuccess: () => setRemoving(undefined) },
+            )
+          }}
+        />
 
         {canModerate && (
           <>

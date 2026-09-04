@@ -1,10 +1,13 @@
 import { ArrowDown, ArrowUp, Plus, X } from 'lucide-react'
 import { useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 import { useNavigate, useParams } from 'react-router'
 import { LoadingState, PageHeader } from '@/components'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { Label } from '@/components/ui/label'
 import {
   Select,
@@ -140,7 +143,12 @@ function TemplateEditor({ template }: { template?: ChecklistTemplate }) {
               required,
             })),
           },
-          { onSuccess: () => void navigate('/checklists/templates') },
+          {
+            onSuccess: () => {
+              toast.success(t('checklists.templateSaved'))
+              void navigate('/checklists/templates')
+            },
+          },
         )
       }}
     >
@@ -209,26 +217,19 @@ function TemplateEditor({ template }: { template?: ChecklistTemplate }) {
 
       <fieldset className="space-y-2">
         <legend className="text-sm font-medium">{t('checklists.schedule')}</legend>
-        <div className="flex flex-wrap gap-3">
+        <ToggleGroup
+          type="multiple"
+          variant="outline"
+          aria-label={t('checklists.schedule')}
+          value={weekdays.map(String)}
+          onValueChange={(days) => setWeekdays(days.map(Number).sort((a, b) => a - b))}
+        >
           {isoWeekdays.map((day) => (
-            <div key={day} className="flex items-center gap-1.5">
-              <input
-                id={`${fieldId}-day-${day}`}
-                type="checkbox"
-                className="size-4"
-                checked={weekdays.includes(day)}
-                onChange={(event) =>
-                  setWeekdays((current) =>
-                    event.target.checked
-                      ? [...current, day].sort((a, b) => a - b)
-                      : current.filter((selected) => selected !== day),
-                  )
-                }
-              />
-              <Label htmlFor={`${fieldId}-day-${day}`}>{names[day - 1]}</Label>
-            </div>
+            <ToggleGroupItem key={day} value={String(day)}>
+              {names[day - 1]}
+            </ToggleGroupItem>
           ))}
-        </div>
+        </ToggleGroup>
       </fieldset>
 
       <fieldset className="space-y-2">
@@ -242,14 +243,12 @@ function TemplateEditor({ template }: { template?: ChecklistTemplate }) {
                 value={item.label}
                 onChange={(event) => updateItem(item.key, { label: event.target.value })}
               />
-              <div className="flex items-center gap-1.5">
-                <input
+              <div className="flex min-h-11 items-center gap-2">
+                <Checkbox
                   id={`${fieldId}-required-${item.key}`}
-                  type="checkbox"
-                  className="size-4"
                   checked={item.required}
-                  onChange={(event) =>
-                    updateItem(item.key, { required: event.target.checked })
+                  onCheckedChange={(checked) =>
+                    updateItem(item.key, { required: checked === true })
                   }
                 />
                 <Label htmlFor={`${fieldId}-required-${item.key}`}>
@@ -303,13 +302,11 @@ function TemplateEditor({ template }: { template?: ChecklistTemplate }) {
       </fieldset>
 
       {template && (
-        <div className="flex items-center gap-2">
-          <input
+        <div className="flex min-h-11 items-center gap-3">
+          <Checkbox
             id={`${fieldId}-active`}
-            type="checkbox"
-            className="size-4"
             checked={active}
-            onChange={(event) => setActive(event.target.checked)}
+            onCheckedChange={(checked) => setActive(checked === true)}
           />
           <Label htmlFor={`${fieldId}-active`}>{t('checklists.active')}</Label>
         </div>

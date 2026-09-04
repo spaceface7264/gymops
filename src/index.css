@@ -8,6 +8,8 @@
  */
 :root {
   --radius: 1rem;
+  /* What a phone screen keeps clear of the bottom tab bar (P7D-07). */
+  --nav-bar-clearance: calc(env(safe-area-inset-bottom) + 5rem);
   --font-sans:
     'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
 

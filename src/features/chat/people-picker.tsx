@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { EmptyState } from '@/components'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { personName } from './channel-name'
 import type { Colleague } from './queries'
@@ -40,12 +42,10 @@ export function PeoplePicker({
       <ul className="max-h-64 space-y-1 overflow-y-auto">
         {shown.map((person) => (
           <li key={person.id}>
-            <label className="hover:bg-accent/60 flex items-center gap-2 rounded-md px-2 py-2 text-sm">
-              <input
-                type="checkbox"
-                className="size-4"
+            <label className="hover:bg-accent/60 flex min-h-11 items-center gap-3 rounded-lg px-2 py-2 text-sm">
+              <Checkbox
                 checked={chosen.includes(person.id)}
-                onChange={() => onToggle(person.id)}
+                onCheckedChange={() => onToggle(person.id)}
               />
               <span className="min-w-0 flex-1 truncate">{personName(person)}</span>
             </label>
@@ -53,7 +53,7 @@ export function PeoplePicker({
         ))}
       </ul>
 
-      {shown.length === 0 && <p className="text-muted-foreground text-sm">{empty}</p>}
+      {shown.length === 0 && <EmptyState bordered={false} title={empty} as="p" />}
     </div>
   )
 }

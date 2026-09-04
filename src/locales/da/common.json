@@ -23,6 +23,7 @@
       "name": "Navn",
       "reactivate": "Aktivér igen",
       "saveFailed": "Centret kunne ikke gemmes. Tjek navn og slug, og prøv igen.",
+      "saved": "Center gemt",
       "slug": "Slug",
       "status": "Status",
       "timezone": "Tidszone",
@@ -39,6 +40,7 @@
       "role": "Rolle",
       "send": "Send invitation",
       "sending": "Sender…",
+      "sent": "Invitation sendt til {{email}}",
       "title": "Invitér en person",
       "unknown": "Invitationen kunne ikke sendes. Prøv igen om et øjeblik."
     },
@@ -54,18 +56,21 @@
       "title": "Roller"
     },
     "save": "Gem",
+    "saveFailed": "Ændringen kunne ikke gemmes. Prøv igen.",
     "saving": "Gemmer…",
     "users": {
       "active": "Aktiv",
       "admin": "Administrator",
       "cannotDeactivateSelf": "Du kan ikke deaktivere din egen konto.",
       "deactivate": "Deaktivér",
+      "deactivated": "{{name}} deaktiveret",
       "empty": "Der er endnu ingen brugere i dette center.",
       "inactive": "Inaktiv",
       "manager": "Leder",
       "name": "Navn",
       "noAssignableGyms": "Du er ikke leder af nogen aktiv hal, så der er endnu ingen at invitere.",
       "reactivate": "Aktivér igen",
+      "reactivated": "{{name}} aktiveret igen",
       "roles": "Roller",
       "staff": "Medarbejder",
       "status": "Status",
@@ -74,6 +79,8 @@
     }
   },
   "app": {
+    "cancel": "Annuller",
+    "close": "Luk",
     "error": {
       "body": "Skærmen kunne ikke vises. Prøv at genindlæse; sker det igen, så sig det til den, der passer appen.",
       "home": "Gå til forsiden",
@@ -82,6 +89,7 @@
     },
     "loading": "Indlæser…",
     "name": "GymOps",
+    "skipToContent": "Spring til indhold",
     "update": {
       "available": "GymOps {{version}} er klar.",
       "failed": "Opdateringen kunne ikke installeres. Den prøves igen næste gang.",
@@ -178,11 +186,13 @@
     "browse": "Gennemse",
     "browseHint": "Kanaler du kan se, men ikke er med i.",
     "cancel": "Annullér",
+    "channelDeleted": "Kanal slettet",
     "channelDescription": "Hvad den bruges til",
     "channelName": "Navn",
     "channelPrivate": "Privat kanal",
     "channelPrivateHint": "Kun de personer, der bliver sat ind i den, kan se den. Det kan ikke laves om bagefter.",
     "channelSaveFailed": "Kanalen kunne ikke gemmes.",
+    "channelSaved": "Kanal gemt",
     "channelScope": "Hvem den hører til",
     "close": "Luk",
     "companyWide": "Hele virksomheden",
@@ -190,6 +200,9 @@
     "delete": "Slet",
     "deleteChannel": "Slet denne kanal",
     "deleteChannelHint": "Alt, hvad der er skrevet i den, ryger med. Det kan ikke fortrydes.",
+    "deleteFailed": "Det kunne ikke slettes. Prøv igen.",
+    "deleteMessageConfirm": "Slet denne besked?",
+    "deleteMessageDescription": "Den forsvinder for alle i kanalen.",
     "deletedMessage": "Denne besked er slettet.",
     "edit": "Redigér",
     "editChannel": "Kanalindstillinger",
@@ -207,6 +220,10 @@
     "join": "Vær med",
     "joinFailed": "Du kunne ikke komme med i kanalen.",
     "leave": "Forlad denne kanal",
+    "leaveConfirm": "Forlad denne kanal?",
+    "leaveDescription": "Du ser ikke længere dens beskeder, før nogen tilføjer dig igen.",
+    "leaveFailed": "Kanalen kunne ikke forlades. Prøv igen.",
+    "left": "Du har forladt kanalen",
     "loadFail": "Kanalerne kunne ikke hentes.",
     "loadMessagesFail": "Beskederne kunne ikke hentes.",
     "loadOlder": "Hent ældre",
@@ -228,9 +245,13 @@
     "noMessages": "Der er ikke sagt noget her endnu.",
     "nothingToJoin": "Der er ikke mere at være med i.",
     "pickChannel": "Vælg en kanal for at læse den.",
+    "remove": "Fjern",
     "removeFile": "Fjern {{name}}",
     "removeMember": "Fjern {{name}}",
+    "removeMemberConfirm": "Fjern {{name}} fra kanalen?",
+    "removeMemberDescription": "De kan tilføjes igen senere.",
     "save": "Gem",
+    "saveFailed": "Ændringen kunne ikke gemmes. Prøv igen.",
     "send": "Send",
     "sendFailed": "Beskeden kunne ikke sendes.",
     "someone": "Nogen",
@@ -295,7 +316,9 @@
     "saveFailed": "Tjeklisten kunne ikke gemmes. Prøv igen.",
     "schedule": "Kører",
     "scope": "Gælder for",
+    "templateSaved": "Tjekliste gemt",
     "templates": "Tjeklister",
+    "tickFailed": "Ikke gemt. Prøv igen.",
     "today": "Dagens tjeklister",
     "untitledRun": "Tjekliste"
   },
@@ -343,6 +366,9 @@
     "pickGym": "Vælg en hal for at skrive i dens log.",
     "readOnly": "Kun hallens eget team kan skrive i loggen.",
     "remove": "Fjern",
+    "removeConfirm": "Fjern denne post?",
+    "removeDescription": "Den forsvinder fra loggen for alle.",
+    "removeFailed": "Posten kunne ikke fjernes. Prøv igen.",
     "removed": "Fjernet fra tidslinjen.",
     "reportAsIncident": "Meld som hændelse",
     "save": "Gem",
@@ -369,6 +395,7 @@
     "emptyUpcoming": "Der er ikke noget på vej her.",
     "endDate": "Slutdato",
     "endTime": "Sluttidspunkt",
+    "formHint": "Hvornår det er, og hvilke centre det gælder.",
     "gymCount_one": "{{count}} center",
     "gymCount_other": "{{count}} centre",
     "link": "Link",
@@ -388,6 +415,7 @@
     "previousMonth": "Forrige måned",
     "save": "Gem",
     "saveFailed": "Begivenheden kunne ikke gemmes. Prøv igen.",
+    "saved": "Begivenhed gemt",
     "saving": "Gemmer…",
     "scope": "Hvor",
     "startDate": "Startdato",
@@ -426,13 +454,19 @@
     "categoryName": "Navn",
     "categoryNeedsName": "Giv kategorien et navn.",
     "categorySaveFailed": "Kategorien kunne ikke gemmes. Prøv igen.",
+    "categorySaved": "Kategori gemt",
     "companyWide": "Hele kæden",
     "createTitle": "Ny vejledning",
     "delete": "Slet",
     "deleteCategory": "Slet {{name}}",
+    "deleteCategoryConfirm": "Slet kategorien {{name}}?",
+    "deleteCategoryDescription": "Den forsvinder fra træet. En kategori med guides i kan ikke slettes.",
     "deleteDescription": "Den forsvinder fra oversigten. Rækken bevares, så den kan hentes frem igen.",
+    "deleteFailed": "Guiden kunne ikke slettes. Prøv igen.",
     "deleteTitle": "Slet vejledningen?",
+    "deleted": "Guide slettet",
     "draft": "Kladde",
+    "draftSaved": "Kladde gemt",
     "edit": "Rediger",
     "editTitle": "Rediger vejledning",
     "empty": "Der er ingen vejledninger her endnu.",
@@ -451,12 +485,14 @@
     "notFound": "Vejledningen findes ikke, eller du har ikke adgang til den.",
     "parentCategory": "Placeres i",
     "publish": "Udgiv",
+    "published": "Guide udgivet",
     "renameCategory": "Omdøb {{name}}",
     "renameCategoryTitle": "Omdøb kategori",
     "requireAcknowledgement": "Kræv, at alle bekræfter at have læst vejledningen",
     "save": "Gem",
     "saveDraft": "Gem som kladde",
     "saveFailed": "Vejledningen kunne ikke gemmes. Prøv igen.",
+    "saved": "Guide gemt",
     "scope": "Gælder for",
     "significantChange": "Væsentlig ændring — alle skal bekræfte igen",
     "title": "Vejledninger",
@@ -565,35 +601,35 @@
     "uploadFailed": "Billedet kunne ikke uploades. Prøv igen."
   },
   "install": {
-    "title": "Installér GymOps",
-    "intro": "GymOps kører i browseren, men installeret åbner den som en app, holder dig logget ind og kan — på iPhone først da — sende dig push-notifikationer.",
+    "android": {
+      "steps": [
+        "Åbn GymOps i Chrome.",
+        "Tryk på menuen og derefter “Installér app” eller “Føj til startskærm”.",
+        "Under Notifikationer → Indstillinger slår du push til for denne enhed."
+      ],
+      "title": "Android (Chrome)"
+    },
     "backToPreferences": "Tilbage til indstillinger",
+    "desktop": {
+      "steps": [
+        "Brug desktop-appen, når den er udgivet; indtil da installerer du browserversionen.",
+        "I Chrome eller Edge åbner du installationsikonet til højre i adressefeltet.",
+        "Under Notifikationer → Indstillinger slår du push til for denne enhed."
+      ],
+      "title": "Windows og Mac"
+    },
+    "intro": "GymOps kører i browseren, men installeret åbner den som en app, holder dig logget ind og kan — på iPhone først da — sende dig push-notifikationer.",
     "ios": {
-      "title": "iPhone og iPad (Safari)",
       "steps": [
         "Åbn GymOps i Safari. Chrome på iPhone kan ikke installere den.",
         "Tryk på Del-knappen og derefter “Føj til hjemmeskærm”.",
         "Åbn GymOps fra ikonet på hjemmeskærmen, ikke fra Safari.",
         "Under Notifikationer → Indstillinger slår du push til for denne enhed."
-      ]
+      ],
+      "title": "iPhone og iPad (Safari)"
     },
-    "android": {
-      "title": "Android (Chrome)",
-      "steps": [
-        "Åbn GymOps i Chrome.",
-        "Tryk på menuen og derefter “Installér app” eller “Føj til startskærm”.",
-        "Under Notifikationer → Indstillinger slår du push til for denne enhed."
-      ]
-    },
-    "desktop": {
-      "title": "Windows og Mac",
-      "steps": [
-        "Brug desktop-appen, når den er udgivet; indtil da installerer du browserversionen.",
-        "I Chrome eller Edge åbner du installationsikonet til højre i adressefeltet.",
-        "Under Notifikationer → Indstillinger slår du push til for denne enhed."
-      ]
-    },
-    "pushNote": "Push gælder pr. enhed og pr. browser: slår du det til her, er det ikke slået til andre steder, og logger du ud af en browser, bliver dens abonnement liggende, indtil du slår det fra."
+    "pushNote": "Push gælder pr. enhed og pr. browser: slår du det til her, er det ikke slået til andre steder, og logger du ud af en browser, bliver dens abonnement liggende, indtil du slår det fra.",
+    "title": "Installér GymOps"
   },
   "language": {
     "da": "Dansk",
@@ -635,8 +671,11 @@
     "createTitle": "Ny nyhed",
     "delete": "Slet",
     "deleteDescription": "Nyheden forsvinder fra oversigten. Rækken bevares, så den kan hentes frem igen.",
+    "deleteFailed": "Opslaget kunne ikke slettes. Prøv igen.",
     "deleteTitle": "Slet nyheden?",
+    "deleted": "Nyhed slettet",
     "draft": "Kladde",
+    "draftSaved": "Kladde gemt",
     "edit": "Rediger",
     "editTitle": "Rediger nyhed",
     "empty": "Der er ingen nyheder endnu.",
@@ -651,10 +690,12 @@
     "pinned": "Fastgjort",
     "postTitle": "Overskrift",
     "publish": "Udgiv",
+    "published": "Nyhed udgivet",
     "requireAcknowledgement": "Kræv, at alle bekræfter at have læst nyheden",
     "save": "Gem",
     "saveDraft": "Gem som kladde",
     "saveFailed": "Nyheden kunne ikke gemmes. Prøv igen.",
+    "saved": "Nyhed gemt",
     "scope": "Gælder for",
     "title": "Nyheder",
     "unpin": "Fjern fastgørelse",

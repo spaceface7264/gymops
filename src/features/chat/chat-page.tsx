@@ -3,6 +3,7 @@ import {
   Bell,
   BellOff,
   LogOut,
+  MessageCircle,
   Plus,
   Search,
   Settings,
@@ -12,16 +13,10 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 import { Link, useNavigate, useParams } from 'react-router'
+import { ConfirmDialog, EmptyState } from '@/components'
 import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import { useAuth } from '@/features/auth'
 import { usePublishScope } from '@/features/content'
 import { cn } from '@/lib/utils'
@@ -63,27 +58,17 @@ export function ChatPage() {
         aria-label={t('chat.title')}
         className={cn(
           'md:w-72 md:shrink-0 md:overflow-y-auto md:border-r',
-          'pb-20 md:pb-0',
+          'pb-(--nav-bar-clearance) md:pb-0',
           channelId && 'hidden md:block',
         )}
       >
         <div className="grid gap-2 p-3 pb-0">
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full"
-            onClick={() => setNewDm(true)}
-          >
+          <Button variant="outline" className="w-full" onClick={() => setNewDm(true)}>
             <SquarePen className="size-4" aria-hidden="true" />
             {t('chat.newDm')}
           </Button>
           <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="flex-1"
-              onClick={() => setBrowsing(true)}
-            >
+            <Button variant="ghost" className="flex-1" onClick={() => setBrowsing(true)}>
               <Search className="size-4" aria-hidden="true" />
               {t('chat.browse')}
             </Button>
@@ -92,7 +77,6 @@ export function ChatPage() {
             {canPublishSomewhere && (
               <Button
                 variant="ghost"
-                size="sm"
                 className="flex-1"
                 onClick={() => setNewChannel(true)}
               >
@@ -115,7 +99,12 @@ export function ChatPage() {
         {channelId ? (
           <ChannelView channelId={channelId} />
         ) : (
-          <p className="text-muted-foreground p-6 text-sm">{t('chat.pickChannel')}</p>
+          <EmptyState
+            icon={MessageCircle}
+            title={t('chat.pickChannel')}
+            as="h1"
+            className="m-6"
+          />
         )}
       </section>
     </div>
@@ -148,6 +137,7 @@ function ChannelView({ channelId }: { channelId: string }) {
   const [members, setMembers] = useState(false)
   const [editing, setEditing] = useState(false)
   const [confirmingDelete, setConfirmingDelete] = useState(false)
+  const [confirmingLeave, setConfirmingLeave] = useState(false)
 
   // The three things only a custom channel has: a member list to manage, a
   // name to change, and a door out. A gym channel's roster is the gym's
@@ -162,7 +152,7 @@ function ChannelView({ channelId }: { channelId: string }) {
         <Link
           to="/chat"
           aria-label={t('chat.back')}
-          className="hover:bg-accent/60 rounded-md p-1 md:hidden"
+          className="hover:bg-accent/60 flex size-11 items-center justify-center rounded-full md:hidden"
         >
           <ArrowLeft className="size-5" aria-hidden="true" />
         </Link>
@@ -178,7 +168,7 @@ function ChannelView({ channelId }: { channelId: string }) {
         {isCustom && channel && (
           <Button
             variant="ghost"
-            size="sm"
+            size="icon"
             aria-label={t('chat.members')}
             onClick={() => setMembers(true)}
           >
@@ -190,7 +180,7 @@ function ChannelView({ channelId }: { channelId: string }) {
           <>
             <Button
               variant="ghost"
-              size="sm"
+              size="icon"
               aria-label={t('chat.editChannel')}
               onClick={() => setEditing(true)}
             >
@@ -198,7 +188,7 @@ function ChannelView({ channelId }: { channelId: string }) {
             </Button>
             <Button
               variant="ghost"
-              size="sm"
+              size="icon"
               aria-label={t('chat.deleteChannel')}
               onClick={() => setConfirmingDelete(true)}
             >
@@ -210,12 +200,9 @@ function ChannelView({ channelId }: { channelId: string }) {
         {isCustom && channel && (
           <Button
             variant="ghost"
-            size="sm"
+            size="icon"
             aria-label={t('chat.leave')}
-            disabled={leave.isPending}
-            onClick={() =>
-              leave.mutate(channel.id, { onSuccess: () => void navigate('/chat') })
-            }
+            onClick={() => setConfirmingLeave(true)}
           >
             <LogOut className="size-4" aria-hidden="true" />
           </Button>
@@ -225,12 +212,15 @@ function ChannelView({ channelId }: { channelId: string }) {
         {channel && (
           <Button
             variant="ghost"
-            size="sm"
+            size="icon"
             aria-pressed={channel.muted}
             aria-label={channel.muted ? t('chat.unmute') : t('chat.mute')}
             disabled={setMuted.isPending}
             onClick={() =>
-              setMuted.mutate({ channelId: channel.id, muted: !channel.muted })
+              setMuted.mutate(
+                { channelId: channel.id, muted: !channel.muted },
+                { onError: () => toast.error(t('chat.saveFailed')) },
+              )
             }
           >
             {channel.muted ? (
@@ -252,33 +242,41 @@ function ChannelView({ channelId }: { channelId: string }) {
           />
           <ChannelDialog channel={channel} open={editing} onOpenChange={setEditing} />
 
-          {/* A dialog rather than `window.confirm`: it is translated, and a
-              browser modal would block the app (as news does it). Deleting a
-              channel takes every message in it. */}
-          <Dialog open={confirmingDelete} onOpenChange={setConfirmingDelete}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>{t('chat.deleteChannel')}</DialogTitle>
-                <DialogDescription>{t('chat.deleteChannelHint')}</DialogDescription>
-              </DialogHeader>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setConfirmingDelete(false)}>
-                  {t('chat.cancel')}
-                </Button>
-                <Button
-                  variant="destructive"
-                  disabled={remove.isPending}
-                  onClick={() =>
-                    remove.mutate(channel.id, {
-                      onSuccess: () => void navigate('/chat'),
-                    })
-                  }
-                >
-                  {t('chat.delete')}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          {/* Deleting a channel takes every message in it. */}
+          <ConfirmDialog
+            open={confirmingDelete}
+            onOpenChange={setConfirmingDelete}
+            title={t('chat.deleteChannel')}
+            body={t('chat.deleteChannelHint')}
+            confirmLabel={t('chat.delete')}
+            pending={remove.isPending}
+            error={remove.isError ? t('chat.deleteFailed') : undefined}
+            onConfirm={() =>
+              remove.mutate(channel.id, {
+                onSuccess: () => {
+                  toast.success(t('chat.channelDeleted'))
+                  void navigate('/chat')
+                },
+              })
+            }
+          />
+          <ConfirmDialog
+            open={confirmingLeave}
+            onOpenChange={setConfirmingLeave}
+            title={t('chat.leaveConfirm')}
+            body={t('chat.leaveDescription')}
+            confirmLabel={t('chat.leave')}
+            pending={leave.isPending}
+            error={leave.isError ? t('chat.leaveFailed') : undefined}
+            onConfirm={() =>
+              leave.mutate(channel.id, {
+                onSuccess: () => {
+                  toast.success(t('chat.left'))
+                  void navigate('/chat')
+                },
+              })
+            }
+          />
         </>
       )}
 

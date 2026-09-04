@@ -139,15 +139,15 @@ describe('AdminPage', () => {
   it('offers a superadmin the gyms section', async () => {
     renderWithProviders(<AdminPage />, { path: '/admin/users' })
 
-    expect(await screen.findByRole('link', { name: 'Gyms' })).toBeInTheDocument()
+    expect(await screen.findByRole('tab', { name: 'Gyms' })).toBeInTheDocument()
   })
 
   it('hides gym management from an admin who is not a superadmin', async () => {
     profile.mockReturnValue({ id: 'user-1', is_admin: true, is_superadmin: false })
     renderWithProviders(<AdminPage />, { path: '/admin/users' })
 
-    expect(await screen.findByRole('link', { name: 'Users' })).toBeInTheDocument()
-    expect(screen.queryByRole('link', { name: 'Gyms' })).not.toBeInTheDocument()
+    expect(await screen.findByRole('tab', { name: 'Users' })).toBeInTheDocument()
+    expect(screen.queryByRole('tab', { name: 'Gyms' })).not.toBeInTheDocument()
   })
 })
 

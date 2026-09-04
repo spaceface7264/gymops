@@ -1,5 +1,6 @@
 import { Newspaper, Pin, PinOff, Plus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 import { Link } from 'react-router'
 import { EmptyState, LoadingState, PageHeader } from '@/components'
 import { Button } from '@/components/ui/button'
@@ -74,7 +75,10 @@ export function NewsFeed() {
                     aria-pressed={post.pinned}
                     disabled={setPinned.isPending}
                     onClick={() =>
-                      setPinned.mutate({ id: post.id, pinned: !post.pinned })
+                      setPinned.mutate(
+                        { id: post.id, pinned: !post.pinned },
+                        { onError: () => toast.error(t('news.saveFailed')) },
+                      )
                     }
                   >
                     {post.pinned ? (

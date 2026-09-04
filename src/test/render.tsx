@@ -3,6 +3,7 @@ import { render, type RenderOptions } from '@testing-library/react'
 import type { ReactElement, ReactNode } from 'react'
 import { I18nextProvider } from 'react-i18next'
 import { MemoryRouter, Route, Routes } from 'react-router'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import { i18next } from '@/lib/i18n'
 
 type ProviderOptions = RenderOptions & {
@@ -33,14 +34,16 @@ export function renderWithProviders(ui: ReactElement, options?: ProviderOptions)
     return (
       <I18nextProvider i18n={i18next}>
         <QueryClientProvider client={queryClient}>
-          <MemoryRouter initialEntries={initialEntries}>
-            <Routes>
-              <Route path={path} element={children} />
-              {routes.map((route) => (
-                <Route key={route.path} path={route.path} element={route.element} />
-              ))}
-            </Routes>
-          </MemoryRouter>
+          <TooltipProvider>
+            <MemoryRouter initialEntries={initialEntries}>
+              <Routes>
+                <Route path={path} element={children} />
+                {routes.map((route) => (
+                  <Route key={route.path} path={route.path} element={route.element} />
+                ))}
+              </Routes>
+            </MemoryRouter>
+          </TooltipProvider>
         </QueryClientProvider>
       </I18nextProvider>
     )

@@ -1,7 +1,7 @@
 import { MessageCircle } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { EmptyState, LoadingState } from '@/components'
+import { ConfirmDialog, EmptyState, LoadingState } from '@/components'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { useAuth } from '@/features/auth'
@@ -60,12 +60,14 @@ export function MessageList({
 
   if (messages.isError) {
     return (
-      <p className="text-muted-foreground p-4 text-sm">{t('chat.loadMessagesFail')}</p>
+      <p role="alert" className="text-destructive p-4 text-sm">
+        {t('chat.loadMessagesFail')}
+      </p>
     )
   }
 
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto p-4 pb-20 md:pb-4">
+    <div className="min-h-0 flex-1 overflow-y-auto p-4 pb-(--nav-bar-clearance) md:pb-4">
       {messages.hasNextPage && (
         <div className="pb-3 text-center">
           <Button
@@ -113,6 +115,7 @@ function MessageRow({
   const { t, i18n } = useTranslation()
   const { user } = useAuth()
   const [editing, setEditing] = useState(false)
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
 
   const edit = useEditMessage(channelId)
   const remove = useDeleteMessage(channelId)
@@ -166,16 +169,24 @@ function MessageRow({
               {t('chat.edit')}
             </Button>
           )}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => remove.mutate(message.id)}
-            disabled={remove.isPending}
-          >
+          <Button variant="ghost" size="sm" onClick={() => setConfirmingDelete(true)}>
             {t('chat.delete')}
           </Button>
         </div>
       )}
+
+      <ConfirmDialog
+        open={confirmingDelete}
+        onOpenChange={setConfirmingDelete}
+        title={t('chat.deleteMessageConfirm')}
+        body={t('chat.deleteMessageDescription')}
+        confirmLabel={t('chat.delete')}
+        pending={remove.isPending}
+        error={remove.isError ? t('chat.deleteFailed') : undefined}
+        onConfirm={() =>
+          remove.mutate(message.id, { onSuccess: () => setConfirmingDelete(false) })
+        }
+      />
     </li>
   )
 }

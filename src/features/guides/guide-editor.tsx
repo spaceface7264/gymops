@@ -1,9 +1,11 @@
 import type { JSONContent } from '@tiptap/react'
 import { useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 import { useNavigate, useParams } from 'react-router'
 import { LoadingState, PageHeader } from '@/components'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -97,6 +99,14 @@ function GuideEditor({ guide }: { guide?: Guide }) {
 
   const submit = (status: GuideInput['status']) => {
     const input: GuideInput = { gymId, categoryId, title, body, requiresAck, status }
+    const saved = () =>
+      toast.success(
+        status === 'published'
+          ? t('guides.published')
+          : guide?.status === 'published'
+            ? t('guides.saved')
+            : t('guides.draftSaved'),
+      )
 
     if (guide) {
       update.mutate(
@@ -105,10 +115,20 @@ function GuideEditor({ guide }: { guide?: Guide }) {
           version: significantChange ? guide.version + 1 : null,
           ...input,
         },
-        { onSuccess: () => void navigate(`/guides/${guide.id}`) },
+        {
+          onSuccess: () => {
+            saved()
+            void navigate(`/guides/${guide.id}`)
+          },
+        },
       )
     } else {
-      create.mutate(input, { onSuccess: (id) => void navigate(`/guides/${id}`) })
+      create.mutate(input, {
+        onSuccess: (id) => {
+          saved()
+          void navigate(`/guides/${id}`)
+        },
+      })
     }
   }
 
@@ -202,25 +222,21 @@ function GuideEditor({ guide }: { guide?: Guide }) {
         />
       </div>
 
-      <div className="flex items-center gap-2">
-        <input
+      <div className="flex min-h-11 items-center gap-3">
+        <Checkbox
           id={`${fieldId}-ack`}
-          type="checkbox"
-          className="size-4"
           checked={requiresAck}
-          onChange={(event) => setRequiresAck(event.target.checked)}
+          onCheckedChange={(checked) => setRequiresAck(checked === true)}
         />
         <Label htmlFor={`${fieldId}-ack`}>{t('guides.requireAcknowledgement')}</Label>
       </div>
 
       {guide && requiresAck && (
-        <div className="flex items-center gap-2">
-          <input
+        <div className="flex min-h-11 items-center gap-3">
+          <Checkbox
             id={`${fieldId}-significant`}
-            type="checkbox"
-            className="size-4"
             checked={significantChange}
-            onChange={(event) => setSignificantChange(event.target.checked)}
+            onCheckedChange={(checked) => setSignificantChange(checked === true)}
           />
           <Label htmlFor={`${fieldId}-significant`}>
             {t('guides.significantChange')}

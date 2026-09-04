@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { EmptyState, LoadingState, PageHeader } from '@/components'
 import { Button } from '@/components/ui/button'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { Card } from '@/components/ui/card'
 import {
   DropdownMenu,
@@ -54,19 +55,24 @@ export function IncidentsPage() {
       <PageHeader title={t('incidents.title')} action={reportAction} />
 
       <div className="flex flex-wrap items-center gap-2">
-        <div className="flex flex-wrap gap-1">
+        <ToggleGroup
+          type="single"
+          aria-label={t('incidents.statusLabel')}
+          value={filters.status}
+          onValueChange={(status) => {
+            if (status)
+              setFilters((current) => ({
+                ...current,
+                status: status as IncidentFilters['status'],
+              }))
+          }}
+        >
           {(['open_only', 'resolved', 'all'] as const).map((option) => (
-            <Button
-              key={option}
-              size="sm"
-              variant={filters.status === option ? 'default' : 'outline'}
-              aria-pressed={filters.status === option}
-              onClick={() => setFilters((current) => ({ ...current, status: option }))}
-            >
+            <ToggleGroupItem key={option} value={option}>
               {t(`incidents.filter.${option}`)}
-            </Button>
+            </ToggleGroupItem>
           ))}
-        </div>
+        </ToggleGroup>
 
         {/* The trigger carries the label and the current value, so the button's
             accessible name reads "Kind: Injury" without an aria-label hiding
@@ -121,7 +127,7 @@ export function IncidentsPage() {
             <Card className="p-4">
               <Link to={`/incidents/${incident.id}`} className="block space-y-2">
                 <IncidentBadges incident={incident} showGym={gymId === null} />
-                <h2 className="font-medium">{incident.title}</h2>
+                <h2 className="text-lg font-semibold">{incident.title}</h2>
                 <p className="text-muted-foreground text-xs">
                   {t('incidents.reportedBy', {
                     who: incident.reporter?.full_name ?? t('incidents.someone'),

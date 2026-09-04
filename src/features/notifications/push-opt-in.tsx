@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { OptInCallout } from './opt-in-callout'
 import { Link } from 'react-router'
 import { Button } from '@/components/ui/button'
 import {
@@ -36,8 +37,7 @@ export function PushOptIn() {
   const subscribed = state.data?.subscribed ?? false
 
   return (
-    <div className="space-y-2 rounded-md border p-3">
-      <p className="font-medium">{t('notifications.pushOnThisDevice')}</p>
+    <OptInCallout title={t('notifications.pushOnThisDevice')}>
       <p className="text-muted-foreground text-sm">
         {denied
           ? t('notifications.pushDenied')
@@ -75,6 +75,6 @@ export function PushOptIn() {
           <Link to="/install">{t('notifications.installGuide')}</Link>
         </Button>
       </div>
-    </div>
+    </OptInCallout>
   )
 }

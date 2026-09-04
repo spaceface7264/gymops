@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { NativeSelect } from '@/components/ui/native-select'
 import { PageHeader } from '@/components'
 import {
   PasswordFields,
@@ -157,9 +158,9 @@ function LanguageCard() {
         <form className="space-y-3" onSubmit={handleSubmit}>
           <div className="space-y-2">
             <Label htmlFor="account-locale">{t('auth.account.language')}</Label>
-            <select
+            <NativeSelect
               id="account-locale"
-              className="border-input bg-card focus-visible:border-ring focus-visible:ring-ring/40 h-11 w-full rounded-xl border px-3.5 py-1 text-base outline-none focus-visible:ring-[3px]"
+              className="w-full"
               value={locale}
               onChange={(event) => {
                 setPicked(event.target.value as Locale)
@@ -171,7 +172,7 @@ function LanguageCard() {
                   {t(`language.${option}`)}
                 </option>
               ))}
-            </select>
+            </NativeSelect>
           </div>
           <Feedback
             saved={lastSaved !== null && locale === lastSaved}

@@ -1,8 +1,10 @@
 import { Users } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 import { EmptyState, LoadingState, StatusBadge } from '@/components'
 import { Button } from '@/components/ui/button'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import {
   Table,
   TableBody,
@@ -136,20 +138,70 @@ export function UsersPanel() {
                   >
                     {t('admin.roles.edit')}
                   </Button>
-                  {isAdmin && (
+                  {isAdmin && user.id === profile?.id && (
+                    <Tooltip>
+                      {/* A disabled button fires no pointer events, so the
+                          wrapper is what the tooltip listens to. */}
+                      <TooltipTrigger asChild>
+                        <span tabIndex={0} className="inline-flex">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            // Deactivating yourself would end the session you are
+                            // working in and leave nobody able to undo it.
+                            disabled={setActive.isPending || user.id === profile?.id}
+                            onClick={() =>
+                              setActive.mutate(
+                                { id: user.id, active: !user.active },
+                                {
+                                  onSuccess: () =>
+                                    toast.success(
+                                      t(
+                                        user.active
+                                          ? 'admin.users.deactivated'
+                                          : 'admin.users.reactivated',
+                                        { name: user.full_name ?? user.email },
+                                      ),
+                                    ),
+                                  onError: () => toast.error(t('admin.saveFailed')),
+                                },
+                              )
+                            }
+                          >
+                            {user.active
+                              ? t('admin.users.deactivate')
+                              : t('admin.users.reactivate')}
+                          </Button>
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {t('admin.users.cannotDeactivateSelf')}
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
+                  {isAdmin && user.id !== profile?.id && (
                     <Button
                       variant="outline"
                       size="sm"
                       // Deactivating yourself would end the session you are
                       // working in and leave nobody able to undo it.
                       disabled={setActive.isPending || user.id === profile?.id}
-                      title={
-                        user.id === profile?.id
-                          ? t('admin.users.cannotDeactivateSelf')
-                          : undefined
-                      }
                       onClick={() =>
-                        setActive.mutate({ id: user.id, active: !user.active })
+                        setActive.mutate(
+                          { id: user.id, active: !user.active },
+                          {
+                            onSuccess: () =>
+                              toast.success(
+                                t(
+                                  user.active
+                                    ? 'admin.users.deactivated'
+                                    : 'admin.users.reactivated',
+                                  { name: user.full_name ?? user.email },
+                                ),
+                              ),
+                            onError: () => toast.error(t('admin.saveFailed')),
+                          },
+                        )
                       }
                     >
                       {user.active

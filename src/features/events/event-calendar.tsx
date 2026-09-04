@@ -1,6 +1,7 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { weekdayNames } from '@/features/checklists'
 import { eventsByDay, formatTime } from './event-date'
 import {
@@ -63,7 +64,7 @@ export function EventCalendar({
         >
           <ChevronRight className="size-4" />
         </Button>
-        <h2 className="text-lg font-medium">{monthLabel(cursor, i18n.language)}</h2>
+        <h2 className="text-lg font-semibold">{monthLabel(cursor, i18n.language)}</h2>
       </div>
 
       {events.isError && (
@@ -96,16 +97,20 @@ export function EventCalendar({
               <ul className="space-y-0.5">
                 {dayEvents.map((event) => (
                   <li key={event.id}>
-                    <button
-                      type="button"
-                      disabled={!canManage}
-                      onClick={() => onEdit(event)}
-                      title={event.title}
-                      className="bg-secondary text-secondary-foreground w-full truncate rounded px-1 py-0.5 text-left enabled:cursor-pointer"
-                    >
-                      {event.start_time && `${formatTime(event.start_time)} `}
-                      {event.title}
-                    </button>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          type="button"
+                          disabled={!canManage}
+                          onClick={() => onEdit(event)}
+                          className="bg-secondary text-secondary-foreground w-full truncate rounded-lg px-1.5 py-0.5 text-left enabled:cursor-pointer"
+                        >
+                          {event.start_time && `${formatTime(event.start_time)} `}
+                          {event.title}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent>{event.title}</TooltipContent>
+                    </Tooltip>
                   </li>
                 ))}
               </ul>

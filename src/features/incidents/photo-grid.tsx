@@ -1,6 +1,7 @@
 import { Camera, ImagePlus } from 'lucide-react'
 import { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import { EmptyState } from '@/components'
 import { Button } from '@/components/ui/button'
 import {
   useIncidentAttachments,
@@ -15,7 +16,7 @@ function Photo({ attachment }: { attachment: IncidentAttachment }) {
 
   if (!url.data) {
     return (
-      <div className="bg-muted text-muted-foreground flex h-32 items-center justify-center rounded-md text-xs">
+      <div className="bg-muted text-muted-foreground flex h-32 items-center justify-center rounded-xl text-xs">
         {url.isError ? t('incidents.photoFailed') : t('incidents.photoLoading')}
       </div>
     )
@@ -26,7 +27,7 @@ function Photo({ attachment }: { attachment: IncidentAttachment }) {
       <img
         src={url.data}
         alt={t('incidents.photoAlt')}
-        className="h-32 w-full rounded-md object-cover"
+        className="h-32 w-full rounded-xl object-cover"
       />
     </a>
   )
@@ -58,7 +59,7 @@ export function PhotoGrid({
 
   return (
     <section className="space-y-2">
-      <h2 className="text-sm font-medium">{t('incidents.photos')}</h2>
+      <h2 className="font-semibold">{t('incidents.photos')}</h2>
 
       {attachments.data && attachments.data.length > 0 && (
         <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -71,7 +72,7 @@ export function PhotoGrid({
       )}
 
       {attachments.data?.length === 0 && (
-        <p className="text-muted-foreground text-sm">{t('incidents.noPhotos')}</p>
+        <EmptyState bordered={false} title={t('incidents.noPhotos')} as="p" />
       )}
 
       {canAdd && (

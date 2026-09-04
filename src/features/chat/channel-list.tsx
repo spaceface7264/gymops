@@ -1,7 +1,7 @@
 import { Hash, Lock, MessageCircle, MessagesSquare, Users, VolumeX } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { NavLink } from 'react-router'
-import { EmptyState, LoadingState } from '@/components'
+import { EmptyState, LoadingState, UnreadCount } from '@/components'
 import { useAuth } from '@/features/auth'
 import { cn } from '@/lib/utils'
 import { channelName } from './channel-name'
@@ -39,7 +39,11 @@ export function ChannelList({ activeId }: { activeId?: string }) {
   }))
 
   if (channels.isError) {
-    return <p className="text-muted-foreground p-3 text-sm">{t('chat.loadFail')}</p>
+    return (
+      <p role="alert" className="text-destructive p-3 text-sm">
+        {t('chat.loadFail')}
+      </p>
+    )
   }
 
   return (
@@ -134,14 +138,7 @@ function ChannelRow({
           aria-label={t('chat.muted')}
         />
       )}
-      {unread > 0 && (
-        <span
-          className="bg-primary text-primary-foreground min-w-5 rounded-full px-1.5 text-[11px] font-semibold"
-          aria-label={t('chat.unread', { count: unread })}
-        >
-          {unread > 99 ? '99+' : unread}
-        </span>
-      )}
+      <UnreadCount count={unread} aria-label={t('chat.unread', { count: unread })} />
     </NavLink>
   )
 }

@@ -40,7 +40,7 @@ function Attachment({ attachment }: { attachment: ChatAttachment }) {
         <img
           src={url.data}
           alt={t('chat.attachmentAlt')}
-          className="max-h-40 rounded-md object-cover"
+          className="max-h-40 rounded-xl object-cover"
         />
       </a>
     )
@@ -51,7 +51,7 @@ function Attachment({ attachment }: { attachment: ChatAttachment }) {
       href={url.data}
       target="_blank"
       rel="noreferrer noopener"
-      className="bg-muted flex items-center gap-1 rounded-md px-2 py-1 text-xs underline-offset-2 hover:underline"
+      className="bg-muted flex min-h-9 items-center gap-1 rounded-lg px-2 py-1 text-xs underline-offset-2 hover:underline"
     >
       <Paperclip className="size-3" aria-hidden="true" />
       {name}
