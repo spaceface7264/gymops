@@ -20,10 +20,10 @@ import { useRunSync } from './use-run-sync'
 /** `/checklists`: what this gym has to get through today. */
 export function ChecklistRunsPage() {
   const { t } = useTranslation()
-  const { gymId } = useGymScope()
+  const { gymId, canSeeAllGyms } = useGymScope()
   const publish = usePublishScope()
   const runs = useTodaysRuns(gymId)
-  useRunSync(gymId)
+  useRunSync(gymId, canSeeAllGyms)
 
   const templatesAction = publish.canPublishSomewhere && (
     <Button asChild variant="outline">

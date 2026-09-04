@@ -252,8 +252,19 @@ describe("today's runs", () => {
     expect(await screen.findByText('2 of 2 done')).toBeInTheDocument()
   })
 
+  it('does not join the admin-only "all gyms" channel while a member’s gym is still unknown', async () => {
+    // The gym scope is null until the profile arrives; for a manager or staff
+    // member that is "not resolved yet", never "all gyms" (which the database
+    // refuses them — P4-08 `can_listen_to_checklists()`).
+    gymScope.mockReturnValue({ gymId: null, canSeeAllGyms: false })
+    renderWithProviders(<ChecklistRunsPage />)
+
+    await screen.findByText('Morning opening')
+    expect(channel).not.toHaveBeenCalled()
+  })
+
   it('uses the "all gyms" channel when an admin looks at every gym', async () => {
-    gymScope.mockReturnValue({ gymId: null })
+    gymScope.mockReturnValue({ gymId: null, canSeeAllGyms: true })
     profile.mockReturnValue({
       id: 'user-1',
       is_admin: true,

@@ -622,7 +622,7 @@
       "confirmedAt": "Bekræftet {{when}}",
       "outstanding": "Mangler",
       "prompt": "Denne nyhed skal bekræftes.",
-      "reminderNote": "Påmindelser sendes, når notifikationer er på plads (P5).",
+      "reminderNote": "Den, der ikke har bekræftet, får en påmindelse hver morgen, højst én gang om ugen pr. opslag.",
       "reportFailed": "Oversigten over bekræftelser kunne ikke hentes.",
       "reportSummary": "{{confirmed}} ud af {{total}} har bekræftet.",
       "reportTitle": "Bekræftelser"

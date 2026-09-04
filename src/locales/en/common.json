@@ -622,7 +622,7 @@
       "confirmedAt": "Confirmed {{when}}",
       "outstanding": "Not yet",
       "prompt": "This post must be acknowledged.",
-      "reminderNote": "Reminders are sent once notifications ship (P5).",
+      "reminderNote": "Whoever has not confirmed is reminded each morning, at most once a week per post.",
       "reportFailed": "The acknowledgement report could not be loaded.",
       "reportSummary": "{{confirmed}} of {{total}} have confirmed.",
       "reportTitle": "Acknowledgements"

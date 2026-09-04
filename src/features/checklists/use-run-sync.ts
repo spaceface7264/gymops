@@ -12,10 +12,15 @@ import { checklistKeys } from './queries'
  * The event only says something changed — the screen refetches rather than
  * patching the cache, because a payload may belong to a run that is not on it.
  */
-export function useRunSync(gymId: string | null) {
+export function useRunSync(gymId: string | null, canSeeAllGyms: boolean) {
   const queryClient = useQueryClient()
 
   useEffect(() => {
+    // A null gym means "all gyms" for an admin, and "not resolved yet" for
+    // everyone else: joining `checklists:all` from there is refused by
+    // `can_listen_to_checklists()` and only logs an authorisation error.
+    if (gymId === null && !canSeeAllGyms) return
+
     const channel = supabase
       .channel(`checklists:${gymId ?? 'all'}`, { config: { private: true } })
       .on(
@@ -26,5 +31,5 @@ export function useRunSync(gymId: string | null) {
       .subscribe()
 
     return () => void supabase.removeChannel(channel)
-  }, [gymId, queryClient])
+  }, [gymId, canSeeAllGyms, queryClient])
 }

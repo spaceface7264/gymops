@@ -201,6 +201,31 @@ describe('RolesDialog', () => {
     expect(screen.getByLabelText('Company-wide admin')).not.toBeChecked()
   })
 
+  it('shows the change it just made: the admin box follows the refetched row', async () => {
+    profile.mockReturnValue({
+      id: 'user-sofie',
+      is_admin: true,
+      is_superadmin: true,
+      gym_memberships: [],
+    })
+    const user = userEvent.setup()
+    renderWithProviders(<UsersPanel />)
+
+    const row = (await screen.findByText('Mette Manager')).closest('tr') as HTMLElement
+    await user.click(within(row).getByRole('button', { name: 'Roles' }))
+    expect(screen.getByLabelText('Company-wide admin')).not.toBeChecked()
+
+    // The write succeeds and the list is refetched with Mette now an admin.
+    rows.mockResolvedValue({
+      data: [anders, { ...mette, is_admin: true }, sam],
+      error: null,
+    })
+    await user.click(screen.getByLabelText('Company-wide admin'))
+
+    await waitFor(() => expect(update).toHaveBeenCalledWith({ is_admin: true }))
+    await waitFor(() => expect(screen.getByLabelText('Company-wide admin')).toBeChecked())
+  })
+
   it('upserts the membership when a role is picked and removes it on "no role"', async () => {
     const user = userEvent.setup()
     renderWithProviders(<UsersPanel />)

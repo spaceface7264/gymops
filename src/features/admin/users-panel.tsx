@@ -56,7 +56,11 @@ export function UsersPanel() {
   const users = useAdminUsers(gymId)
   const gyms = useAdminGyms()
   const setActive = useSetUserActive()
-  const [editing, setEditing] = useState<AdminUser | undefined>(undefined)
+  // The id, not the row: the dialog writes as soon as a control changes, and
+  // it has to show the row as it comes back from the refetch, not the snapshot
+  // it was opened with.
+  const [editingId, setEditingId] = useState<string | undefined>(undefined)
+  const editing = users.data?.find((user) => user.id === editingId)
   const [inviting, setInviting] = useState(false)
   const isAdmin = Boolean(profile?.is_admin || profile?.is_superadmin)
 
@@ -125,7 +129,11 @@ export function UsersPanel() {
                   </StatusBadge>
                 </TableCell>
                 <TableCell className="space-x-2 text-right whitespace-nowrap">
-                  <Button variant="outline" size="sm" onClick={() => setEditing(user)}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setEditingId(user.id)}
+                  >
                     {t('admin.roles.edit')}
                   </Button>
                   {isAdmin && (
@@ -171,7 +179,7 @@ export function UsersPanel() {
           canMakeManagers={isAdmin}
           canMakeAdmins={Boolean(profile?.is_superadmin)}
           open
-          onOpenChange={() => setEditing(undefined)}
+          onOpenChange={() => setEditingId(undefined)}
         />
       )}
 
