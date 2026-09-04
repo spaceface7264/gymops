@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { ConfirmDialog } from '@/components'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -66,16 +67,20 @@ export function EventCard({
       {event.link && (
         // Outward, user-supplied links: a new tab, and no window handle or
         // referrer handed to whatever is on the other end.
-        <a
-          href={event.link}
-          target="_blank"
-          rel="noopener noreferrer nofollow"
-          title={event.link}
-          className="text-primary inline-flex items-center gap-1 text-sm underline"
-        >
-          {linkLabel(event.link)}
-          <ExternalLink className="size-3" aria-label={t('events.opensInNewTab')} />
-        </a>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <a
+              href={event.link}
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              className="text-accent-foreground inline-flex min-h-11 items-center gap-1 text-sm underline"
+            >
+              {linkLabel(event.link)}
+              <ExternalLink className="size-3" aria-label={t('events.opensInNewTab')} />
+            </a>
+          </TooltipTrigger>
+          <TooltipContent>{event.link}</TooltipContent>
+        </Tooltip>
       )}
 
       <ConfirmDialog

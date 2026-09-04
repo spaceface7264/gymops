@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { StatusBadge } from '@/components'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { eventGymNames, isCompanyWide, type GymEvent } from './queries'
 
 /** How many gyms are named before the badge switches to a count. */
@@ -27,9 +28,14 @@ export function EventBadges({
       ) : names.length > namedGyms ? (
         // Naming five gyms costs more room than it earns; the form is where
         // the full list is read.
-        <StatusBadge tone="neutral" title={names.join(', ')}>
-          {t('events.gymCount', { count: names.length })}
-        </StatusBadge>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <StatusBadge tone="neutral" tabIndex={0}>
+              {t('events.gymCount', { count: names.length })}
+            </StatusBadge>
+          </TooltipTrigger>
+          <TooltipContent>{names.join(', ')}</TooltipContent>
+        </Tooltip>
       ) : (
         names.map((name) => (
           <StatusBadge key={name} tone="neutral">
