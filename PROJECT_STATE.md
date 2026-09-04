@@ -86,7 +86,7 @@ container out. `supabase stop && supabase start` brings it back.
 | P6 Team chat             | ✅ Complete    | P6-01 … P6-08, merged in PR #8.                 |
 | P7 Desktop and release   | ✅ Complete    | P7-01 … P7-06 merged in PR #9; P7-07 walkthrough pending (checklist in `docs/`). |
 | P7b Basics pass          | ✅ Complete    | P7B-01…03, PR #10.                          |
-| P7C Facelift             | ✅ Complete    | P7C-01 … P7C-05 on `facelift`, merged `origin/main` after PR #10; PR to follow. |
+| P7C Facelift             | ✅ Complete    | P7C-01 … P7C-05 on `facelift`, merged `origin/main` after PR #10; PR #11. |
 | P8 AI assistant (V1.5)   | ⬜ Not started | Needs Anthropic API key in Supabase secrets.    |
 
 ## Task status
