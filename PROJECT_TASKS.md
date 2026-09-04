@@ -129,7 +129,7 @@ Legend: P1 = Phase 1 etc. Effort: S (< half day), M (1–2 days), L (3+ days).
 
 | ID    | Task                                                                                                      | Depends on   | Effort |
 | ----- | --------------------------------------------------------------------------------------------------------- | ------------ | ------ |
-| P8-01 | Migration: `assistant_conversations`, `assistant_messages`, `assistant_usage`, bot profile, RLS           | P3-02        | S      |
+| P8-01 | Migration: `app_settings`, `assistant_conversations`, `assistant_messages`, `assistant_usage`, `messages.from_assistant`, RLS | P3-02        | S      |
 | P8-02 | `search_content` / `read_content` SQL functions over guides + posts (RLS-respecting)                      | P3-02        | S      |
 | P8-03 | Edge Function `assistant`: Anthropic SDK tool runner, streaming SSE, caller JWT, usage cap, token logging | P8-01, P8-02 | L      |
 | P8-04 | Ask page: conversation list, streaming answer view, citation links                                        | P8-03        | M      |

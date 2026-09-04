@@ -149,6 +149,22 @@ describe('AdminPage', () => {
     expect(await screen.findByRole('tab', { name: 'Users' })).toBeInTheDocument()
     expect(screen.queryByRole('tab', { name: 'Gyms' })).not.toBeInTheDocument()
   })
+
+  it('offers a superadmin the assistant’s usage (P8-06)', async () => {
+    renderWithProviders(<AdminPage />, { path: '/admin/users' })
+
+    expect(
+      await screen.findByRole('tab', { name: 'Assistant usage' }),
+    ).toBeInTheDocument()
+  })
+
+  it('hides the assistant’s usage from an admin who is not a superadmin', async () => {
+    profile.mockReturnValue({ id: 'user-1', is_admin: true, is_superadmin: false })
+    renderWithProviders(<AdminPage />, { path: '/admin/users' })
+
+    expect(await screen.findByRole('tab', { name: 'Users' })).toBeInTheDocument()
+    expect(screen.queryByRole('tab', { name: 'Assistant usage' })).not.toBeInTheDocument()
+  })
 })
 
 describe('RequireSuperadmin', () => {

@@ -58,6 +58,22 @@
     "save": "Save",
     "saveFailed": "The change could not be saved. Try again.",
     "saving": "Saving…",
+    "usage": {
+      "cacheRead": "Cached tokens",
+      "calls": "Questions",
+      "cap": "Questions per person per day",
+      "capHint": "How many questions each person may ask per day (UTC). The Ask page and @assistant in chat count together.",
+      "capTitle": "Daily limit",
+      "empty": "Nobody has asked the assistant in the last 30 days.",
+      "inputTokens": "Input tokens",
+      "last30Days": "Last 30 days",
+      "outputTokens": "Output tokens",
+      "saveFailed": "The limit could not be saved.",
+      "saved": "Saved.",
+      "title": "Assistant usage",
+      "total": "Total",
+      "user": "Person"
+    },
     "users": {
       "active": "Active",
       "admin": "Admin",
@@ -96,6 +112,27 @@
       "install": "Restart to update",
       "installing": "Updating…"
     }
+  },
+  "assistant": {
+    "back": "Back to conversations",
+    "capReached": "You have reached today’s limit for the assistant.",
+    "conversations": "Conversations",
+    "deleteConversation": "Delete conversation",
+    "description": "Ask about the guides and news you can read. Every answer names its sources.",
+    "empty": "What do you want to know?",
+    "failed": "The assistant could not answer. Try again in a moment.",
+    "loadFailed": "Could not load the conversation.",
+    "newConversation": "New conversation",
+    "noConversations": "Nothing asked yet.",
+    "notConfigured": "The assistant is not set up yet.",
+    "quota": "{{used}} of {{cap}} today",
+    "send": "Send",
+    "sources": "Sources",
+    "stop": "Stop",
+    "thinking": "Looking it up…",
+    "title": "Ask",
+    "untitled": "Untitled",
+    "write": "Ask a question"
   },
   "auth": {
     "acceptInvite": {
@@ -178,6 +215,12 @@
   "chat": {
     "add": "Add",
     "addMembers": "Add somebody",
+    "askAssistant": "Ask the assistant",
+    "assistant": "Assistant",
+    "assistantAnswering": "The assistant is answering…",
+    "assistantCapReached": "You have reached today’s limit for the assistant.",
+    "assistantFailed": "The assistant could not answer. Try again in a moment.",
+    "assistantNotConfigured": "The assistant is not set up yet.",
     "attach": "Attach a file",
     "attachmentAlt": "Attachment",
     "attachmentFailed": "This file could not be opened.",
@@ -642,6 +685,7 @@
   },
   "nav": {
     "admin": "Admin",
+    "ask": "Ask",
     "chat": "Chat",
     "checklists": "Checklists",
     "dailyLog": "Daily log",

@@ -57,8 +57,10 @@ export default defineConfig({
   test: {
     globals: true,
     // Playwright owns `e2e/`; Vitest would otherwise pick its specs up by name
-    // and fail on `@playwright/test` (P5-06).
-    exclude: ['e2e/**', 'node_modules/**', 'dist/**'],
+    // and fail on `@playwright/test` (P5-06). Deno owns `supabase/functions/`
+    // (P8-03, `deno test`), and a worktree under `.claude/` is another
+    // checkout's tests, not this one's.
+    exclude: ['e2e/**', 'node_modules/**', 'dist/**', 'supabase/**', '.claude/**'],
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     css: true,

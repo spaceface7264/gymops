@@ -8,7 +8,7 @@
 --
 -- Tested against supabase/migrations/20260903140100_chat_notification_trigger.sql.
 begin;
-select plan(12);
+select plan(14);
 
 -- ---------------------------------------------------------------- fixtures --
 insert into public.gyms (id, name, slug)
@@ -161,6 +161,28 @@ select is(
    where type = 'chat_mention' and user_id = tests.get_user_id('bystander')),
   0,
   'the per-type switch silences a mention too'
+);
+
+-- --------------------------------------------------------------- assistant --
+-- An assistant reply (P8-01) has no author and is nobody's message. Without
+-- the early return it would raise a DM notification with no title, which the
+-- table refuses — and the reply with it.
+insert into public.messages (channel_id, body, from_assistant)
+values ('eeeeeeee-0000-0000-0000-000000000002', 'The guide says Thursday.', true);
+
+select is(
+  (select count(*)::int from public.notifications where type = 'chat_dm'),
+  1,
+  'an assistant reply in a DM raises nothing'
+);
+
+insert into public.messages (channel_id, body, from_assistant)
+values ('eeeeeeee-0000-0000-0000-000000000001', 'The guide says wall 4 is closed.', true);
+
+select is(
+  (select count(*)::int from public.notifications where type = 'chat_mention'),
+  1,
+  'nor in a channel'
 );
 
 select * from finish();

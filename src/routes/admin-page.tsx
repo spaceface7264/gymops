@@ -6,8 +6,9 @@ import { useProfile } from '@/features/auth'
 
 type AdminSection = {
   to: string
-  labelKey: 'admin.users.title' | 'admin.gyms.title' | 'admin.audit.title'
-  /** Gym management and the audit log are superadmin-only (spec §2.1). */
+  labelKey:
+    'admin.users.title' | 'admin.gyms.title' | 'admin.audit.title' | 'admin.usage.title'
+  /** Gym management, the audit log and the assistant's cap are superadmin-only (spec §2.1, §2.3). */
   superadminOnly?: boolean
 }
 
@@ -18,6 +19,7 @@ const sections: AdminSection[] = [
   { to: defaultSection, labelKey: 'admin.users.title' },
   { to: '/admin/gyms', labelKey: 'admin.gyms.title', superadminOnly: true },
   { to: '/admin/audit', labelKey: 'admin.audit.title', superadminOnly: true },
+  { to: '/admin/usage', labelKey: 'admin.usage.title', superadminOnly: true },
 ]
 
 function visibleSections(isSuperadmin: boolean) {

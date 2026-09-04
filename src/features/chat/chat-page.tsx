@@ -17,6 +17,7 @@ import { toast } from 'sonner'
 import { Link, useNavigate, useParams } from 'react-router'
 import { ConfirmDialog, EmptyState } from '@/components'
 import { Button } from '@/components/ui/button'
+import { mentionsAssistant, useAssistantReply } from '@/features/assistant'
 import { useAuth } from '@/features/auth'
 import { usePublishScope } from '@/features/content'
 import { cn } from '@/lib/utils'
@@ -129,6 +130,9 @@ function ChannelView({ channelId }: { channelId: string }) {
 
   // One subscription for the channel: the messages and who is typing.
   const { typing, startTyping } = useChannelLive(channelId)
+  // A message that names the assistant is answered by its sender's own call
+  // (P8-05); the reply comes back through the subscription above.
+  const reply = useAssistantReply()
   const setMuted = useSetChannelMuted()
   const leave = useLeaveChannel()
   const remove = useDeleteChannel()
@@ -288,7 +292,32 @@ function ChannelView({ channelId }: { channelId: string }) {
         </p>
       )}
 
-      {channel && <Composer channelId={channel.id} onTyping={startTyping} />}
+      {reply.isPending && (
+        <p aria-live="polite" className="text-muted-foreground px-4 pb-1 text-xs">
+          {t('chat.assistantAnswering')}
+        </p>
+      )}
+      {reply.isError && (
+        <p role="alert" className="text-destructive px-4 pb-1 text-sm">
+          {t(
+            reply.error.problem === 'cap_reached'
+              ? 'chat.assistantCapReached'
+              : reply.error.problem === 'not_configured'
+                ? 'chat.assistantNotConfigured'
+                : 'chat.assistantFailed',
+          )}
+        </p>
+      )}
+      {channel && (
+        <Composer
+          channelId={channel.id}
+          onTyping={startTyping}
+          onSent={(messageId, body) => {
+            if (mentionsAssistant(body))
+              reply.mutate({ channelId: channel.id, messageId })
+          }}
+        />
+      )}
     </>
   )
 }

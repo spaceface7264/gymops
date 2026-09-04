@@ -58,6 +58,22 @@
     "save": "Gem",
     "saveFailed": "Ændringen kunne ikke gemmes. Prøv igen.",
     "saving": "Gemmer…",
+    "usage": {
+      "cacheRead": "Cachede tokens",
+      "calls": "Spørgsmål",
+      "cap": "Spørgsmål pr. person pr. dag",
+      "capHint": "Hvor mange spørgsmål hver person må stille om dagen (UTC). Spørg-siden og @assistant i chatten tæller sammen.",
+      "capTitle": "Daglig grænse",
+      "empty": "Ingen har spurgt assistenten de seneste 30 dage.",
+      "inputTokens": "Input-tokens",
+      "last30Days": "Seneste 30 dage",
+      "outputTokens": "Output-tokens",
+      "saveFailed": "Grænsen kunne ikke gemmes.",
+      "saved": "Gemt.",
+      "title": "Assistent-forbrug",
+      "total": "I alt",
+      "user": "Person"
+    },
     "users": {
       "active": "Aktiv",
       "admin": "Administrator",
@@ -96,6 +112,27 @@
       "install": "Genstart for at opdatere",
       "installing": "Opdaterer…"
     }
+  },
+  "assistant": {
+    "back": "Tilbage til samtaler",
+    "capReached": "Du har nået dagens grænse for assistenten.",
+    "conversations": "Samtaler",
+    "deleteConversation": "Slet samtale",
+    "description": "Spørg om de guides og nyheder, du kan læse. Hvert svar nævner sine kilder.",
+    "empty": "Hvad vil du vide?",
+    "failed": "Assistenten kunne ikke svare. Prøv igen om lidt.",
+    "loadFailed": "Kunne ikke hente samtalen.",
+    "newConversation": "Ny samtale",
+    "noConversations": "Intet spurgt endnu.",
+    "notConfigured": "Assistenten er ikke sat op endnu.",
+    "quota": "{{used}} af {{cap}} i dag",
+    "send": "Send",
+    "sources": "Kilder",
+    "stop": "Stop",
+    "thinking": "Slår det op…",
+    "title": "Spørg",
+    "untitled": "Uden titel",
+    "write": "Stil et spørgsmål"
   },
   "auth": {
     "acceptInvite": {
@@ -178,6 +215,12 @@
   "chat": {
     "add": "Tilføj",
     "addMembers": "Tilføj nogen",
+    "askAssistant": "Spørg assistenten",
+    "assistant": "Assistent",
+    "assistantAnswering": "Assistenten svarer…",
+    "assistantCapReached": "Du har nået dagens grænse for assistenten.",
+    "assistantFailed": "Assistenten kunne ikke svare. Prøv igen om lidt.",
+    "assistantNotConfigured": "Assistenten er ikke sat op endnu.",
     "attach": "Vedhæft en fil",
     "attachmentAlt": "Vedhæftet fil",
     "attachmentFailed": "Filen kunne ikke åbnes.",
@@ -642,6 +685,7 @@
   },
   "nav": {
     "admin": "Administration",
+    "ask": "Spørg",
     "chat": "Chat",
     "checklists": "Tjeklister",
     "dailyLog": "Dagbog",

@@ -1,6 +1,7 @@
 import { wrapCreateBrowserRouterV7 } from '@sentry/react'
 import { createBrowserRouter } from 'react-router'
 import { AuditPanel, GymsPanel, UsersPanel } from '@/features/admin'
+import { AskPage, AssistantUsagePanel } from '@/features/assistant'
 import { RequireAuth } from '@/features/auth'
 import { ChatPage } from '@/features/chat'
 import { DailyLogPage } from '@/features/daily-log'
@@ -81,6 +82,10 @@ export const router = createRouter([
           // tells the shell to drop its page padding and max width for them.
           { path: 'chat', element: <ChatPage /> },
           { path: 'chat/:channelId', element: <ChatPage /> },
+          // The assistant (P8-04): the list, a fresh conversation, an open one.
+          { path: 'ask', element: <AskPage /> },
+          { path: 'ask/new', element: <AskPage /> },
+          { path: 'ask/:conversationId', element: <AskPage /> },
           { path: 'notifications', element: <InboxPage /> },
           { path: 'install', element: <InstallPage /> },
           { path: 'account', element: <AccountPage /> },
@@ -113,6 +118,14 @@ export const router = createRouter([
                 element: (
                   <RequireSuperadmin>
                     <AuditPanel />
+                  </RequireSuperadmin>
+                ),
+              },
+              {
+                path: 'usage',
+                element: (
+                  <RequireSuperadmin>
+                    <AssistantUsagePanel />
                   </RequireSuperadmin>
                 ),
               },
