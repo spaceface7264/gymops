@@ -214,7 +214,7 @@ describe('the template editor', () => {
     await userEvent.click(screen.getAllByLabelText('Required')[1] as HTMLElement)
     // Saturday and Sunday only.
     for (const day of ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']) {
-      await userEvent.click(screen.getByLabelText(day))
+      await userEvent.click(screen.getByRole('button', { name: day, pressed: true }))
     }
     await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
@@ -258,7 +258,7 @@ describe('the template editor', () => {
     expect(screen.getByRole('button', { name: 'Save' })).toBeEnabled()
 
     for (const day of ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']) {
-      await userEvent.click(screen.getByLabelText(day))
+      await userEvent.click(screen.getByRole('button', { name: day, pressed: true }))
     }
     expect(screen.getByText(/at least one day/)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled()

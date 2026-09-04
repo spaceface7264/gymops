@@ -25,6 +25,20 @@ vi.stubEnv('VITE_VAPID_PUBLIC_KEY', 'dGVzdC12YXBpZC1rZXk')
 vi.stubGlobal('__APP_VERSION__', '0.0.0-test')
 
 /**
+ * P7D-01: Radix `Checkbox` measures its hidden form input with a
+ * `ResizeObserver`, which jsdom does not have. Nothing in a test depends on
+ * the measurement, so a no-op observer is enough.
+ */
+vi.stubGlobal(
+  'ResizeObserver',
+  class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  },
+)
+
+/**
  * ProseMirror (the editor behind Tiptap, P3-01) measures the selection after
  * every transaction, and jsdom implements no `Range` measurement at all: without
  * these stubs, typing into an editor throws instead of failing an assertion.

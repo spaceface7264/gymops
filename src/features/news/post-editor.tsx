@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router'
 import { LoadingState, PageHeader } from '@/components'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -166,13 +167,11 @@ function PostEditor({ post }: { post?: NewsPost }) {
         />
       </div>
 
-      <div className="flex items-center gap-2">
-        <input
+      <div className="flex min-h-11 items-center gap-3">
+        <Checkbox
           id={`${fieldId}-ack`}
-          type="checkbox"
-          className="size-4"
           checked={requiresAck}
-          onChange={(event) => setRequiresAck(event.target.checked)}
+          onCheckedChange={(checked) => setRequiresAck(checked === true)}
         />
         <Label htmlFor={`${fieldId}-ack`}>{t('news.requireAcknowledgement')}</Label>
       </div>

@@ -1,5 +1,6 @@
 import { useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useAuth } from '@/features/auth'
@@ -34,17 +35,18 @@ export function RunItemRow({
 
   return (
     <div className="space-y-1.5">
-      <div className="flex items-start gap-2">
-        <input
+      <div className="flex min-h-11 items-start gap-3 py-1">
+        <Checkbox
           id={`${fieldId}-done`}
-          type="checkbox"
-          className="mt-1 size-4"
+          className="mt-0.5"
           checked={Boolean(item.done_at)}
           disabled={!canComplete || toggle.isPending}
-          onChange={(event) => toggle.mutate({ id: item.id, done: event.target.checked })}
+          onCheckedChange={(checked) =>
+            toggle.mutate({ id: item.id, done: checked === true })
+          }
         />
         <div className="space-y-0.5">
-          <Label htmlFor={`${fieldId}-done`} className="font-normal">
+          <Label htmlFor={`${fieldId}-done`} className="min-h-6 font-normal">
             {item.label}
           </Label>
           {!item.required && (
@@ -72,7 +74,7 @@ export function RunItemRow({
       </div>
 
       <Input
-        className="ml-6 h-8 max-w-md"
+        className="ml-8 max-w-md"
         aria-label={t('checklists.noteOn', { label: item.label })}
         placeholder={t('checklists.notePlaceholder')}
         disabled={!canComplete}

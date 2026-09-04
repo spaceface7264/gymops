@@ -6,6 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import {
   Select,
@@ -76,15 +77,13 @@ export function RolesDialog({
         </DialogHeader>
 
         {canMakeAdmins && (
-          <div className="flex items-center gap-2">
-            <input
+          <div className="flex min-h-11 items-center gap-3">
+            <Checkbox
               id="roles-admin"
-              type="checkbox"
-              className="size-4"
               checked={user.is_admin}
               disabled={pending || user.is_superadmin}
-              onChange={(event) =>
-                setAdmin.mutate({ id: user.id, isAdmin: event.target.checked })
+              onCheckedChange={(checked) =>
+                setAdmin.mutate({ id: user.id, isAdmin: checked === true })
               }
             />
             <Label htmlFor="roles-admin">{t('admin.roles.isAdmin')}</Label>

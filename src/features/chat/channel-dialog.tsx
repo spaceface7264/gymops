@@ -10,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -153,12 +154,11 @@ function ChannelForm({ channel, onDone }: { channel?: Channel; onDone: () => voi
             </Select>
           </div>
 
-          <label className="flex items-start gap-2 text-sm">
-            <input
-              type="checkbox"
-              className="mt-0.5 size-4"
+          <label className="flex min-h-11 items-start gap-3 py-1 text-sm">
+            <Checkbox
+              className="mt-0.5"
               checked={isPrivate}
-              onChange={(event) => setIsPrivate(event.target.checked)}
+              onCheckedChange={(checked) => setIsPrivate(checked === true)}
             />
             <span>
               {t('chat.channelPrivate')}
