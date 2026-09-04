@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { PageHeader } from '@/components'
 import {
   PasswordFields,
   checkPassword,
@@ -25,8 +26,8 @@ export function AccountPage() {
   const { t } = useTranslation()
 
   return (
-    <div className="max-w-xl space-y-4">
-      <h1 className="text-2xl font-semibold">{t('auth.account.title')}</h1>
+    <div className="max-w-xl space-y-5">
+      <PageHeader title={t('auth.account.title')} />
       <NameCard />
       <LanguageCard />
       <PasswordCard />
