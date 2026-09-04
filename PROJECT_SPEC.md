@@ -20,6 +20,7 @@ A single internal system for a chain of 10+ bouldering gyms in Denmark (200+ use
 - Events are the one exception to "managers publish in their own gyms": the calendar is run centrally, so `events_insert`/`events_update` are `is_admin()`, not `can_publish_content()`. Everyone in the audience reads them.
 - Events are also the one record whose scope is a *set* of gyms rather than one nullable `gym_id`: an event runs at any number of gyms (`event_gyms`), and one with no rows there is company-wide.
 - An acknowledgement is the database's record, not the client's claim: timestamps and the acknowledged guide version are stamped server-side, and you can only confirm content you are allowed to read.
+- Every active person can see the active admins and superadmins (name, email, phone); gym members see each other; managers see their gyms' members; admins see everyone.
 
 Permission matrix (also the RLS test spec):
 
@@ -254,6 +255,8 @@ gymops/
 | GitHub Releases on the private source repository as the update feed | `releases/latest/download/latest.json` on a private repository answers 404 without a token, and an installed app has none to give. The feed and the installers live on the public `gymops-releases` repository instead; the workflow in the private repository publishes there. |
 
 | `supabase-js` in the Playwright fixtures | Creating a client opens a Realtime socket, and Node 20 — the version CI runs — has no native WebSocket. The fixtures need three REST verbs; `fetch` against PostgREST has no such dependency. |
+
+| Ranking in the client (sorting the two lists by a score computed in JS) | The score lives with the vector; two queries cannot be ranked against each other without the database's `ts_rank`, and one function is also one round trip. |
 
 | Dark mode | Removed 2026-09-03 with the facelift: one theme designed well; front desks and phones in a lit gym. |
 

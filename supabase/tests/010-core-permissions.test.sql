@@ -94,14 +94,15 @@ select is((select count(*)::int from changed), 1, 'superadmin can deactivate a g
 
 -- ---------------------------------------------------------------- profiles --
 select tests.authenticate_as('staff_a');
--- Colleagues, since P4-06: a name on a handover entry or a checklist tick has
--- to come from somewhere. Manager A shares Gym A with them; the admin and the
--- superadmin do not.
+-- Colleagues, since P4-06, and — since P7B-03 — every active admin: `#company`
+-- puts them in the same channel, and a name has to come from somewhere.
 select results_eq(
-  $$ select id from public.profiles order by id $$,
+  $$ select id from public.profiles where email like '%@example.test' order by id $$,
   $$ select id from (values (tests.get_user_id('staff_a')),
-                            (tests.get_user_id('manager_a'))) v(id) order by id $$,
-  'staff see themselves and the people they share a gym with'
+                            (tests.get_user_id('manager_a')),
+                            (tests.get_user_id('admin')),
+                            (tests.get_user_id('super'))) v(id) order by id $$,
+  'staff see themselves, the people they share a gym with, and the admins'
 );
 with changed as (
   update public.profiles set full_name = 'Staff A' where id = tests.get_user_id('staff_a') returning 1
@@ -120,8 +121,8 @@ select throws_ok(
 select tests.authenticate_as('manager_a');
 select is(
   (select count(*)::int from public.profiles where email like '%@example.test'),
-  2,
-  'manager sees themselves and the members of their gyms'
+  4,
+  'manager sees themselves, the members of their gyms, and the admins'
 );
 
 select tests.authenticate_as('admin');

@@ -150,3 +150,69 @@ export function useCompleteInvite() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['auth'] }),
   })
 }
+
+/**
+ * P7B-01 — the account screen. Name and language are written to both the
+ * profile row (what the app reads) and the auth user's metadata (what the
+ * invite flow wrote there), the way `useCompleteInvite` does.
+ */
+function useOwnProfileWrite<T>(
+  toProfile: (value: T) => Partial<Pick<Profile, 'full_name' | 'locale'>>,
+) {
+  const { user } = useAuth()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (value: T) => {
+      if (!user) throw new Error('not signed in')
+      const values = toProfile(value)
+
+      const { error } = await supabase.auth.updateUser({ data: values })
+      if (error) throw error
+
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update(values)
+        .eq('id', user.id)
+      if (profileError) throw profileError
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['auth'] }),
+  })
+}
+
+export function useUpdateName() {
+  return useOwnProfileWrite((fullName: string) => ({ full_name: fullName }))
+}
+
+export function useUpdateLocale() {
+  return useOwnProfileWrite((locale: Profile['locale']) => ({ locale }))
+}
+
+export type PasswordChange = { current: string; next: string }
+
+/**
+ * A live session proves access, not ownership: the current password is
+ * checked first, by signing in again with it, so somebody at an unlocked
+ * front-desk machine cannot take the account over. A wrong one is reported
+ * as `wrong_password`; nothing has been changed at that point.
+ */
+export function useChangePassword() {
+  const { user } = useAuth()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ current, next }: PasswordChange) => {
+      if (!user?.email) throw new Error('not signed in')
+
+      const check = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: current,
+      })
+      if (check.error) throw new Error('wrong_password')
+
+      const { error } = await supabase.auth.updateUser({ password: next })
+      if (error) throw error
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['auth'] }),
+  })
+}

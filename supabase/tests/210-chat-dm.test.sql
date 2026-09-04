@@ -7,7 +7,7 @@
 --
 -- Tested against supabase/migrations/20260903150000_start_dm.sql.
 begin;
-select plan(17);
+select plan(20);
 
 -- ---------------------------------------------------------------- fixtures --
 insert into public.gyms (id, name, slug)
@@ -20,6 +20,8 @@ select tests.create_user('staff_a2');
 select tests.create_user('staff_a3');
 select tests.create_user('staff_b');
 select tests.create_user('gone');
+select tests.create_user('admin');
+select tests.create_user('old_admin');
 
 insert into public.gym_memberships (user_id, gym_id, role)
 values
@@ -30,6 +32,9 @@ values
   (tests.get_user_id('staff_b'), '22222222-2222-2222-2222-222222222222', 'staff');
 
 update public.profiles set active = false where id = tests.get_user_id('gone');
+update public.profiles set is_admin = true
+where id in (tests.get_user_id('admin'), tests.get_user_id('old_admin'));
+update public.profiles set active = false where id = tests.get_user_id('old_admin');
 
 -- --------------------------------------------------------------- structure --
 select has_function('public', 'start_dm', array['uuid[]'], 'start_dm exists');
@@ -142,6 +147,25 @@ select throws_ok(
   'P0001',
   null,
   'a conversation with nobody is not a conversation'
+);
+
+-- ------------------------------------------------------- reaching an admin --
+select tests.authenticate_as('staff_a');
+select lives_ok(
+  $$ select public.start_dm(array[tests.get_user_id('admin')]) $$,
+  'staff can open a DM with an admin (P7B-03)'
+);
+select throws_ok(
+  $$ select public.start_dm(array[tests.get_user_id('old_admin')]) $$,
+  'P0001',
+  'Cannot start a conversation with somebody you cannot see',
+  'but not with a deactivated admin'
+);
+select throws_ok(
+  $$ select public.start_dm(array[tests.get_user_id('staff_b')]) $$,
+  'P0001',
+  'Cannot start a conversation with somebody you cannot see',
+  'and still not with staff at another gym'
 );
 
 select * from finish();

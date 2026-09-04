@@ -102,9 +102,23 @@
       "title": "Welcome to GymOps"
     },
     "account": {
+      "current": "Current password",
+      "language": "Language",
+      "languageSaved": "Language saved.",
       "menu": "Account menu",
+      "name": "Full name",
+      "nameEmpty": "Enter your name.",
+      "nameSaved": "Name saved.",
+      "newPassword": "New password",
+      "password": "Password",
+      "passwordSaved": "Password changed.",
       "preferences": "Notification preferences",
-      "title": "Your account"
+      "repeat": "Repeat new password",
+      "save": "Save",
+      "saveFailed": "The change could not be saved. Try again.",
+      "saving": "Saving…",
+      "title": "Your account",
+      "wrongPassword": "That is not your current password."
     },
     "callback": {
       "continueInBrowser": "Continue in the browser",
