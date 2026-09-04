@@ -94,13 +94,17 @@ jobs:
       # them (spec §5, P2-03). This is the only thing that type-checks them.
       - name: Type-check
         working-directory: supabase/functions
-        run: deno check invite/index.ts notify/index.ts
+        run: deno check invite/index.ts notify/index.ts assistant/index.ts assistant/lib.test.ts
       - name: Lint
         working-directory: supabase/functions
         run: deno lint
       - name: Format
         working-directory: supabase/functions
         run: deno fmt --check
+      # P8-03: the assistant's request parsing, transcript and error mapping.
+      - name: Test
+        working-directory: supabase/functions
+        run: deno test
 
   desktop:
     name: Desktop shell compiles

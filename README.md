@@ -50,7 +50,8 @@ secret in one. `.env.local` is git-ignored.
 Server-side secrets (service-role key, Resend, the VAPID private key, the
 Anthropic key) live in Supabase function secrets and GitHub Actions secrets
 only. `supabase/functions/.env` holds a local-only development set for
-`npx supabase functions serve --env-file supabase/functions/.env`.
+`npx supabase functions serve --env-file supabase/functions/.env`; add
+`ANTHROPIC_API_KEY` there to get real answers from the assistant locally.
 
 ## Commands
 

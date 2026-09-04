@@ -389,6 +389,12 @@ verify_jwt = true
 enabled = true
 verify_jwt = true
 
+# P8-03. Called by the app with the person's own JWT, which the function then
+# uses for everything the model reads; the gateway's check is the first gate.
+[functions.assistant]
+enabled = true
+verify_jwt = true
+
 [edge_runtime]
 enabled = true
 # Supported request policies: `oneshot`, `per_worker`.

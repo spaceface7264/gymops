@@ -25,10 +25,13 @@ Requires a Docker-compatible container runtime (OrbStack installed 2026-09-01) f
 | `npx vitest run --dir src` | the unit tests without the `.claude/worktrees/**` copies, which `npm test` from the primary checkout also sweeps in (path filters are substrings) |
 | `npm run tauri dev` | the desktop window over the Vite server (needs Rust: `. ~/.cargo/env`) |
 
-The notification fan-out (P5-03) runs as an Edge Function with secrets the
-stack's own runtime does not have: serve it with
+The notification fan-out (P5-03) and the assistant (P8-03) run as Edge
+Functions with secrets the stack's own runtime does not have: serve them with
 `npx supabase functions serve --env-file supabase/functions/.env` (that file is
-local-only and gitignored; it holds a development VAPID pair). The webhook that
+local-only and gitignored; it holds a development VAPID pair and
+`ANTHROPIC_API_KEY`, without which the assistant answers 503
+`assistant_not_configured`). A worktree needs its own copies of that file and of
+`.env.local`; both are gitignored. The webhook that
 calls it reads `notify_functions_url` and `notify_service_key` from Vault, set
 locally by `supabase/seeds/local-webhook.sql`; with either missing the inbox
 still fills and nothing is pushed or emailed.
