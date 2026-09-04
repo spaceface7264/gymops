@@ -261,6 +261,7 @@ gymops/
 | Dark mode | Removed 2026-09-03 with the facelift: one theme designed well; front desks and phones in a lit gym. |
 
 | A standing Sign out button in the header | Moved into the account menu 2026-09-03: on a shared front-desk machine an always-visible sign-out invited accidental taps; the menu is one tap further and names who is signed in. |
+| Joining `checklists:all` while the gym scope is still null | Rejected 2026-09-04 (P7-07): for a manager or staff member a null gym means "not resolved yet", not "all gyms" — the join is refused by `can_listen_to_checklists()`, and the churn cost the gym channel its events (ticks from another window arrived 0 of 3 times; 2 of 2 once the join waits for `canSeeAllGyms`). No Realtime topic is joined until the scope has resolved. |
 
 ## 5. Conventions
 

@@ -21,6 +21,7 @@ Requires a Docker-compatible container runtime (OrbStack installed 2026-09-01) f
 | `npm run db:migration <name>` | new migration file |
 | `npm run db:types` | regenerate `src/lib/database.types.ts` (commit it) |
 | `npm run typecheck lint format:check test build` | the gates CI runs |
+| `npx vitest run --dir src` | the unit tests without the `.claude/worktrees/**` copies, which `npm test` from the primary checkout also sweeps in (path filters are substrings) |
 | `npm run tauri dev` | the desktop window over the Vite server (needs Rust: `. ~/.cargo/env`) |
 
 The notification fan-out (P5-03) runs as an Edge Function with secrets the
