@@ -103,6 +103,7 @@ container out. `supabase stop && supabase start` brings it back.
 | P8 AI assistant (V1.5)   | ⬜ Not started | Needs Anthropic API key in Supabase secrets.    |
 | P8 AI assistant (V1.5)   | 🔄 In progress | Branch `assistant` (worktree `.claude/worktrees/assistant`), plan `docs/superpowers/plans/2026-09-04-assistant.md`. Needs Anthropic API key in Supabase secrets for P8-03. |
 | P8 AI assistant (V1.5)   | ✅ Complete    | P8-01 … P8-06 on `assistant` (plan `docs/superpowers/plans/2026-09-04-assistant.md`). Built and verified without an Anthropic key; the first real answer is the one line left (Blockers). |
+| P9 Hosted cutover        | ⬜ Not started | Plan `docs/superpowers/plans/2026-09-05-cutover.md` (2026-09-05): Cloudflare Pages on the default `pages.dev` origin for the pilot, plus P9-01 (admins reach gym channels) and P9-02 (branded auth mail). |
 
 ## Task status
 

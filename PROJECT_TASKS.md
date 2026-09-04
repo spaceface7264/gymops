@@ -136,6 +136,20 @@ Legend: P1 = Phase 1 etc. Effort: S (< half day), M (1–2 days), L (3+ days).
 | P8-05 | `@assistant` in channels: trigger on mention, last 20 messages as context, bot reply insert               | P8-03, P6-05 | M      |
 | P8-06 | Superadmin usage-cap setting + usage view                                                                 | P8-03        | S      |
 
+## Phase 9 — hosted cutover (decided 2026-09-05, plan in `docs/superpowers/plans/2026-09-05-cutover.md`)
+
+| ID    | Task                                                                                       | Depends on | Effort |
+| ----- | ------------------------------------------------------------------------------------------ | ---------- | ------ |
+| P9-01 | Admins browse and join the gym channels they may read (the P7-07 known gap)               | P6-07      | S      |
+| P9-02 | Branded invite and recovery mails, Danish then English, wired in `config.toml`             | P2-03      | S      |
+| P9-03 | Cloudflare Pages: `_redirects`, the project, `VITE_*` variables, first deploy, docs         | P7-04      | S      |
+| P9-04 | Hosted database: link, extensions, `db push`, buckets, cron check, type drift check        | P8-01      | M      |
+| P9-05 | Hosted auth mirrored from `config.toml`: Resend SMTP, URLs, password policy, templates      | P9-02      | M      |
+| P9-06 | Secrets and the three functions deployed; Vault secrets for the notify webhook             | P9-04      | M      |
+| P9-07 | First superadmin; sign-in, reset, invite, push and phone installs on the deployed origin   | P9-05, P9-06 | M    |
+| P9-08 | First desktop release (v0.1.0) and the updater line (v0.1.1); Actions secrets              | P9-07      | M      |
+| P9-09 | Pilot at one gym for a week; findings into Known gaps                                      | P9-08      | L      |
+
 ## Later (not scheduled)
 
 - V2: tasks (`tasks`, recurrence, assignment, incident → task). Calendars shipped early as P4-11.
