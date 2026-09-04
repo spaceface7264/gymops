@@ -154,7 +154,7 @@ describe('AdminPage', () => {
     renderWithProviders(<AdminPage />, { path: '/admin/users' })
 
     expect(
-      await screen.findByRole('link', { name: 'Assistant usage' }),
+      await screen.findByRole('tab', { name: 'Assistant usage' }),
     ).toBeInTheDocument()
   })
 
@@ -162,10 +162,8 @@ describe('AdminPage', () => {
     profile.mockReturnValue({ id: 'user-1', is_admin: true, is_superadmin: false })
     renderWithProviders(<AdminPage />, { path: '/admin/users' })
 
-    expect(await screen.findByRole('link', { name: 'Users' })).toBeInTheDocument()
-    expect(
-      screen.queryByRole('link', { name: 'Assistant usage' }),
-    ).not.toBeInTheDocument()
+    expect(await screen.findByRole('tab', { name: 'Users' })).toBeInTheDocument()
+    expect(screen.queryByRole('tab', { name: 'Assistant usage' })).not.toBeInTheDocument()
   })
 })
 

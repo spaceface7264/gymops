@@ -4,7 +4,7 @@ Last updated: 2026-09-04
 
 ## Currently working on
 
-**Phase 7d, the frontend refinement, is done on `refine` (2026-09-04)** and waits for its PR into `main`: checkbox, alert-dialog, tabs and toggle-group vendored; `ConfirmDialog` before every irreversible delete; toasts; `Tooltip` wired; the polish sweep. Deferred primitives (sheet and the five-tab phone bar, command, progress, collapsible, scroll-area) are under Later. Phase 8 (the assistant) is still next after that.
+**Phase 7d, the frontend refinement, merged as PR #12 (2026-09-04)**: checkbox, alert-dialog, tabs and toggle-group vendored; `ConfirmDialog` before every irreversible delete; toasts; `Tooltip` wired; the polish sweep. Deferred primitives (sheet and the five-tab phone bar, command, progress, collapsible, scroll-area) are under Later. Phase 8 (the assistant) is still next after that.
 **Phase 8 (AI assistant, V1.5) started 2026-09-04** on branch `assistant`, one PR, in the order P8-02 → P8-01 → P8-03 → P8-05 → P8-04 → P8-06 (plan: `docs/superpowers/plans/2026-09-04-assistant.md`). Decided with Rami before starting: no bot user (a `messages.from_assistant` flag, service-role insert), the sender's client triggers the channel reply with its own JWT (no pg_net), the Ask page streams over SSE via raw `fetch`. Everything below this paragraph is the earlier history.
 **Phase 8 (AI assistant, V1.5) built 2026-09-04** on branch `assistant`, one PR, in the order P8-02 → P8-01 → P8-03 → P8-05 → P8-04 → P8-06 (plan: `docs/superpowers/plans/2026-09-04-assistant.md`). Decided with Rami before starting: no bot user (a `messages.from_assistant` flag, service-role insert), the sender's client triggers the channel reply with its own JWT (no pg_net), the Ask page streams over SSE via raw `fetch`. Everything is tested without an Anthropic key — every branch of the function, the pages in Chrome — and **one thing is not: an actual answer.** Put `ANTHROPIC_API_KEY` in `supabase/functions/.env`, serve, and run the P8-03 check in Blockers; then `deno.lock` and `database.types.ts` are already committed, so the PR can go. Everything below this paragraph is the earlier history.
 
@@ -99,7 +99,7 @@ container out. `supabase stop && supabase start` brings it back.
 | P7 Desktop and release   | ✅ Complete    | P7-01 … P7-06 merged in PR #9; P7-07 web and desktop lines ticked, phone-install, push-by-hand and the update line remain. |
 | P7b Basics pass          | ✅ Complete    | P7B-01…03, PR #10.                          |
 | P7C Facelift             | ✅ Complete    | P7C-01 … P7C-05 on `facelift`, merged `origin/main` after PR #10; PR #11. |
-| P7D Refinement           | ✅ Complete    | P7D-01 … P7D-08 on `refine`, plan `docs/superpowers/plans/2026-09-04-refine.md`; PR pending. |
+| P7D Refinement           | ✅ Complete    | P7D-01 … P7D-08, plan `docs/superpowers/plans/2026-09-04-refine.md`; PR #12. |
 | P8 AI assistant (V1.5)   | ⬜ Not started | Needs Anthropic API key in Supabase secrets.    |
 | P8 AI assistant (V1.5)   | 🔄 In progress | Branch `assistant` (worktree `.claude/worktrees/assistant`), plan `docs/superpowers/plans/2026-09-04-assistant.md`. Needs Anthropic API key in Supabase secrets for P8-03. |
 | P8 AI assistant (V1.5)   | ✅ Complete    | P8-01 … P8-06 on `assistant` (plan `docs/superpowers/plans/2026-09-04-assistant.md`). Built and verified without an Anthropic key; the first real answer is the one line left (Blockers). |
