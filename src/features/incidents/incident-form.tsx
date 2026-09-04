@@ -2,6 +2,7 @@ import { ArrowLeft, Camera, ImagePlus, X } from 'lucide-react'
 import { useId, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useSearchParams } from 'react-router'
+import { PageHeader } from '@/components'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -79,7 +80,7 @@ export function IncidentFormPage() {
         </Link>
       </Button>
 
-      <h1 className="text-2xl font-semibold">{t('incidents.report')}</h1>
+      <PageHeader title={t('incidents.report')} />
 
       <Card className="p-4">
         <form

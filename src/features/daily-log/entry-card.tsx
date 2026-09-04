@@ -2,6 +2,7 @@ import { TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
+import { StatusBadge } from '@/components'
 import { Badge } from '@/components/ui/badge'
 import {
   Select,
@@ -60,10 +61,12 @@ export function EntryCard({
   return (
     <Card className="space-y-2 p-4">
       <div className="flex flex-wrap items-center gap-1.5">
-        <Badge variant={entry.kind === 'issue' ? 'default' : 'outline'}>
+        <StatusBadge tone={entry.kind === 'issue' ? 'warning' : 'neutral'}>
           {t(`dailyLog.kind.${entry.kind}`)}
-        </Badge>
-        {showGym && entry.gyms && <Badge variant="outline">{entry.gyms.name}</Badge>}
+        </StatusBadge>
+        {showGym && entry.gyms && (
+          <StatusBadge tone="neutral">{entry.gyms.name}</StatusBadge>
+        )}
         <span className="text-muted-foreground text-xs">
           {t('dailyLog.writtenBy', {
             who: entry.author?.full_name ?? t('dailyLog.someone'),
