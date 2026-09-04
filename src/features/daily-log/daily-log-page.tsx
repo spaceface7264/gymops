@@ -2,7 +2,7 @@ import { NotebookPen } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { EmptyState, LoadingState, PageHeader } from '@/components'
-import { Button } from '@/components/ui/button'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { useCompletionScope, localDate } from '@/features/checklists'
 import { usePublishScope } from '@/features/content'
 import { useGymScope } from '@/features/gyms'
@@ -50,19 +50,20 @@ export function DailyLogPage() {
       )}
 
       <div className="flex flex-wrap items-center gap-2">
-        <div className="flex flex-wrap gap-1">
+        <ToggleGroup
+          type="single"
+          aria-label={t('dailyLog.allKinds')}
+          value={kind}
+          onValueChange={(option) => {
+            if (option) setKind(option as typeof kind)
+          }}
+        >
           {(['all', ...dailyLogKinds] as const).map((option) => (
-            <Button
-              key={option}
-              size="sm"
-              variant={kind === option ? 'default' : 'outline'}
-              aria-pressed={kind === option}
-              onClick={() => setKind(option)}
-            >
+            <ToggleGroupItem key={option} value={option}>
               {option === 'all' ? t('dailyLog.allKinds') : t(`dailyLog.kind.${option}`)}
-            </Button>
+            </ToggleGroupItem>
           ))}
-        </div>
+        </ToggleGroup>
 
         {(tags.length > 0 || tag) && (
           <select

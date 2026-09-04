@@ -2,6 +2,8 @@ import { useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { Toggle } from '@/components/ui/toggle'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import {
   Dialog,
   DialogContent,
@@ -191,38 +193,27 @@ function EventForm({
           per gym that would then have to keep up as gyms open and close. */}
       <fieldset className="space-y-2">
         <legend className="text-sm font-medium">{t('events.scope')}</legend>
-        <div className="flex flex-wrap gap-1">
-          <Button
-            type="button"
-            size="sm"
-            variant={values.gymIds.length === 0 ? 'default' : 'outline'}
-            aria-pressed={values.gymIds.length === 0}
-            onClick={() => set({ gymIds: [] })}
+        <div className="flex flex-wrap items-center gap-2">
+          <Toggle
+            variant="outline"
+            pressed={values.gymIds.length === 0}
+            onPressedChange={() => set({ gymIds: [] })}
           >
             {t('events.companyWide')}
-          </Button>
-          {gyms.map((gym) => {
-            const picked = values.gymIds.includes(gym.id)
-
-            return (
-              <Button
-                key={gym.id}
-                type="button"
-                size="sm"
-                variant={picked ? 'default' : 'outline'}
-                aria-pressed={picked}
-                onClick={() =>
-                  set({
-                    gymIds: picked
-                      ? values.gymIds.filter((id) => id !== gym.id)
-                      : [...values.gymIds, gym.id],
-                  })
-                }
-              >
+          </Toggle>
+          <ToggleGroup
+            type="multiple"
+            variant="outline"
+            aria-label={t('events.scope')}
+            value={values.gymIds}
+            onValueChange={(gymIds) => set({ gymIds })}
+          >
+            {gyms.map((gym) => (
+              <ToggleGroupItem key={gym.id} value={gym.id}>
                 {gym.name}
-              </Button>
-            )
-          })}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
         </div>
       </fieldset>
 
@@ -247,18 +238,16 @@ function EventForm({
         </div>
       </div>
 
-      <Button
-        type="button"
-        size="sm"
-        variant={multiDay ? 'default' : 'outline'}
-        aria-pressed={multiDay}
-        onClick={() => {
-          setMultiDay(!multiDay)
-          if (multiDay) set({ endsOn: '' })
+      <Toggle
+        variant="outline"
+        pressed={multiDay}
+        onPressedChange={(pressed) => {
+          setMultiDay(pressed)
+          if (!pressed) set({ endsOn: '' })
         }}
       >
         {t('events.multiDay')}
-      </Button>
+      </Toggle>
 
       {multiDay && (
         <div className="space-y-2">

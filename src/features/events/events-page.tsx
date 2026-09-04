@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router'
 import { PageHeader } from '@/components'
 import { Button } from '@/components/ui/button'
+import { Toggle } from '@/components/ui/toggle'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -75,29 +77,25 @@ export function EventsPage() {
       <PageHeader title={t('events.title')} action={newEventAction} />
 
       <div className="flex flex-wrap items-center gap-2">
-        <div className="flex flex-wrap gap-1">
+        <ToggleGroup
+          type="single"
+          aria-label={t('events.title')}
+          value={view}
+          onValueChange={(option) => {
+            if (option) update({ view: option })
+          }}
+        >
           {views.map((option) => (
-            <Button
-              key={option}
-              size="sm"
-              variant={view === option ? 'default' : 'outline'}
-              aria-pressed={view === option}
-              onClick={() => update({ view: option })}
-            >
+            <ToggleGroupItem key={option} value={option}>
               {t(`events.view.${option}`)}
-            </Button>
+            </ToggleGroupItem>
           ))}
-        </div>
+        </ToggleGroup>
 
         {view === 'list' && (
-          <Button
-            size="sm"
-            variant={showPast ? 'default' : 'outline'}
-            aria-pressed={showPast}
-            onClick={() => setShowPast(!showPast)}
-          >
+          <Toggle variant="outline" pressed={showPast} onPressedChange={setShowPast}>
             {t('events.past')}
-          </Button>
+          </Toggle>
         )}
 
         {/* The trigger carries the label and the value, so its accessible name

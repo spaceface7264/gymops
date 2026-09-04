@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router'
 import { LoadingState, PageHeader } from '@/components'
 import { Button } from '@/components/ui/button'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { Card } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import {
@@ -27,6 +28,7 @@ import {
   useUpdateIncident,
   type Incident,
   type IncidentSeverity,
+  type IncidentStatus,
 } from './queries'
 
 /**
@@ -43,20 +45,22 @@ function HandlingControls({ incident }: { incident: Incident }) {
     <Card className="space-y-3 p-4">
       <div className="space-y-1">
         <span className="text-sm font-medium">{t('incidents.statusLabel')}</span>
-        <div className="flex flex-wrap gap-1">
+        <ToggleGroup
+          type="single"
+          aria-label={t('incidents.statusLabel')}
+          value={incident.status}
+          disabled={update.isPending}
+          onValueChange={(status) => {
+            if (status)
+              update.mutate({ id: incident.id, status: status as IncidentStatus })
+          }}
+        >
           {incidentStatuses.map((option) => (
-            <Button
-              key={option}
-              size="sm"
-              variant={incident.status === option ? 'default' : 'outline'}
-              aria-pressed={incident.status === option}
-              disabled={update.isPending}
-              onClick={() => update.mutate({ id: incident.id, status: option })}
-            >
+            <ToggleGroupItem key={option} value={option}>
               {t(`incidents.status.${option}`)}
-            </Button>
+            </ToggleGroupItem>
           ))}
-        </div>
+        </ToggleGroup>
       </div>
 
       <div className="flex flex-wrap gap-3">

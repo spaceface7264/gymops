@@ -153,7 +153,7 @@ describe('the daily log', () => {
     renderWithProviders(<DailyLogPage />)
 
     await timelineEntries()
-    await userEvent.click(screen.getByRole('button', { name: 'Issue' }))
+    await userEvent.click(screen.getByRole('radio', { name: 'Issue' }))
 
     await waitFor(() => expect(filters).toHaveBeenCalledWith('eq', ['kind', 'issue']))
 
