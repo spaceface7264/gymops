@@ -82,7 +82,7 @@ export function AcceptInvitePage() {
           <Label htmlFor="locale">{t('language.label')}</Label>
           <select
             id="locale"
-            className="border-input bg-background h-9 w-full rounded-md border px-3 py-1 text-sm shadow-xs"
+            className="border-input bg-card focus-visible:border-ring focus-visible:ring-ring/40 h-11 w-full rounded-xl border px-3.5 py-1 text-base outline-none focus-visible:ring-[3px]"
             value={locale}
             onChange={(event) => setLocale(event.target.value as Locale)}
           >

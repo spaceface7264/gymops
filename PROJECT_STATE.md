@@ -1,6 +1,6 @@
 # GymOps — Project State
 
-Last updated: 2026-09-03
+Last updated: 2026-09-04
 
 ## Currently working on
 
@@ -55,12 +55,19 @@ installed for it on 2026-09-03 (rustup, stable 1.98, minimal profile, in
 `~/.cargo`); `npm run tauri dev` is the desktop window against the Vite dev
 server and needs `. ~/.cargo/env` in a shell that has not sourced it.
 
-**Phase 7c, facelift** (P7C-01 … P7C-05) started 2026-09-03 on the `facelift`
+**Phase 7c, facelift** (P7C-01 … P7C-05) ran 2026-09-03/04 on the `facelift`
 branch, in a git worktree under `.claude/worktrees/` (now gitignored) so it
-does not disturb the checkout the 7b work is on. Direction, palette and
+did not disturb the checkout the 7b work was on. Direction, palette and
 scope are in `docs/superpowers/specs/2026-09-03-facelift-design.md`: All
 Gravy feel, the icon violet as the one accent, Inter self-hosted, light only,
-layout and routes unchanged. P7C-01 … P7C-04 done.
+layout and routes unchanged. Tokens and primitives landed first (P7C-01/02),
+then the shared `PageHeader`/`EmptyState`/`LoadingState`/`StatusBadge` layer
+and the restyled shell (P7C-03/04), then every screen was swept onto it
+(P7C-05), including the account page and search picked up from `main` in the
+PR #10 merge. Verification — gates, unit tests, e2e, the debug `.app`, and
+36 screenshots at 390/768/1280px in `en`/`da` — is in `docs/design/screens/`
+and the P7C-05 task-status row above. The branch is ready for a PR against
+`main`.
 
 Testing Realtime locally needs the full stack: the run screen's live sync does
 not work under the CI-style `supabase start -x …`, which leaves the realtime
@@ -79,7 +86,7 @@ container out. `supabase stop && supabase start` brings it back.
 | P6 Team chat             | ✅ Complete    | P6-01 … P6-08, merged in PR #8.                 |
 | P7 Desktop and release   | ✅ Complete    | P7-01 … P7-06 merged in PR #9; P7-07 walkthrough pending (checklist in `docs/`). |
 | P7b Basics pass          | ✅ Complete    | P7B-01…03, PR #10.                          |
-| P7C Facelift             | 🔄 In progress | Spec approved 2026-09-03; P7C-01 … P7C-05 on `facelift` (worktree), branched from `main` after PR #9. |
+| P7C Facelift             | ✅ Complete    | P7C-01 … P7C-05 on `facelift`, merged `origin/main` after PR #10; PR to follow. |
 | P8 AI assistant (V1.5)   | ⬜ Not started | Needs Anthropic API key in Supabase secrets.    |
 
 ## Task status
@@ -152,6 +159,7 @@ Update this list as work begins:
 | P7C-02 | ✅ done | 2026-09-03 | 2026-09-03 | The ten existing primitives restyled to the facelift: pill buttons (`h-11 rounded-full`), `h-11 rounded-xl` inputs, `rounded-2xl` cards without shadow, no `dark:` utility anywhere in `src/components/ui`. `CardTitle` now renders a real heading (`as`, default `h2`), which closes the heading-landmark gap that was in Known gaps (row removed here, fixed). Six more primitives added — `skeleton.tsx`, `avatar.tsx`, `sonner.tsx`, `tooltip.tsx`, `textarea.tsx`, `switch.tsx` — via `npx shadcn@latest add`, imports rewritten to the unified `radix-ui` package the way `dialog.tsx`/`dropdown-menu.tsx` already do, and restyled the same way: no `dark:`, `rounded-xl` on tooltip content and the textarea, `AvatarFallback` in the `tone-new` violet. `sonner.tsx`'s generated body (which pulled in `next-themes`) was replaced with a fixed `theme="light"` `Toaster`, offset above the phone nav bar; `next-themes` was removed from `package.json` since nothing else used it. `Toaster` is mounted once in `src/App.tsx`, a sibling of `RouterProvider` inside `AuthProvider`. 1 new unit test (327 total, `skeleton.test.tsx`). |
 | P7C-03 | ✅ done | 2026-09-03 | 2026-09-03 | The shared composition layer, `src/components/` (barrel `index.ts`), swept onto by the shell and every screen: `Logo({ wordmark?, className? })` draws the app-icon bolt as an inline `<svg aria-hidden>`, with `t('app.name')` as the wordmark; `PageHeader({ title, description?, action?, as? })` (default `h1`) is the title/description/one-action row every screen opens with; `EmptyState({ icon?: LucideIcon, title, body?, action? })` is the dashed-border "nothing here yet" card; `LoadingState({ rows?, label? })` (`rows` default 3, `label` default `t('app.loading')`) renders `role="status"` with the label visually hidden (`sr-only`) and `rows` `Skeleton` rows, so a screen reader gets one announcement, not one per row; `StatusBadge({ tone, children, dot?, className? })` (`type Tone = 'success' \| 'warning' \| 'info' \| 'danger' \| 'new' \| 'neutral'`) wraps `Badge`, tinting `ghost` by tone (`bg-tone-<tone>-bg`/`text-tone-<tone>-fg`, optional dot) with `neutral` as the quiet `outline` variant. New locale key `app.loading` (en "Loading…", da "Indlæser…"). 6 new unit tests (333 total, `shared.test.tsx`). |
 | P7C-04 | ✅ done | 2026-09-03 | 2026-09-03 | The signed-in shell (`src/routes/app-shell.tsx`) and the signed-out frame (`src/routes/auth-layout.tsx`) restyled: `Logo` (with wordmark) sits in the sidebar and above the auth card; the nav is a pill list, `min-h-11` (44px) on the phone bottom bar with safe-area bottom padding, a rounded-full active pill from `md`; the header's email text and standing Sign out button are replaced by an initials `Avatar` behind a `DropdownMenu` (`t('auth.account.menu')` label) holding who's signed in, links to Account and Notification preferences, and Sign out as a `DropdownMenuItem`. `initials(name, email)` (exported from `app-shell.tsx` for its own tests) takes the first and last initial of a full name, one initial from a single name, or the first letter of the email. `auth.account` did not exist yet on this branch — P7B-01 (the account screen, `auth.account.title` and the header email `Link`) is still unmerged on `basics-account-search-dm` — so `auth.account.menu`/`.preferences`/`.title` were added fresh (en/da), matching P7B-01's own `title` wording ("Your account"/"Din konto") to ease that future merge; the Account menu item links to `/account`, which 404s until P7B-01's route lands — expected, not a regression, and out of this task's file list. `react-refresh/only-export-components` needed a per-file override in `eslint.config.js` for `app-shell.tsx` (same pattern already used for `src/components/ui/**`) since `initials` is a non-component export. `app-shell.test.tsx` updated: existing sign-out/email tests now open the avatar menu first; `describe('initials', …)` added. 335 tests (2 new). Browser check: `/login` confirmed serving (200) on a spare port (5173 was in use by the main checkout's own dev server, left untouched) with `--background: #f7f5fb` (lilac) visible in `src/index.css`; the claude-in-chrome extension was not connected in this environment, so the visual pixel check itself (44px bar, active pill, avatar menu open) could not be done — relied on the 16 `app-shell.test.tsx` assertions instead. |
+| P7C-05 | ✅ done | 2026-09-03 | 2026-09-04 | Every route swept onto the shared layer: `PageHeader`/`EmptyState`/`LoadingState`/`StatusBadge` everywhere a screen needs them. `StatusBadge` tone rulings settled and applied consistently: `new` only for unread or must-acknowledge items, `draft`/`in-progress`/`flagged` → `warning`, `missed`/`open`-and-high-severity → `danger`, `done`/`active` → `success`, and neutral labels (kinds, gyms, roles) → `neutral`. Preference toggles moved onto `Switch`. The chat composer's textarea now auto-grows with content instead of a fixed single row. The account page (landed from PR #10 after the merge into `facelift`) was swept in the same pass, including its native `<select>` for locale, which — like `accept-invite-page.tsx`'s role select — now carries the `Input` treatment (`h-11 rounded-xl border-input bg-card`) while staying a native `<select>` (spec §4). The incident detail header deliberately carries no header action — status changes live in the permission-gated handling card below it, not as a page-level button. Leftover greps (hand-rolled loading text, ad-hoc heading classes, `dark:` utilities, raw `Badge` imports) came back clean; locale-key parity between `en`/`da` is exact. 36 screenshots at 390/768/1280px in `en` and `da` (login, home, incidents, checklists, chat, news) are in `docs/design/screens/`. Full gates green (typecheck, lint, format:check, 350 unit tests, build); `npm run e2e:chrome` against this worktree's dev server (4/4 passed, no test needed the header-menu fix); the debug `.app` built and confirmed to embed the Inter `.woff2` files, so the font renders offline. |
 | P5-02 … P8-06 | ⬜ not started | | | |
 
 Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
@@ -185,6 +193,7 @@ Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
 | A native desktop notification does not open its `url` when clicked (P7-03) | `tauri-plugin-notification` 2.x delivers click and action events on mobile only; on the desktop a click merely brings the app forward. The inbox is one click further. Revisit when the plugin exposes desktop clicks, or with a Rust-side `UNUserNotificationCenter` delegate. | P7 polish |
 | A desktop-requested reset mail opened on a phone is a dead `gymops://` link (P7-02) | PKCE ties the link to the app that asked for it, so nothing could complete it there; but the browser's "no app can open this" is a poor way to say *open it on the computer you asked from*. The forgot-password screen in the app could say so up front. | P7 polish |
 | Chat attachments are unvalidated on the way in (P6-05) | Any type, any size up to the bucket's 50 MiB, and a phone photograph goes up at full resolution over gym wifi. The storage policies decide *who* may upload, not *what*. | P6 polish, or with P7-04 |
+| Phone bottom bar overflows past five entries; Danish labels make it worse | Nine nav entries scroll sideways on a phone; that's already tight, and Danish's longer words push it further. | Five primary tabs plus a More sheet is logged under Later in `PROJECT_TASKS.md`. |
 
 ## Hosted project cutover
 

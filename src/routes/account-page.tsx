@@ -159,7 +159,7 @@ function LanguageCard() {
             <Label htmlFor="account-locale">{t('auth.account.language')}</Label>
             <select
               id="account-locale"
-              className="border-input bg-background h-9 w-full rounded-md border px-3 py-1 text-sm shadow-xs"
+              className="border-input bg-card focus-visible:border-ring focus-visible:ring-ring/40 h-11 w-full rounded-xl border px-3.5 py-1 text-base outline-none focus-visible:ring-[3px]"
               value={locale}
               onChange={(event) => {
                 setPicked(event.target.value as Locale)
