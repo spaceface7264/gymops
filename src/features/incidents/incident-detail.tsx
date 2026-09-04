@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { Card } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
+import { NativeSelect } from '@/components/ui/native-select'
 import {
   Select,
   SelectContent,
@@ -93,9 +94,9 @@ function HandlingControls({ incident }: { incident: Incident }) {
 
         <div className="space-y-1">
           <Label htmlFor="incident-assignee">{t('incidents.assigneeLabel')}</Label>
-          <select
+          <NativeSelect
             id="incident-assignee"
-            className="border-input bg-card focus-visible:border-ring focus-visible:ring-ring/40 h-11 rounded-xl border px-3.5 py-1 text-base outline-none focus-visible:ring-[3px]"
+
             value={incident.assignee_id ?? ''}
             disabled={update.isPending}
             onChange={(event) =>
@@ -111,7 +112,7 @@ function HandlingControls({ incident }: { incident: Incident }) {
                 {person.full_name ?? t('incidents.someone')}
               </option>
             ))}
-          </select>
+          </NativeSelect>
         </div>
       </div>
 

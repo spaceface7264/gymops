@@ -4,6 +4,7 @@ import { Navigate } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { NativeSelect } from '@/components/ui/native-select'
 import {
   PasswordFields,
   checkPassword,
@@ -80,9 +81,9 @@ export function AcceptInvitePage() {
         </div>
         <div className="space-y-2">
           <Label htmlFor="locale">{t('language.label')}</Label>
-          <select
+          <NativeSelect
             id="locale"
-            className="border-input bg-card focus-visible:border-ring focus-visible:ring-ring/40 h-11 w-full rounded-xl border px-3.5 py-1 text-base outline-none focus-visible:ring-[3px]"
+            className="w-full"
             value={locale}
             onChange={(event) => setLocale(event.target.value as Locale)}
           >
@@ -91,7 +92,7 @@ export function AcceptInvitePage() {
                 {t(`language.${option}`)}
               </option>
             ))}
-          </select>
+          </NativeSelect>
         </div>
         <PasswordFields
           passwordLabel={t('auth.acceptInvite.password')}

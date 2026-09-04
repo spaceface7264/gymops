@@ -4,6 +4,14 @@ import { PageHeader } from '@/components'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { isDesktop } from '@/lib/platform'
 import { DesktopNotificationOptIn } from './desktop-notification-opt-in'
 import { PushOptIn } from './push-opt-in'
@@ -66,47 +74,43 @@ export function NotificationPreferencesPage() {
         </p>
       )}
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-muted-foreground text-left">
-              <th scope="col" className="py-2 pr-4 font-medium">
-                {t('notifications.typeColumn')}
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead scope="col">{t('notifications.typeColumn')}</TableHead>
+            {notificationChannels.map((channel) => (
+              <TableHead key={channel} scope="col">
+                {t(`notifications.channel.${channel}`)}
+              </TableHead>
+            ))}
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {notificationTypes.map((type) => (
+            <TableRow key={type}>
+              <th scope="row" className="px-2 py-3 text-left align-middle font-normal">
+                {t(`notifications.type.${type}`)}
               </th>
               {notificationChannels.map((channel) => (
-                <th key={channel} scope="col" className="px-2 py-2 font-medium">
-                  {t(`notifications.channel.${channel}`)}
-                </th>
+                <TableCell key={channel}>
+                  <Label htmlFor={`pref-${type}-${channel}`} className="sr-only">
+                    {t('notifications.channelFor', {
+                      channel: t(`notifications.channel.${channel}`),
+                      type: t(`notifications.type.${type}`),
+                    })}
+                  </Label>
+                  <Switch
+                    id={`pref-${type}-${channel}`}
+                    checked={effective(type)[channel]}
+                    disabled={prefs.isPending || setPref.isPending}
+                    onCheckedChange={() => toggle(type, channel)}
+                  />
+                </TableCell>
               ))}
-            </tr>
-          </thead>
-          <tbody>
-            {notificationTypes.map((type) => (
-              <tr key={type} className="border-t">
-                <th scope="row" className="py-2 pr-4 text-left font-normal">
-                  {t(`notifications.type.${type}`)}
-                </th>
-                {notificationChannels.map((channel) => (
-                  <td key={channel} className="px-2 py-2">
-                    <Label htmlFor={`pref-${type}-${channel}`} className="sr-only">
-                      {t('notifications.channelFor', {
-                        channel: t(`notifications.channel.${channel}`),
-                        type: t(`notifications.type.${type}`),
-                      })}
-                    </Label>
-                    <Switch
-                      id={`pref-${type}-${channel}`}
-                      checked={effective(type)[channel]}
-                      disabled={prefs.isPending || setPref.isPending}
-                      onCheckedChange={() => toggle(type, channel)}
-                    />
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   )
 }

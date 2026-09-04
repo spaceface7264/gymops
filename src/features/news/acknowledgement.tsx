@@ -65,7 +65,7 @@ export function AckReport({
 
   return (
     <section className="space-y-2">
-      <h2 className="text-lg font-medium">{t('news.ack.reportTitle')}</h2>
+      <h2 className="text-lg font-semibold">{t('news.ack.reportTitle')}</h2>
 
       {report.isPending && <LoadingState rows={3} />}
       {report.isError && (
@@ -82,7 +82,7 @@ export function AckReport({
         </p>
       )}
 
-      <ul className="divide-y rounded-md border">
+      <ul className="divide-y rounded-xl border">
         {rows.map((row) => (
           <li
             key={row.userId}

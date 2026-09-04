@@ -60,12 +60,14 @@ export function MessageList({
 
   if (messages.isError) {
     return (
-      <p className="text-muted-foreground p-4 text-sm">{t('chat.loadMessagesFail')}</p>
+      <p role="alert" className="text-destructive p-4 text-sm">
+        {t('chat.loadMessagesFail')}
+      </p>
     )
   }
 
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto p-4 pb-20 md:pb-4">
+    <div className="min-h-0 flex-1 overflow-y-auto p-4 pb-(--nav-bar-clearance) md:pb-4">
       {messages.hasNextPage && (
         <div className="pb-3 text-center">
           <Button

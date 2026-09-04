@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { NativeSelect } from '@/components/ui/native-select'
 import { useCreateGym, useUpdateGym, type AdminGym, type GymInput } from './queries'
 import { toSlug } from './slug'
 
@@ -134,9 +135,9 @@ function GymForm({ gym, onDone }: { gym?: AdminGym; onDone: () => void }) {
       <div className="space-y-2">
         <Label htmlFor={`${fieldId}-timezone`}>{t('admin.gyms.timezone')}</Label>
         {/* Checklist runs are generated at 03:00 in this zone (P4-02). */}
-        <select
+        <NativeSelect
           id={`${fieldId}-timezone`}
-          className="border-input bg-card focus-visible:border-ring focus-visible:ring-ring/40 h-11 w-full rounded-xl border px-3.5 py-1 text-base outline-none focus-visible:ring-[3px]"
+          className="w-full"
           value={values.timezone}
           onChange={(event) =>
             setValues((current) => ({ ...current, timezone: event.target.value }))
@@ -147,7 +148,7 @@ function GymForm({ gym, onDone }: { gym?: AdminGym; onDone: () => void }) {
               {zone}
             </option>
           ))}
-        </select>
+        </NativeSelect>
       </div>
 
       {save.isError && (

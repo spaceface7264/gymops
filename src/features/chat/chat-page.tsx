@@ -3,6 +3,7 @@ import {
   Bell,
   BellOff,
   LogOut,
+  MessageCircle,
   Plus,
   Search,
   Settings,
@@ -14,7 +15,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { Link, useNavigate, useParams } from 'react-router'
-import { ConfirmDialog } from '@/components'
+import { ConfirmDialog, EmptyState } from '@/components'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/features/auth'
 import { usePublishScope } from '@/features/content'
@@ -57,27 +58,17 @@ export function ChatPage() {
         aria-label={t('chat.title')}
         className={cn(
           'md:w-72 md:shrink-0 md:overflow-y-auto md:border-r',
-          'pb-20 md:pb-0',
+          'pb-(--nav-bar-clearance) md:pb-0',
           channelId && 'hidden md:block',
         )}
       >
         <div className="grid gap-2 p-3 pb-0">
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full"
-            onClick={() => setNewDm(true)}
-          >
+          <Button variant="outline" className="w-full" onClick={() => setNewDm(true)}>
             <SquarePen className="size-4" aria-hidden="true" />
             {t('chat.newDm')}
           </Button>
           <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="flex-1"
-              onClick={() => setBrowsing(true)}
-            >
+            <Button variant="ghost" className="flex-1" onClick={() => setBrowsing(true)}>
               <Search className="size-4" aria-hidden="true" />
               {t('chat.browse')}
             </Button>
@@ -86,7 +77,6 @@ export function ChatPage() {
             {canPublishSomewhere && (
               <Button
                 variant="ghost"
-                size="sm"
                 className="flex-1"
                 onClick={() => setNewChannel(true)}
               >
@@ -109,7 +99,12 @@ export function ChatPage() {
         {channelId ? (
           <ChannelView channelId={channelId} />
         ) : (
-          <p className="text-muted-foreground p-6 text-sm">{t('chat.pickChannel')}</p>
+          <EmptyState
+            icon={MessageCircle}
+            title={t('chat.pickChannel')}
+            as="h1"
+            className="m-6"
+          />
         )}
       </section>
     </div>
@@ -157,7 +152,7 @@ function ChannelView({ channelId }: { channelId: string }) {
         <Link
           to="/chat"
           aria-label={t('chat.back')}
-          className="hover:bg-accent/60 rounded-md p-1 md:hidden"
+          className="hover:bg-accent/60 flex size-11 items-center justify-center rounded-full md:hidden"
         >
           <ArrowLeft className="size-5" aria-hidden="true" />
         </Link>
@@ -173,7 +168,7 @@ function ChannelView({ channelId }: { channelId: string }) {
         {isCustom && channel && (
           <Button
             variant="ghost"
-            size="sm"
+            size="icon"
             aria-label={t('chat.members')}
             onClick={() => setMembers(true)}
           >
@@ -185,7 +180,7 @@ function ChannelView({ channelId }: { channelId: string }) {
           <>
             <Button
               variant="ghost"
-              size="sm"
+              size="icon"
               aria-label={t('chat.editChannel')}
               onClick={() => setEditing(true)}
             >
@@ -193,7 +188,7 @@ function ChannelView({ channelId }: { channelId: string }) {
             </Button>
             <Button
               variant="ghost"
-              size="sm"
+              size="icon"
               aria-label={t('chat.deleteChannel')}
               onClick={() => setConfirmingDelete(true)}
             >
@@ -205,7 +200,7 @@ function ChannelView({ channelId }: { channelId: string }) {
         {isCustom && channel && (
           <Button
             variant="ghost"
-            size="sm"
+            size="icon"
             aria-label={t('chat.leave')}
             onClick={() => setConfirmingLeave(true)}
           >
@@ -217,7 +212,7 @@ function ChannelView({ channelId }: { channelId: string }) {
         {channel && (
           <Button
             variant="ghost"
-            size="sm"
+            size="icon"
             aria-pressed={channel.muted}
             aria-label={channel.muted ? t('chat.unmute') : t('chat.mute')}
             disabled={setMuted.isPending}

@@ -69,7 +69,7 @@ export function ChannelMembersDialog({
           {seated.map((member) => (
             <li
               key={member.user_id}
-              className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm"
+              className="flex min-h-11 items-center gap-2 rounded-lg px-2 py-1 text-sm"
             >
               <span className="min-w-0 flex-1 truncate">
                 {member.full_name?.trim() || member.email || t('chat.someone')}

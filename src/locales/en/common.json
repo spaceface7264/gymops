@@ -89,6 +89,7 @@
     },
     "loading": "Loading…",
     "name": "GymOps",
+    "skipToContent": "Skip to content",
     "update": {
       "available": "GymOps {{version}} is ready.",
       "failed": "The update could not be installed. It will be tried again next time.",
@@ -394,6 +395,7 @@
     "emptyUpcoming": "Nothing is coming up here.",
     "endDate": "End date",
     "endTime": "End time",
+    "formHint": "When it is, and which gyms it is for.",
     "gymCount_one": "{{count}} gym",
     "gymCount_other": "{{count}} gyms",
     "link": "Link",

@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { OptInCallout } from './opt-in-callout'
 import { Button } from '@/components/ui/button'
 import { useDesktopNotificationState, useEnableDesktopNotifications } from './desktop'
 
@@ -15,8 +16,7 @@ export function DesktopNotificationOptIn() {
   const denied = enable.error?.message === 'denied'
 
   return (
-    <div className="space-y-2 rounded-md border p-3">
-      <p className="font-medium">{t('notifications.desktopOnThisDevice')}</p>
+    <OptInCallout title={t('notifications.desktopOnThisDevice')}>
       <p className="text-muted-foreground text-sm">
         {granted
           ? t('notifications.desktopOn')
@@ -33,6 +33,6 @@ export function DesktopNotificationOptIn() {
           {t('notifications.pushEnable')}
         </Button>
       )}
-    </div>
+    </OptInCallout>
   )
 }

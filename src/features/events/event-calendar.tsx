@@ -64,7 +64,7 @@ export function EventCalendar({
         >
           <ChevronRight className="size-4" />
         </Button>
-        <h2 className="text-lg font-medium">{monthLabel(cursor, i18n.language)}</h2>
+        <h2 className="text-lg font-semibold">{monthLabel(cursor, i18n.language)}</h2>
       </div>
 
       {events.isError && (

@@ -127,7 +127,7 @@ export function IncidentsPage() {
             <Card className="p-4">
               <Link to={`/incidents/${incident.id}`} className="block space-y-2">
                 <IncidentBadges incident={incident} showGym={gymId === null} />
-                <h2 className="font-medium">{incident.title}</h2>
+                <h2 className="text-lg font-semibold">{incident.title}</h2>
                 <p className="text-muted-foreground text-xs">
                   {t('incidents.reportedBy', {
                     who: incident.reporter?.full_name ?? t('incidents.someone'),

@@ -80,7 +80,7 @@ export function GuidesPage() {
             type="button"
             aria-current={selectedCategory === null}
             onClick={() => setSelectedCategory(null)}
-            className={`hover:bg-accent w-full rounded-md px-2 py-1 text-left text-sm ${
+            className={`hover:bg-accent min-h-9 w-full rounded-lg px-2 py-1 text-left text-sm ${
               selectedCategory === null ? 'bg-accent font-medium' : ''
             }`}
           >

@@ -86,7 +86,7 @@ function NotificationRow({ notification }: { notification: Notification }) {
   return (
     <div
       className={cn(
-        'flex items-start gap-3 rounded-md border p-3',
+        'bg-card flex items-start gap-3 rounded-2xl border p-3',
         unread && 'bg-tone-new-bg/60',
       )}
     >

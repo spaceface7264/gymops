@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { EmptyState, LoadingState } from '@/components'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
@@ -20,10 +21,11 @@ export function CommentThread({
 
   return (
     <section className="space-y-2">
-      <h2 className="text-sm font-medium">{t('incidents.comments')}</h2>
+      <h2 className="font-semibold">{t('incidents.comments')}</h2>
 
+      {comments.isPending && <LoadingState rows={2} />}
       {comments.data?.length === 0 && (
-        <p className="text-muted-foreground text-sm">{t('incidents.noComments')}</p>
+        <EmptyState bordered={false} title={t('incidents.noComments')} as="p" />
       )}
 
       <ul className="space-y-2">

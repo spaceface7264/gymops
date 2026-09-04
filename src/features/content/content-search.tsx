@@ -2,7 +2,7 @@ import { Search } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
-import { StatusBadge } from '@/components'
+import { EmptyState, LoadingState, StatusBadge } from '@/components'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { minSearchLength, useContentSearch, useDebounced } from './search'
@@ -33,16 +33,14 @@ export function ContentSearch() {
 
       {searching && (
         <div className="space-y-2">
-          {results.isPending && (
-            <p className="text-muted-foreground text-sm">{t('content.searching')}</p>
-          )}
+          {results.isPending && <LoadingState rows={3} label={t('content.searching')} />}
           {results.isError && (
             <p role="alert" className="text-destructive text-sm">
               {t('content.searchFailed')}
             </p>
           )}
           {results.data?.length === 0 && (
-            <p className="text-muted-foreground text-sm">{t('content.noResults')}</p>
+            <EmptyState bordered={false} title={t('content.noResults')} as="p" />
           )}
 
           <ul aria-label={t('content.results')} className="space-y-2">

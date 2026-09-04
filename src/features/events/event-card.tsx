@@ -55,7 +55,7 @@ export function EventCard({
         )}
       </div>
 
-      <h3 className="font-medium">{event.title}</h3>
+      <h3 className="text-lg font-semibold">{event.title}</h3>
       <p className="text-muted-foreground text-sm">
         {formatEventWhen(event, i18n.language)}
       </p>

@@ -42,7 +42,7 @@ export function ConfirmDialog({
   const { t } = useTranslation()
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
+      <AlertDialogContent {...(body ? {} : { 'aria-describedby': undefined })}>
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
           {body && <AlertDialogDescription>{body}</AlertDialogDescription>}

@@ -6,8 +6,8 @@ function Toaster(props: ToasterProps) {
       theme="light"
       position="bottom-center"
       // Above the phone nav bar; the sidebar layout has nothing at the bottom.
-      offset={{ bottom: 'calc(env(safe-area-inset-bottom) + 5rem)' }}
-      mobileOffset={{ bottom: 'calc(env(safe-area-inset-bottom) + 5rem)' }}
+      offset={{ bottom: 'var(--nav-bar-clearance)' }}
+      mobileOffset={{ bottom: 'var(--nav-bar-clearance)' }}
       toastOptions={{
         classNames: {
           toast: 'rounded-2xl border border-border bg-card text-foreground font-sans',

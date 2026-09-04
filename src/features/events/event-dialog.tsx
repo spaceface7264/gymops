@@ -8,11 +8,14 @@ import {
   Dialog,
   DialogContent,
   DialogFooter,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { NativeSelect } from '@/components/ui/native-select'
+import { Textarea } from '@/components/ui/textarea'
 import { MissingRequirements } from '@/features/content'
 import type { Gym } from '@/features/gyms'
 import { formatTime } from './event-date'
@@ -23,9 +26,6 @@ import {
   type EventInput,
   type GymEvent,
 } from './queries'
-
-const selectClassName =
-  'border-input bg-card focus-visible:border-ring focus-visible:ring-ring/40 h-11 w-full rounded-xl border px-3.5 py-1 text-base outline-none focus-visible:ring-[3px]'
 
 const linkPattern = /^https?:\/\/\S+$/
 
@@ -148,6 +148,7 @@ function EventForm({
         <DialogTitle>
           {event ? t('events.editTitle') : t('events.createTitle')}
         </DialogTitle>
+        <DialogDescription>{t('events.formHint')}</DialogDescription>
       </DialogHeader>
 
       <div className="space-y-2">
@@ -161,10 +162,9 @@ function EventForm({
 
       <div className="space-y-2">
         <Label htmlFor={`${fieldId}-description`}>{t('events.description')}</Label>
-        <textarea
+        <Textarea
           id={`${fieldId}-description`}
           rows={3}
-          className={`${selectClassName} h-auto py-1.5`}
           value={values.description}
           onChange={(input) => set({ description: input.target.value })}
         />
@@ -172,9 +172,9 @@ function EventForm({
 
       <div className="space-y-2">
         <Label htmlFor={`${fieldId}-type`}>{t('events.typeLabel')}</Label>
-        <select
+        <NativeSelect
           id={`${fieldId}-type`}
-          className={selectClassName}
+          className="w-full"
           value={values.eventType}
           onChange={(input) =>
             set({ eventType: input.target.value as EventInput['eventType'] })
@@ -185,7 +185,7 @@ function EventForm({
               {t(`events.type.${option}`)}
             </option>
           ))}
-        </select>
+        </NativeSelect>
       </div>
 
       {/* One event, any number of gyms. "Company-wide" is the absence of a

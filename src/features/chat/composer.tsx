@@ -120,7 +120,7 @@ export function Composer({
 
   return (
     <form
-      className="relative border-t p-3 pb-20 md:pb-3"
+      className="relative border-t p-3 pb-(--nav-bar-clearance) md:pb-3"
       onSubmit={(event) => {
         event.preventDefault()
         submit()
@@ -130,7 +130,7 @@ export function Composer({
         <ul
           role="listbox"
           aria-label={t('chat.mentionSomebody')}
-          className="bg-popover absolute bottom-full left-3 mb-1 w-64 rounded-md border shadow-md"
+          className="bg-popover absolute bottom-full left-3 mb-1 w-64 rounded-xl border p-1 shadow-lg"
         >
           {suggestions.map((member, index) => (
             <li key={member.user_id}>
@@ -161,7 +161,7 @@ export function Composer({
           {files.map((file) => (
             <li
               key={file.name}
-              className="bg-muted flex items-center gap-1 rounded-md px-2 py-1 text-xs"
+              className="bg-muted flex items-center gap-1 rounded-lg px-2 py-1 text-xs"
             >
               {file.name}
               <button
@@ -194,7 +194,7 @@ export function Composer({
         <Button
           type="button"
           variant="ghost"
-          size="sm"
+          size="icon"
           aria-label={t('chat.attach')}
           onClick={() => fileInput.current?.click()}
         >
@@ -206,7 +206,7 @@ export function Composer({
           aria-label={t('chat.write')}
           placeholder={t('chat.write')}
           rows={1}
-          className="max-h-32 min-h-9 flex-1 py-2 text-sm"
+          className="max-h-32 min-h-11 flex-1 py-2.5 text-sm"
           value={body}
           onChange={(event) => change(event.target.value, event.target.selectionStart)}
           onKeyDown={key}

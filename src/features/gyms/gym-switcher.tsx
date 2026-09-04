@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { NativeSelect } from '@/components/ui/native-select'
 import { Label } from '@/components/ui/label'
 import { useGymScope } from './gym-context'
 
@@ -25,10 +26,10 @@ export function GymSwitcher() {
       <Label htmlFor="gym-switcher" className="sr-only">
         {t('gym.label')}
       </Label>
-      <select
+      <NativeSelect
         id="gym-switcher"
         aria-label={t('gym.label')}
-        className="border-input bg-card focus-visible:border-ring focus-visible:ring-ring/40 h-11 max-w-44 rounded-xl border px-3.5 py-1 text-base outline-none focus-visible:ring-[3px]"
+        className="max-w-44"
         value={gymId ?? allGymsValue}
         onChange={(event) =>
           selectGym(event.target.value === allGymsValue ? null : event.target.value)
@@ -40,7 +41,7 @@ export function GymSwitcher() {
             {gym.name}
           </option>
         ))}
-      </select>
+      </NativeSelect>
     </div>
   )
 }

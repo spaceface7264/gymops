@@ -31,7 +31,7 @@ export function InstallPage() {
 
       {platforms.map((platform) => (
         <section key={platform} className="space-y-2">
-          <h2 className="font-medium">{t(`install.${platform}.title`)}</h2>
+          <h2 className="text-lg font-semibold">{t(`install.${platform}.title`)}</h2>
           <ol className="text-muted-foreground list-decimal space-y-1 pl-5 text-sm">
             {t(`install.${platform}.steps`, { returnObjects: true }).map((step) => (
               <li key={step}>{step}</li>

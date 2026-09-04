@@ -89,6 +89,7 @@
     },
     "loading": "Indlæser…",
     "name": "GymOps",
+    "skipToContent": "Spring til indhold",
     "update": {
       "available": "GymOps {{version}} er klar.",
       "failed": "Opdateringen kunne ikke installeres. Den prøves igen næste gang.",
@@ -394,6 +395,7 @@
     "emptyUpcoming": "Der er ikke noget på vej her.",
     "endDate": "Slutdato",
     "endTime": "Sluttidspunkt",
+    "formHint": "Hvornår det er, og hvilke centre det gælder.",
     "gymCount_one": "{{count}} center",
     "gymCount_other": "{{count}} centre",
     "link": "Link",

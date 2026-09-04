@@ -3,7 +3,6 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { ConfirmDialog, StatusBadge } from '@/components'
-import { Badge } from '@/components/ui/badge'
 import {
   Select,
   SelectContent,
@@ -128,9 +127,9 @@ export function EntryCard({
       {entry.tags.length > 0 && !editing && (
         <div className="flex flex-wrap gap-1">
           {entry.tags.map((tag) => (
-            <Badge key={tag} variant="secondary">
+            <StatusBadge key={tag} tone="neutral">
               #{tag}
-            </Badge>
+            </StatusBadge>
           ))}
         </div>
       )}

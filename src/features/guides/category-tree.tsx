@@ -36,7 +36,7 @@ export function CategoryTree({
               aria-current={selectedId === node.id}
               onClick={() => onSelect(node.id)}
               className={cn(
-                'hover:bg-accent flex-1 rounded-md px-2 py-1 text-left text-sm',
+                'hover:bg-accent min-h-9 flex-1 rounded-lg px-2 py-1 text-left text-sm',
                 selectedId === node.id && 'bg-accent font-medium',
               )}
               style={{ paddingLeft: `${depth * 12 + 8}px` }}

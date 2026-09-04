@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { EmptyState } from '@/components'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { personName } from './channel-name'
@@ -52,7 +53,7 @@ export function PeoplePicker({
         ))}
       </ul>
 
-      {shown.length === 0 && <p className="text-muted-foreground text-sm">{empty}</p>}
+      {shown.length === 0 && <EmptyState bordered={false} title={empty} as="p" />}
     </div>
   )
 }
