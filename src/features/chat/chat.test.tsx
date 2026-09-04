@@ -326,12 +326,14 @@ describe('the message list', () => {
     messageRows.mockReturnValue([
       message({ id: 'message-3', body: 'Third', created_at: at(1) }),
       message({ id: 'message-2', body: 'Second', created_at: at(2) }),
-      message({ id: 'message-1', body: 'First', created_at: '2026-09-03T09:00:00Z' }),
+      // Far enough back to be a date in every timezone CI runs in, not
+      // "Yesterday".
+      message({ id: 'message-1', body: 'First', created_at: '2026-08-20T09:00:00Z' }),
     ])
     openChannel()
 
     expect(await screen.findByRole('heading', { name: 'Today' })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: /September/ })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /August/ })).toBeInTheDocument()
     // Two lines by Mette a minute apart carry her name once.
     const rows = screen.getAllByRole('listitem')
     expect(rows[1]).toHaveTextContent('Mette Holm')
