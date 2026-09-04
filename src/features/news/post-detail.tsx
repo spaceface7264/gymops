@@ -1,6 +1,7 @@
 import { ArrowLeft, Pencil, Pin, PinOff, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 import { Link, useNavigate, useParams } from 'react-router'
 import { ConfirmDialog, LoadingState, PageHeader } from '@/components'
 import { Button } from '@/components/ui/button'
@@ -65,7 +66,10 @@ export function PostDetailPage() {
             size="sm"
             aria-pressed={post.data.pinned}
             onClick={() =>
-              setPinned.mutate({ id: post.data.id, pinned: !post.data.pinned })
+              setPinned.mutate(
+                { id: post.data.id, pinned: !post.data.pinned },
+                { onError: () => toast.error(t('news.saveFailed')) },
+              )
             }
           >
             {post.data.pinned ? (
@@ -79,10 +83,21 @@ export function PostDetailPage() {
             variant="outline"
             size="sm"
             onClick={() =>
-              setStatus.mutate({
-                id: post.data.id,
-                status: post.data.status === 'published' ? 'draft' : 'published',
-              })
+              setStatus.mutate(
+                {
+                  id: post.data.id,
+                  status: post.data.status === 'published' ? 'draft' : 'published',
+                },
+                {
+                  onSuccess: () =>
+                    toast.success(
+                      post.data.status === 'published'
+                        ? t('news.draftSaved')
+                        : t('news.published'),
+                    ),
+                  onError: () => toast.error(t('news.saveFailed')),
+                },
+              )
             }
           >
             {post.data.status === 'published' ? t('news.unpublish') : t('news.publish')}
@@ -108,7 +123,12 @@ export function PostDetailPage() {
         pending={remove.isPending}
         error={remove.isError ? t('news.deleteFailed') : undefined}
         onConfirm={() =>
-          remove.mutate(post.data.id, { onSuccess: () => void navigate('/news') })
+          remove.mutate(post.data.id, {
+            onSuccess: () => {
+              toast.success(t('news.deleted'))
+              void navigate('/news')
+            },
+          })
         }
       />
     </article>

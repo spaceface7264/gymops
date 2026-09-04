@@ -1,6 +1,7 @@
 import { ArrowLeft, Check, Pencil, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 import { Link, useNavigate, useParams } from 'react-router'
 import { ConfirmDialog, LoadingState, PageHeader, StatusBadge } from '@/components'
 import { Button } from '@/components/ui/button'
@@ -78,10 +79,21 @@ export function GuideDetailPage() {
             variant="outline"
             size="sm"
             onClick={() =>
-              setStatus.mutate({
-                id: guide.data.id,
-                status: guide.data.status === 'published' ? 'draft' : 'published',
-              })
+              setStatus.mutate(
+                {
+                  id: guide.data.id,
+                  status: guide.data.status === 'published' ? 'draft' : 'published',
+                },
+                {
+                  onSuccess: () =>
+                    toast.success(
+                      guide.data.status === 'published'
+                        ? t('guides.draftSaved')
+                        : t('guides.published'),
+                    ),
+                  onError: () => toast.error(t('guides.saveFailed')),
+                },
+              )
             }
           >
             {guide.data.status === 'published'
@@ -108,7 +120,12 @@ export function GuideDetailPage() {
         pending={remove.isPending}
         error={remove.isError ? t('guides.deleteFailed') : undefined}
         onConfirm={() =>
-          remove.mutate(guide.data.id, { onSuccess: () => void navigate('/guides') })
+          remove.mutate(guide.data.id, {
+            onSuccess: () => {
+              toast.success(t('guides.deleted'))
+              void navigate('/guides')
+            },
+          })
         }
       />
     </article>

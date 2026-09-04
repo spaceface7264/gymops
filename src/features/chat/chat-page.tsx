@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 import { Link, useNavigate, useParams } from 'react-router'
 import { ConfirmDialog } from '@/components'
 import { Button } from '@/components/ui/button'
@@ -221,7 +222,10 @@ function ChannelView({ channelId }: { channelId: string }) {
             aria-label={channel.muted ? t('chat.unmute') : t('chat.mute')}
             disabled={setMuted.isPending}
             onClick={() =>
-              setMuted.mutate({ channelId: channel.id, muted: !channel.muted })
+              setMuted.mutate(
+                { channelId: channel.id, muted: !channel.muted },
+                { onError: () => toast.error(t('chat.saveFailed')) },
+              )
             }
           >
             {channel.muted ? (
@@ -253,7 +257,12 @@ function ChannelView({ channelId }: { channelId: string }) {
             pending={remove.isPending}
             error={remove.isError ? t('chat.deleteFailed') : undefined}
             onConfirm={() =>
-              remove.mutate(channel.id, { onSuccess: () => void navigate('/chat') })
+              remove.mutate(channel.id, {
+                onSuccess: () => {
+                  toast.success(t('chat.channelDeleted'))
+                  void navigate('/chat')
+                },
+              })
             }
           />
           <ConfirmDialog
@@ -265,7 +274,12 @@ function ChannelView({ channelId }: { channelId: string }) {
             pending={leave.isPending}
             error={leave.isError ? t('chat.leaveFailed') : undefined}
             onConfirm={() =>
-              leave.mutate(channel.id, { onSuccess: () => void navigate('/chat') })
+              leave.mutate(channel.id, {
+                onSuccess: () => {
+                  toast.success(t('chat.left'))
+                  void navigate('/chat')
+                },
+              })
             }
           />
         </>

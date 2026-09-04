@@ -1,5 +1,6 @@
 import { Bell } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 import { Link, useNavigate } from 'react-router'
 import { EmptyState, LoadingState, PageHeader } from '@/components'
 import { Button } from '@/components/ui/button'
@@ -31,7 +32,11 @@ export function InboxPage() {
               size="sm"
               variant="outline"
               disabled={unread === 0 || markAllRead.isPending}
-              onClick={() => markAllRead.mutate()}
+              onClick={() =>
+                markAllRead.mutate(undefined, {
+                  onError: () => toast.error(t('notifications.saveFailed')),
+                })
+              }
             >
               {t('notifications.markAllRead')}
             </Button>
@@ -113,7 +118,12 @@ function NotificationRow({ notification }: { notification: Notification }) {
       <Button
         size="sm"
         variant="ghost"
-        onClick={() => markRead.mutate({ id: notification.id, read: unread })}
+        onClick={() =>
+          markRead.mutate(
+            { id: notification.id, read: unread },
+            { onError: () => toast.error(t('notifications.saveFailed')) },
+          )
+        }
         disabled={markRead.isPending}
       >
         {unread ? t('notifications.markRead') : t('notifications.markUnread')}

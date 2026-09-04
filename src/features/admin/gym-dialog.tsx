@@ -1,5 +1,6 @@
 import { useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -68,10 +69,14 @@ function GymForm({ gym, onDone }: { gym?: AdminGym; onDone: () => void }) {
     event.preventDefault()
     const input: GymInput = { ...values, city: values.city?.trim() || null }
 
+    const saved = () => {
+      toast.success(t('admin.gyms.saved'))
+      onDone()
+    }
     if (gym) {
-      update.mutate({ id: gym.id, ...input }, { onSuccess: onDone })
+      update.mutate({ id: gym.id, ...input }, { onSuccess: saved })
     } else {
-      create.mutate(input, { onSuccess: onDone })
+      create.mutate(input, { onSuccess: saved })
     }
   }
 

@@ -1,5 +1,6 @@
 import { useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -98,7 +99,12 @@ function InviteForm({
       ? { email, fullName, asAdmin: true }
       : { email, fullName, asAdmin: false, gymId, role }
 
-    invite.mutate(input, { onSuccess: onDone })
+    invite.mutate(input, {
+      onSuccess: () => {
+        toast.success(t('admin.invite.sent', { email }))
+        onDone()
+      },
+    })
   }
 
   return (

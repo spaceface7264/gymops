@@ -1,5 +1,6 @@
 import { useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 import { useNavigate } from 'react-router'
 import { Button } from '@/components/ui/button'
 import {
@@ -79,7 +80,10 @@ function ChannelForm({ channel, onDone }: { channel?: Channel; onDone: () => voi
       update.mutate(
         { id: channel.id, name: name.trim(), description: described },
         {
-          onSuccess: onDone,
+          onSuccess: () => {
+            toast.success(t('chat.channelSaved'))
+            onDone()
+          },
         },
       )
       return

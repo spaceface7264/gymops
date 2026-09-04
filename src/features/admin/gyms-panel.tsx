@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 import { LoadingState, StatusBadge } from '@/components'
 import { Button } from '@/components/ui/button'
 import {
@@ -85,7 +86,12 @@ export function GymsPanel() {
                     variant="outline"
                     size="sm"
                     disabled={setActive.isPending}
-                    onClick={() => setActive.mutate({ id: gym.id, active: !gym.active })}
+                    onClick={() =>
+                      setActive.mutate(
+                        { id: gym.id, active: !gym.active },
+                        { onError: () => toast.error(t('admin.saveFailed')) },
+                      )
+                    }
                   >
                     {gym.active ? t('admin.gyms.deactivate') : t('admin.gyms.reactivate')}
                   </Button>

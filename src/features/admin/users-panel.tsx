@@ -1,6 +1,7 @@
 import { Users } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 import { EmptyState, LoadingState, StatusBadge } from '@/components'
 import { Button } from '@/components/ui/button'
 import {
@@ -149,7 +150,21 @@ export function UsersPanel() {
                           : undefined
                       }
                       onClick={() =>
-                        setActive.mutate({ id: user.id, active: !user.active })
+                        setActive.mutate(
+                          { id: user.id, active: !user.active },
+                          {
+                            onSuccess: () =>
+                              toast.success(
+                                t(
+                                  user.active
+                                    ? 'admin.users.deactivated'
+                                    : 'admin.users.reactivated',
+                                  { name: user.full_name ?? user.email },
+                                ),
+                              ),
+                            onError: () => toast.error(t('admin.saveFailed')),
+                          },
+                        )
                       }
                     >
                       {user.active

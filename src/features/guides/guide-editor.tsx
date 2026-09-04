@@ -1,6 +1,7 @@
 import type { JSONContent } from '@tiptap/react'
 import { useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 import { useNavigate, useParams } from 'react-router'
 import { LoadingState, PageHeader } from '@/components'
 import { Button } from '@/components/ui/button'
@@ -98,6 +99,14 @@ function GuideEditor({ guide }: { guide?: Guide }) {
 
   const submit = (status: GuideInput['status']) => {
     const input: GuideInput = { gymId, categoryId, title, body, requiresAck, status }
+    const saved = () =>
+      toast.success(
+        status === 'published'
+          ? t('guides.published')
+          : guide?.status === 'published'
+            ? t('guides.saved')
+            : t('guides.draftSaved'),
+      )
 
     if (guide) {
       update.mutate(
@@ -106,10 +115,20 @@ function GuideEditor({ guide }: { guide?: Guide }) {
           version: significantChange ? guide.version + 1 : null,
           ...input,
         },
-        { onSuccess: () => void navigate(`/guides/${guide.id}`) },
+        {
+          onSuccess: () => {
+            saved()
+            void navigate(`/guides/${guide.id}`)
+          },
+        },
       )
     } else {
-      create.mutate(input, { onSuccess: (id) => void navigate(`/guides/${id}`) })
+      create.mutate(input, {
+        onSuccess: (id) => {
+          saved()
+          void navigate(`/guides/${id}`)
+        },
+      })
     }
   }
 

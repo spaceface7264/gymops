@@ -12,6 +12,9 @@ function Toaster(props: ToasterProps) {
         classNames: {
           toast: 'rounded-2xl border border-border bg-card text-foreground font-sans',
           description: 'text-muted-foreground',
+          success: '[&_[data-icon]]:text-tone-success-fg',
+          error: '[&_[data-icon]]:text-tone-danger-fg',
+          info: '[&_[data-icon]]:text-tone-info-fg',
         },
       }}
       {...props}

@@ -8,6 +8,7 @@ import {
   weekdayNames,
 } from '@/features/checklists'
 import { renderWithProviders } from '@/test/render'
+import { toast } from 'sonner'
 
 type Row = Record<string, unknown>
 
@@ -34,6 +35,9 @@ function builder(table: string) {
   }
   return chain
 }
+
+// P7D-04: saving navigates away, so the confirmation is a toast.
+vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }))
 
 vi.mock('@/lib/supabase', () => ({
   supabase: {
@@ -241,6 +245,7 @@ describe('the template editor', () => {
         required: false,
       },
     ])
+    await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Checklist saved'))
   })
 
   it('says what is still missing instead of just greying the button out', async () => {

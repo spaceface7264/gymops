@@ -1,6 +1,7 @@
 import { ArrowDown, ArrowUp, Plus, X } from 'lucide-react'
 import { useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 import { useNavigate, useParams } from 'react-router'
 import { LoadingState, PageHeader } from '@/components'
 import { Button } from '@/components/ui/button'
@@ -142,7 +143,12 @@ function TemplateEditor({ template }: { template?: ChecklistTemplate }) {
               required,
             })),
           },
-          { onSuccess: () => void navigate('/checklists/templates') },
+          {
+            onSuccess: () => {
+              toast.success(t('checklists.templateSaved'))
+              void navigate('/checklists/templates')
+            },
+          },
         )
       }}
     >

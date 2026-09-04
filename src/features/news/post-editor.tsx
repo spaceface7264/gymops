@@ -1,6 +1,7 @@
 import type { JSONContent } from '@tiptap/react'
 import { useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 import { useNavigate, useParams } from 'react-router'
 import { LoadingState, PageHeader } from '@/components'
 import { Button } from '@/components/ui/button'
@@ -95,13 +96,31 @@ function PostEditor({ post }: { post?: NewsPost }) {
   const submit = (status: PostInput['status']) => {
     const input: PostInput = { gymId, title, body, requiresAck, status }
 
+    const saved = () =>
+      toast.success(
+        status === 'published'
+          ? t('news.published')
+          : post?.status === 'published'
+            ? t('news.saved')
+            : t('news.draftSaved'),
+      )
     if (post) {
       update.mutate(
         { id: post.id, ...input },
-        { onSuccess: () => void navigate(`/news/${post.id}`) },
+        {
+          onSuccess: () => {
+            saved()
+            void navigate(`/news/${post.id}`)
+          },
+        },
       )
     } else {
-      create.mutate(input, { onSuccess: (id) => void navigate(`/news/${id}`) })
+      create.mutate(input, {
+        onSuccess: (id) => {
+          saved()
+          void navigate(`/news/${id}`)
+        },
+      })
     }
   }
 

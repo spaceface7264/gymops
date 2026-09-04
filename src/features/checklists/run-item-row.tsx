@@ -1,5 +1,6 @@
 import { useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -42,7 +43,10 @@ export function RunItemRow({
           checked={Boolean(item.done_at)}
           disabled={!canComplete || toggle.isPending}
           onCheckedChange={(checked) =>
-            toggle.mutate({ id: item.id, done: checked === true })
+            toggle.mutate(
+              { id: item.id, done: checked === true },
+              { onError: () => toast.error(t('checklists.tickFailed')) },
+            )
           }
         />
         <div className="space-y-0.5">
@@ -81,7 +85,11 @@ export function RunItemRow({
         value={note}
         onChange={(event) => setNote_(event.target.value)}
         onBlur={() => {
-          if ((item.note ?? '') !== note) setNote.mutate({ id: item.id, note })
+          if ((item.note ?? '') !== note)
+            setNote.mutate(
+              { id: item.id, note },
+              { onError: () => toast.error(t('checklists.tickFailed')) },
+            )
         }}
       />
     </div>
