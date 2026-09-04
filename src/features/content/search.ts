@@ -43,10 +43,12 @@ function snippet(text: string | null, query: string): string {
 }
 
 /**
- * One search over news and guides (P3-06). `websearch_to_tsquery` with the
- * `simple` configuration is the query side of the generated `search_vector`
- * columns — quoted phrases and `-word` work, and neither language is stemmed
- * into the other. RLS decides what can match at all.
+ * One search over news and guides (P3-06, ranked in P7B-02).
+ * `content_search()` runs `websearch_to_tsquery` with the `simple`
+ * configuration against the generated `search_vector` columns — quoted
+ * phrases and `-word` work, neither language is stemmed into the other — and
+ * orders by `ts_rank`, so a title hit comes before a passing mention. It is
+ * `security invoker`: RLS decides what can match at all.
  */
 export function useContentSearch(query: string) {
   const text = query.trim()
@@ -55,37 +57,17 @@ export function useContentSearch(query: string) {
     queryKey: searchKeys.query(text),
     enabled: text.length >= minSearchLength,
     queryFn: async (): Promise<SearchHit[]> => {
-      const [posts, guides] = await Promise.all([
-        supabase
-          .from('posts')
-          .select('id, title, body_text, status, gyms(name)')
-          .is('deleted_at', null)
-          .textSearch('search_vector', text, { type: 'websearch', config: 'simple' })
-          .limit(20),
-        supabase
-          .from('guides')
-          .select('id, title, body_text, status, gyms(name)')
-          .is('deleted_at', null)
-          .textSearch('search_vector', text, { type: 'websearch', config: 'simple' })
-          .limit(20),
-      ])
+      const { data, error } = await supabase.rpc('content_search', { query: text })
+      if (error) throw error
 
-      if (posts.error) throw posts.error
-      if (guides.error) throw guides.error
-
-      return [
-        ...posts.data.map((row) => ({ kind: 'news' as const, row })),
-        ...guides.data.map((row) => ({ kind: 'guide' as const, row })),
-      ]
-        .map(({ kind, row }) => ({
-          kind,
-          id: row.id,
-          title: row.title,
-          snippet: snippet(row.body_text, text),
-          scopeName: row.gyms?.name ?? null,
-          isDraft: row.status === 'draft',
-        }))
-        .sort((a, b) => a.title.localeCompare(b.title))
+      return data.map((row) => ({
+        kind: row.kind === 'guide' ? ('guide' as const) : ('news' as const),
+        id: row.id,
+        title: row.title,
+        snippet: snippet(row.body_text, text),
+        scopeName: row.gym_name,
+        isDraft: row.status === 'draft',
+      }))
     },
   })
 }

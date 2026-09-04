@@ -100,6 +100,23 @@
       "submitting": "Opretter konto…",
       "title": "Velkommen til GymOps"
     },
+    "account": {
+      "current": "Nuværende adgangskode",
+      "language": "Sprog",
+      "languageSaved": "Sprog gemt.",
+      "name": "Fulde navn",
+      "nameEmpty": "Skriv dit navn.",
+      "nameSaved": "Navn gemt.",
+      "newPassword": "Ny adgangskode",
+      "password": "Adgangskode",
+      "passwordSaved": "Adgangskoden er ændret.",
+      "repeat": "Gentag ny adgangskode",
+      "save": "Gem",
+      "saveFailed": "Ændringen kunne ikke gemmes. Prøv igen.",
+      "saving": "Gemmer…",
+      "title": "Din konto",
+      "wrongPassword": "Det er ikke din nuværende adgangskode."
+    },
     "callback": {
       "continueInBrowser": "Fortsæt i browseren",
       "description": "Din invitation er klar. Gør din konto færdig i skrivebordsappen eller her i browseren.",

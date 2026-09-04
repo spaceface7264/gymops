@@ -2,6 +2,7 @@ export { AuthProvider } from './auth-provider'
 export { useAuth, type AuthState, type AuthStatus } from './auth-context'
 export { RequireAuth } from './require-auth'
 export {
+  useChangePassword,
   useCompleteInvite,
   useExchangeCode,
   useProfile,
@@ -9,8 +10,11 @@ export {
   useSetPassword,
   useSignIn,
   useSignOut,
+  useUpdateLocale,
+  useUpdateName,
   type Credentials,
   type InviteCompletion,
+  type PasswordChange,
   type Profile,
 } from './queries'
 export { PasswordFields } from './password-fields'

@@ -1392,6 +1392,18 @@ export type Database = {
       chat_topic_channel: { Args: { topic: string }; Returns: string }
       content_audience: { Args: { target_gym: string }; Returns: string[] }
       content_object_gym: { Args: { object_name: string }; Returns: string }
+      content_search: {
+        Args: { query: string }
+        Returns: {
+          body_text: string
+          gym_name: string
+          id: string
+          kind: string
+          rank: number
+          status: string
+          title: string
+        }[]
+      }
       content_search_vector: {
         Args: { doc: Json; title: string }
         Returns: unknown

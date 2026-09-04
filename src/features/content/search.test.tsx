@@ -5,50 +5,37 @@ import { ContentSearch } from '@/features/content'
 import { renderWithProviders } from '@/test/render'
 
 type Row = Record<string, unknown>
-
-const tableRows = vi.fn<(table: string) => Row[]>()
-const textSearch = vi.fn<(column: string, query: string, options: Row) => void>()
-
-function builder(table: string) {
-  const chain = {
-    select: () => chain,
-    is: () => chain,
-    textSearch: (column: string, query: string, options: Row) => {
-      textSearch(column, query, options)
-      return chain
-    },
-    limit: () => Promise.resolve({ data: tableRows(table), error: null }),
-  }
-  return chain
-}
+const rpc = vi.fn<(fn: string, args: Row) => Promise<{ data: Row[]; error: null }>>()
 
 vi.mock('@/lib/supabase', () => ({
-  supabase: { from: (table: string) => builder(table) },
+  supabase: { rpc: (fn: string, args: Row) => rpc(fn, args) },
 }))
 
 beforeEach(() => {
   vi.clearAllMocks()
-  tableRows.mockImplementation((table) =>
-    table === 'posts'
-      ? [
-          {
-            id: 'post-1',
-            title: 'New chalk policy',
-            body_text: 'From Monday only liquid chalk is allowed in the whole gym.',
-            status: 'published',
-            gyms: null,
-          },
-        ]
-      : [
-          {
-            id: 'guide-1',
-            title: 'Evacuation',
-            body_text: 'Gather everyone by the front door.',
-            status: 'draft',
-            gyms: { name: 'Copenhagen Nord' },
-          },
-        ],
-  )
+  rpc.mockResolvedValue({
+    data: [
+      {
+        kind: 'guide',
+        id: 'guide-1',
+        title: 'Evacuation',
+        body_text: 'Gather everyone by the front door.',
+        status: 'draft',
+        gym_name: 'Copenhagen Nord',
+        rank: 0.6,
+      },
+      {
+        kind: 'news',
+        id: 'post-1',
+        title: 'New chalk policy',
+        body_text: 'From Monday only liquid chalk is allowed in the whole gym.',
+        status: 'published',
+        gym_name: null,
+        rank: 0.3,
+      },
+    ],
+    error: null,
+  })
 })
 
 describe('ContentSearch', () => {
@@ -58,7 +45,7 @@ describe('ContentSearch', () => {
     await userEvent.type(screen.getByLabelText('Search news and guides'), 'c')
 
     await new Promise((resolve) => setTimeout(resolve, 400))
-    expect(textSearch).not.toHaveBeenCalled()
+    expect(rpc).not.toHaveBeenCalled()
   })
 
   it('searches both news and guides with a websearch query on the simple config', async () => {
@@ -66,11 +53,8 @@ describe('ContentSearch', () => {
 
     await userEvent.type(screen.getByLabelText('Search news and guides'), 'chalk')
 
-    await waitFor(() => expect(textSearch).toHaveBeenCalledTimes(2))
-    expect(textSearch).toHaveBeenCalledWith('search_vector', 'chalk', {
-      type: 'websearch',
-      config: 'simple',
-    })
+    await waitFor(() => expect(rpc).toHaveBeenCalledTimes(1))
+    expect(rpc).toHaveBeenCalledWith('content_search', { query: 'chalk' })
   })
 
   it('labels each hit with its kind, its scope and whether it is a draft', async () => {
@@ -109,5 +93,15 @@ describe('ContentSearch', () => {
     await userEvent.type(screen.getByLabelText('Search news and guides'), 'liquid')
 
     expect(await screen.findByText(/…?From Monday only liquid chalk/)).toBeInTheDocument()
+  })
+
+  it('lists results in the order the database ranked them', async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<ContentSearch />)
+    await user.type(screen.getByRole('searchbox'), 'door')
+    const list = await screen.findByRole('list', { name: 'Search results' })
+    const items = await within(list).findAllByRole('listitem')
+    expect(items[0]).toHaveTextContent('Evacuation')
+    expect(items[1]).toHaveTextContent('New chalk policy')
   })
 })
