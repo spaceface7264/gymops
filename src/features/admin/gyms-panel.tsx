@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Badge } from '@/components/ui/badge'
+import { LoadingState, StatusBadge } from '@/components'
 import { Button } from '@/components/ui/button'
 import {
   Table,
@@ -43,9 +43,7 @@ export function GymsPanel() {
         </Button>
       </div>
 
-      {gyms.isPending && (
-        <p className="text-muted-foreground text-sm">{t('admin.loading')}</p>
-      )}
+      {gyms.isPending && <LoadingState rows={6} />}
       {gyms.isError && (
         <p role="alert" className="text-destructive text-sm">
           {t('admin.loadFailed')}
@@ -75,9 +73,9 @@ export function GymsPanel() {
                   {gym.timezone}
                 </TableCell>
                 <TableCell>
-                  <Badge variant={gym.active ? 'default' : 'outline'}>
+                  <StatusBadge tone={gym.active ? 'success' : 'neutral'}>
                     {gym.active ? t('admin.gyms.active') : t('admin.gyms.inactive')}
-                  </Badge>
+                  </StatusBadge>
                 </TableCell>
                 <TableCell className="space-x-2 text-right whitespace-nowrap">
                   <Button variant="outline" size="sm" onClick={() => openEdit(gym)}>

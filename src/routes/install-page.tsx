@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
+import { PageHeader } from '@/components'
 import { Button } from '@/components/ui/button'
 
 /**
@@ -17,12 +18,14 @@ export function InstallPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-2xl font-semibold">{t('install.title')}</h1>
-        <Button size="sm" variant="outline" asChild>
-          <Link to="/notifications/preferences">{t('install.backToPreferences')}</Link>
-        </Button>
-      </div>
+      <PageHeader
+        title={t('install.title')}
+        action={
+          <Button size="sm" variant="outline" asChild>
+            <Link to="/notifications/preferences">{t('install.backToPreferences')}</Link>
+          </Button>
+        }
+      />
 
       <p className="text-muted-foreground">{t('install.intro')}</p>
 

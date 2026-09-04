@@ -1,5 +1,7 @@
+import { Bell } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router'
+import { EmptyState, LoadingState, PageHeader } from '@/components'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { notificationIcons } from './labels'
@@ -21,33 +23,35 @@ export function InboxPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-2xl font-semibold">{t('notifications.title')}</h1>
-        <div className="flex items-center gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={unread === 0 || markAllRead.isPending}
-            onClick={() => markAllRead.mutate()}
-          >
-            {t('notifications.markAllRead')}
-          </Button>
-          <Button size="sm" variant="outline" asChild>
-            <Link to="/notifications/preferences">{t('notifications.preferences')}</Link>
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        title={t('notifications.title')}
+        action={
+          <>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={unread === 0 || markAllRead.isPending}
+              onClick={() => markAllRead.mutate()}
+            >
+              {t('notifications.markAllRead')}
+            </Button>
+            <Button size="sm" variant="outline" asChild>
+              <Link to="/notifications/preferences">
+                {t('notifications.preferences')}
+              </Link>
+            </Button>
+          </>
+        }
+      />
 
-      {notifications.isPending && (
-        <p className="text-muted-foreground text-sm">{t('notifications.loading')}</p>
-      )}
+      {notifications.isPending && <LoadingState rows={6} />}
       {notifications.isError && (
         <p role="alert" className="text-destructive text-sm">
           {t('notifications.loadFailed')}
         </p>
       )}
       {notifications.data && items.length === 0 && (
-        <p className="text-muted-foreground text-sm">{t('notifications.empty')}</p>
+        <EmptyState icon={Bell} title={t('notifications.empty')} />
       )}
 
       <ul className="space-y-2">
@@ -78,7 +82,7 @@ function NotificationRow({ notification }: { notification: Notification }) {
     <div
       className={cn(
         'flex items-start gap-3 rounded-md border p-3',
-        unread && 'bg-accent/40 border-accent-foreground/20',
+        unread && 'bg-accent/50',
       )}
     >
       <Icon className="text-muted-foreground mt-0.5 size-4 shrink-0" aria-hidden="true" />

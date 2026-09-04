@@ -1,5 +1,6 @@
+import { Construction } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { EmptyState } from '@/components'
 import type { NavEntry } from '@/routes/nav'
 
 /**
@@ -9,15 +10,9 @@ import type { NavEntry } from '@/routes/nav'
 export function ModulePlaceholder({ entry }: { entry: NavEntry }) {
   const { t } = useTranslation()
 
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t(entry.labelKey)}</CardTitle>
-      </CardHeader>
-      <CardContent className="text-muted-foreground space-y-1 text-sm">
-        <p>{t('module.notYet')}</p>
-        {entry.phase && <p>{t('module.comingIn', { phase: entry.phase })}</p>}
-      </CardContent>
-    </Card>
-  )
+  const body = entry.phase
+    ? `${t('module.notYet')} ${t('module.comingIn', { phase: entry.phase })}`
+    : t('module.notYet')
+
+  return <EmptyState icon={Construction} title={t(entry.labelKey)} body={body} />
 }
