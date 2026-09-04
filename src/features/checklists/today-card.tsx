@@ -37,7 +37,11 @@ export function TodaysChecklistsCard() {
           </p>
         )}
         {runs.data && all.length === 0 && (
-          <EmptyState icon={ListChecks} title={t('checklists.nothingToday')} />
+          <EmptyState
+            bordered={false}
+            icon={ListChecks}
+            title={t('checklists.nothingToday')}
+          />
         )}
 
         <ul className="space-y-2">

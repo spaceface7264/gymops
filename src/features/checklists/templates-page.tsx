@@ -66,7 +66,7 @@ export function ChecklistTemplatesPage() {
                       <StatusBadge tone="neutral">{t('checklists.inactive')}</StatusBadge>
                     )}
                   </div>
-                  <h2 className="text-lg font-medium">{template.name}</h2>
+                  <h2 className="text-lg font-semibold">{template.name}</h2>
                   <p className="text-muted-foreground text-sm">
                     {days ?? t('checklists.everyDay')} ·{' '}
                     {t('checklists.itemCount', {

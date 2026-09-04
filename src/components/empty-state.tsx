@@ -9,17 +9,22 @@ export function EmptyState({
   body,
   action,
   className,
+  as: Title = 'p',
+  bordered = true,
 }: {
   icon?: LucideIcon
   title: string
   body?: string
   action?: ReactNode
   className?: string
+  as?: 'h1' | 'h2' | 'p'
+  bordered?: boolean
 }) {
   return (
     <div
       className={cn(
-        'flex flex-col items-center gap-3 rounded-2xl border border-dashed px-6 py-10 text-center',
+        'flex flex-col items-center gap-3 text-center',
+        bordered ? 'rounded-2xl border border-dashed px-6 py-10' : 'px-2 py-6',
         className,
       )}
     >
@@ -29,7 +34,7 @@ export function EmptyState({
         </span>
       )}
       <div className="space-y-1">
-        <p className="font-semibold">{title}</p>
+        <Title className="font-semibold">{title}</Title>
         {body && <p className="text-muted-foreground max-w-prose text-sm">{body}</p>}
       </div>
       {action}

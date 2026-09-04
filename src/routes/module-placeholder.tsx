@@ -14,5 +14,5 @@ export function ModulePlaceholder({ entry }: { entry: NavEntry }) {
     ? `${t('module.notYet')} ${t('module.comingIn', { phase: entry.phase })}`
     : t('module.notYet')
 
-  return <EmptyState icon={Construction} title={t(entry.labelKey)} body={body} />
+  return <EmptyState as="h1" icon={Construction} title={t(entry.labelKey)} body={body} />
 }

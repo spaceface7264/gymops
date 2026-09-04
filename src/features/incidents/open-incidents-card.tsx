@@ -38,7 +38,11 @@ export function OpenIncidentsCard() {
           </p>
         )}
         {incidents.data && open.length === 0 && (
-          <EmptyState icon={TriangleAlert} title={t('home.incidents.none')} />
+          <EmptyState
+            bordered={false}
+            icon={TriangleAlert}
+            title={t('home.incidents.none')}
+          />
         )}
 
         <ul className="space-y-2">

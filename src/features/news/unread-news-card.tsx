@@ -36,7 +36,11 @@ export function UnreadNewsCard() {
           </p>
         )}
         {unread.data && posts.length === 0 && (
-          <EmptyState icon={Newspaper} title={t('home.news.allCaughtUp')} />
+          <EmptyState
+            bordered={false}
+            icon={Newspaper}
+            title={t('home.news.allCaughtUp')}
+          />
         )}
 
         <ul className="space-y-2">
@@ -45,7 +49,7 @@ export function UnreadNewsCard() {
               {post.requires_ack ? (
                 <StatusBadge tone="new">{t('home.news.needsConfirmation')}</StatusBadge>
               ) : (
-                <StatusBadge tone="new">{t('home.news.unread')}</StatusBadge>
+                <StatusBadge tone="info">{t('home.news.unread')}</StatusBadge>
               )}
               <Link to={`/news/${post.id}`} className="font-medium hover:underline">
                 {post.title}

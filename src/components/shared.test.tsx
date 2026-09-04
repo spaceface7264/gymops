@@ -42,6 +42,18 @@ describe('EmptyState', () => {
     expect(screen.getByText('No incidents')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Report one' })).toBeInTheDocument()
   })
+
+  it('renders the title as an h1 when as="h1" is given', () => {
+    render(<EmptyState as="h1" title="Page not found" />)
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Page not found' }),
+    ).toBeInTheDocument()
+  })
+
+  it('drops the dashed border when bordered is false', () => {
+    const { container } = render(<EmptyState bordered={false} title="All caught up" />)
+    expect(container.firstElementChild?.className).not.toContain('border-dashed')
+  })
 })
 
 describe('LoadingState', () => {

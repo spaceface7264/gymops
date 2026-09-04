@@ -17,6 +17,7 @@ export function RouteError() {
     <div className="flex min-h-dvh items-center justify-center p-6">
       <div className="w-full max-w-md space-y-4">
         <EmptyState
+          as="h1"
           icon={TriangleAlert}
           title={t('app.error.title')}
           body={t('app.error.body')}

@@ -132,7 +132,7 @@ export function GuidesPage() {
                       <StatusBadge tone="new">{t('guides.mustConfirm')}</StatusBadge>
                     )}
                   </div>
-                  <h2 className="text-lg font-medium">
+                  <h2 className="text-lg font-semibold">
                     <Link to={`/guides/${guide.id}`} className="hover:underline">
                       {guide.title}
                     </Link>

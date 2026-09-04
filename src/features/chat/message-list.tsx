@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { EmptyState, LoadingState } from '@/components'
 import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
 import { useAuth } from '@/features/auth'
 import { Attachments } from './attachments'
 import { ChatMarkdown } from './markdown'
@@ -201,9 +202,9 @@ function EditForm({
         if (body.trim()) onSave(body.trim())
       }}
     >
-      <textarea
+      <Textarea
         aria-label={t('chat.editMessage')}
-        className="border-input bg-background w-full rounded-md border p-2 text-sm"
+        className="text-sm"
         rows={2}
         value={body}
         autoFocus

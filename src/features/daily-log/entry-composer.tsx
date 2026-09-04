@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
   SelectContent,
@@ -80,9 +81,9 @@ export function EntryComposer({ gymId }: { gymId: string }) {
 
         <div className="space-y-1">
           <Label htmlFor={`${fieldId}-body`}>{t('dailyLog.entry')}</Label>
-          <textarea
+          <Textarea
             id={`${fieldId}-body`}
-            className="border-input bg-background min-h-20 w-full rounded-md border p-2 text-sm"
+            className="min-h-20 text-sm"
             value={body}
             onChange={(event) => setBody(event.target.value)}
           />

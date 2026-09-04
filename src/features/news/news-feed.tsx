@@ -53,7 +53,7 @@ export function NewsFeed() {
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0 space-y-2">
                   <PostBadges post={post} />
-                  <h2 className="text-lg font-medium">
+                  <h2 className="text-lg font-semibold">
                     <Link to={`/news/${post.id}`} className="hover:underline">
                       {post.title}
                     </Link>

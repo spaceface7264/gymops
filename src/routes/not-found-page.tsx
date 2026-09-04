@@ -6,6 +6,11 @@ export function NotFoundPage() {
   const { t } = useTranslation()
 
   return (
-    <EmptyState icon={SearchX} title={t('notFound.title')} body={t('notFound.body')} />
+    <EmptyState
+      as="h1"
+      icon={SearchX}
+      title={t('notFound.title')}
+      body={t('notFound.body')}
+    />
   )
 }

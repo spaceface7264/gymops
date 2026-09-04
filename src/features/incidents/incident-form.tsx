@@ -15,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
 import { useCompletionScope } from '@/features/checklists'
 import { MissingRequirements } from '@/features/content'
 import { useGymScope } from '@/features/gyms'
@@ -150,9 +151,9 @@ export function IncidentFormPage() {
 
           <div className="space-y-1">
             <Label htmlFor={`${fieldId}-body`}>{t('incidents.bodyLabel')}</Label>
-            <textarea
+            <Textarea
               id={`${fieldId}-body`}
-              className="border-input bg-background min-h-24 w-full rounded-md border p-2 text-sm"
+              className="min-h-24 text-sm"
               value={body}
               onChange={(event) => setBody(event.target.value)}
             />

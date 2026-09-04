@@ -81,7 +81,7 @@ function RunCard({ run, showGym }: { run: ChecklistRun; showGym: boolean }) {
       </div>
 
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="text-lg font-medium">{title}</h2>
+        <h2 className="text-lg font-semibold">{title}</h2>
         <p className="text-muted-foreground text-sm">
           {t('checklists.progress', { done: progress.done, total: progress.total })}
         </p>

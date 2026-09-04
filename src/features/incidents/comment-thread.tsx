@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { Textarea } from '@/components/ui/textarea'
 import { useAddComment, useIncidentComments } from './queries'
 
 /** The thread on one incident: oldest first, and a box for the next word. */
@@ -54,9 +55,9 @@ export function CommentThread({
             add.mutate(body, { onSuccess: () => setBody('') })
           }}
         >
-          <textarea
+          <Textarea
             aria-label={t('incidents.comment')}
-            className="border-input bg-background min-h-16 w-full rounded-md border p-2 text-sm"
+            className="min-h-16 text-sm"
             value={body}
             onChange={(event) => setBody(event.target.value)}
           />

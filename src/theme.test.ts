@@ -41,4 +41,8 @@ describe('theme', () => {
       expect(css).toContain(`--tone-${tone}-dot`)
     }
   })
+
+  it('keeps cards at the full radius, with inputs less round', () => {
+    expect(css).toContain('--radius-2xl: var(--radius)')
+  })
 })

@@ -82,7 +82,7 @@ function NotificationRow({ notification }: { notification: Notification }) {
     <div
       className={cn(
         'flex items-start gap-3 rounded-md border p-3',
-        unread && 'bg-accent/50',
+        unread && 'bg-tone-new-bg/60',
       )}
     >
       <Icon className="text-muted-foreground mt-0.5 size-4 shrink-0" aria-hidden="true" />

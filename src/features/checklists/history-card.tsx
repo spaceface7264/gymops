@@ -46,7 +46,11 @@ export function ChecklistHistoryCard() {
         )}
 
         {runs.data && all.length === 0 && (
-          <EmptyState icon={History} title={t('home.checklists.noRuns')} />
+          <EmptyState
+            bordered={false}
+            icon={History}
+            title={t('home.checklists.noRuns')}
+          />
         )}
 
         {all.length > 0 && (

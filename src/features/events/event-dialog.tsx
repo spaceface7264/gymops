@@ -22,7 +22,7 @@ import {
 } from './queries'
 
 const selectClassName =
-  'border-input bg-background h-9 w-full rounded-md border px-2 text-sm'
+  'border-input bg-card focus-visible:border-ring focus-visible:ring-ring/40 h-11 w-full rounded-xl border px-3.5 py-1 text-base outline-none focus-visible:ring-[3px]'
 
 const linkPattern = /^https?:\/\/\S+$/
 

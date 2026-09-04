@@ -15,6 +15,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { useAuth } from '@/features/auth'
 import { incidentDraftPath } from './incident-draft'
 import {
@@ -91,9 +92,9 @@ export function EntryCard({
               </SelectGroup>
             </SelectContent>
           </Select>
-          <textarea
+          <Textarea
             aria-label={t('dailyLog.entry')}
-            className="border-input bg-background min-h-20 w-full rounded-md border p-2 text-sm"
+            className="min-h-20 text-sm"
             value={body}
             onChange={(event) => setBody(event.target.value)}
           />

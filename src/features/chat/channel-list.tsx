@@ -87,7 +87,7 @@ export function ChannelList({ activeId }: { activeId?: string }) {
       })}
 
       {!channels.isPending && named.length === 0 && (
-        <EmptyState icon={MessagesSquare} title={t('chat.empty')} />
+        <EmptyState bordered={false} icon={MessagesSquare} title={t('chat.empty')} />
       )}
     </div>
   )
@@ -120,7 +120,7 @@ function ChannelRow({
       to={`/chat/${channel.id}`}
       aria-current={active ? 'page' : undefined}
       className={cn(
-        'flex items-center gap-2 rounded-xl px-2 py-2 text-sm',
+        'flex min-h-11 items-center gap-2 rounded-xl px-2 py-2 text-sm',
         active ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/60',
       )}
     >

@@ -31,7 +31,11 @@ export function LatestLogEntryCard() {
           </p>
         )}
         {latest.data === null && (
-          <EmptyState icon={NotebookPen} title={t('home.dailyLog.empty')} />
+          <EmptyState
+            bordered={false}
+            icon={NotebookPen}
+            title={t('home.dailyLog.empty')}
+          />
         )}
 
         {entry && (

@@ -24,7 +24,7 @@ export function AuthLayout({
   return (
     <main className="bg-background flex min-h-svh items-center justify-center p-4">
       <div className="w-full max-w-sm space-y-6">
-        <Logo wordmark className="justify-center text-xl" />
+        <Logo wordmark className="flex justify-center text-xl" />
         <Card>
           <CardHeader>
             <CardTitle>{title}</CardTitle>
