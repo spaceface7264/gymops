@@ -1,0 +1,87 @@
+# GymOps design reference
+
+The one page to read before building or changing a screen. Decided with Rami on 2026-09-03 (Phase 7c, PR #11); the reasoning and the contrast maths are in `docs/superpowers/specs/2026-09-03-facelift-design.md`, the screens as shipped are in `docs/design/screens/`, the palette swatches at https://claude.ai/code/artifact/8ded5226-8845-48cf-a592-7477e5043edd.
+
+**The feel:** friendly and clear, modelled on All Gravy. White surfaces on a faint lilac ground, one violet accent, pill buttons, bold plain headings, Inter. Built for 20–25-year-old staff on a phone mid-shift and on a front-desk touch screen. Light only.
+
+## Colour
+
+Tokens live in `src/index.css` and are used through Tailwind (`bg-primary`, `text-muted-foreground`, `bg-tone-warning-bg` …). Never write a hex in a component.
+
+| Token                         | Value                 | Use                                                        |
+| ----------------------------- | --------------------- | ---------------------------------------------------------- |
+| `--background`                | `#f7f5fb`             | page ground                                                |
+| `--card`, `--popover`         | `#ffffff`             | cards, dialogs, menus, inputs, the header and nav          |
+| `--foreground`                | `#16121f`             | text, headings, icons                                      |
+| `--primary`                   | `#863bff`             | primary button, active states, unread counts, focus ring   |
+| `--primary-hover` / `-active` | `#7429f0` / `#5f1fd1` | button hover and pressed                                   |
+| `--secondary`, `--muted`      | `#f1eef7`             | secondary buttons, table header, skeletons                 |
+| `--secondary-foreground`      | `#2c2540`             | text on secondary, table cells                             |
+| `--muted-foreground`          | `#6b6580`             | meta, descriptions, inactive nav                           |
+| `--accent`                    | `#f5f0ff`             | active nav pill, row and menu hover                        |
+| `--accent-foreground`         | `#5f1fd1`             | text on the accent tint, links                             |
+| `--destructive`               | `#cc2e2e`             | delete buttons, error text                                 |
+| `--border` / `--input`        | `#e6e2ef` / `#d9d4e6` | card edges and dividers / input and outline-button borders |
+| `--ring`                      | `#863bff`             | focus ring, 3 px at 40 %                                   |
+
+Violet is spent on the active nav pill, the primary button, the focus ring, unread counts and the `new` tone. It is never body text on white (5.1:1 clears AA only for large or bold text).
+
+### Status tones
+
+Five tones, each a tinted background, dark text of the same hue and a dot, exposed as `bg-tone-<tone>-bg`, `text-tone-<tone>-fg`, `bg-tone-<tone>-dot`. Semantic colour is separate from the accent.
+
+| Tone      | Means                                 | Examples                                                           |
+| --------- | ------------------------------------- | ------------------------------------------------------------------ |
+| `success` | done, active, resolved, complete      | checklist complete, incident resolved, active user                 |
+| `warning` | in progress, draft, flagged but open  | checklist in progress, draft post, medium severity, a logged issue |
+| `info`    | scheduled, informational attribute    | incident in progress, pinned post, event type, merely-unread post  |
+| `danger`  | needs attention now, a closed failure | open incident, high severity, missed checklist                     |
+| `new`     | **only** unread or must-acknowledge   | unread news, acknowledgement required                              |
+| `neutral` | a label, not a state                  | gym name, kind, role, category, company-wide                       |
+
+`new` is reserved. If something is not literally unread or awaiting acknowledgement, it is not `new`.
+
+## Type and shape
+
+- **Inter**, self-hosted from `@fontsource-variable/inter` so the desktop app renders it offline. Base 15 px; tabular numerals everywhere.
+- **Scale:** page title 24 px semibold (`PageHeader`), section title 18 px semibold (`CardTitle`), body 15 px, meta 13 px.
+- **Radius:** `--radius: 1rem`. Cards and dialogs `rounded-2xl` (16 px), inputs and selects `rounded-xl` (12 px), menu items `rounded-lg` (12 px), buttons and badges pill. Inputs are less round than the card they sit in.
+- **Surfaces:** cards are white with a 1 px border and no shadow. Dialogs are the one lifted surface (they keep a shadow).
+- **Touch:** every control a thumb hits is at least 44 px tall: `Button` default `h-11`, `size="icon"` `size-11`, inputs and selects `h-11`, phone nav items `min-h-11`, `Switch` has a padded hit area. `size="sm"` (`h-9`) is for dense desktop-only rows.
+- **Motion:** 150 ms ease-out on hover and press, skeleton shimmer while loading. Everything respects `prefers-reduced-motion`. No layout animation; no route transitions.
+
+## Layout
+
+- Phone: a bottom tab bar (spec §4 rejects a drawer). Sidebar from `md` up. `/chat` is the one full-bleed route.
+- Signed-in screens render inside `AppShell` in a `max-w-3xl` column. Signed-out screens use `AuthLayout`: the logo above a `max-w-sm` card.
+- The header carries the gym switcher, the bell and an initials avatar whose menu holds Account, Notification preferences and Sign out. There is no standing Sign out button.
+
+## The shared layer
+
+Everything in `src/components/` (exported from `@/components`); the vendored shadcn primitives are in `src/components/ui/`. Feature code composes the former and reaches for the latter only for what the former does not cover.
+
+| Component      | Use it for                                                                     | Rules                                                                                                                                                                              |
+| -------------- | ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PageHeader`   | how every screen opens: `title`, optional `description`, one `action`          | renders the page's only `h1`. `action` is a control that already belongs beside the title (New …, Edit); never hoist Save out of a form or a control out of a card. Chat has none. |
+| `EmptyState`   | nothing here yet: `icon`, `title`, optional `body`, `action`                   | inside a `Card` pass `bordered={false}`; on a screen with no other heading pass `as="h1"`. Reuse the existing `*.empty` key as the title.                                          |
+| `LoadingState` | skeleton rows in place of "Loading…" text: `rows` (3 in a card, 5–6 on a page) | one `role="status"` announcement; never a bare loading paragraph                                                                                                                   |
+| `StatusBadge`  | any state or label: `tone`, optional `dot`                                     | tones per the table above; `neutral` for labels; never the raw `Badge` for a state                                                                                                 |
+| `Logo`         | the bolt from the app icon, `wordmark` for the text                            | sidebar head and the auth frame                                                                                                                                                    |
+| `CardTitle`    | (in `ui/card`) a section title inside a card                                   | a real heading, `h2` by default, `as` to change                                                                                                                                    |
+
+Error lines stay as they are: `<p role="alert" className="text-destructive text-sm">`.
+
+## Do and don't
+
+- Do put every string through `t()` with a key in both `en` and `da`; Danish runs long, check it first.
+- Do keep native `<select>` elements native (spec §4) and give them the input classes.
+- Do use `Textarea` from `ui/` for multi-line input; it auto-grows.
+- Don't add `dark:` classes; there is no dark theme and the variant is gone.
+- Don't use `bg-background` on a control; controls sit on `bg-card`.
+- Don't reach for `rounded-md`, `h-9`, `shadow-xs` on anything a user touches; those are the pre-facelift defaults.
+- Don't introduce a new colour. If a state needs one, it is one of the five tones.
+
+## Known follow-ups
+
+- The phone bottom bar scrolls sideways past five entries. The fix (five primary tabs plus a More sheet) is logged under Later in `PROJECT_TASKS.md`.
+- `Toaster` is mounted and `Tooltip` is vendored; nothing calls them yet.
