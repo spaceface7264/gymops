@@ -93,7 +93,7 @@ Daily log: `daily_log_entries`. Incidents: `incidents`, `incident_attachments`, 
 Events: `events` (`event_type`, `starts_on`/`start_time`/`ends_on`/`end_time`, generated `last_on`), `event_gyms` (event, gym; no rows = company-wide).
 Notifications: `notifications`, `notification_prefs`, `push_subscriptions`.
 Chat: `channels` (kind gym/company/custom/dm, `member_hash` for DM dedupe), `channel_members` (`last_read_at`, `muted`), `messages` (`mentions uuid[]`, soft delete), `message_attachments`.
-Assistant (V1.5): `assistant_conversations`, `assistant_messages`, `assistant_usage`.
+Assistant (V1.5): `assistant_conversations`, `assistant_messages`, `assistant_usage`; tool functions `search_content(query)` and `read_content(target_kind, target_id)` (security invoker, published rows only).
 RLS helpers: `is_superadmin()`, `is_admin()`, `member_gym_ids()`, `managed_gym_ids()`, `can_read_event(event_id)`, `is_channel_member(channel_id)`, `can_read_channel(channel_id)`, `can_moderate_channel(channel_id)`, `can_seat_in_dm(channel_id)`.
 
 ### 3.2 Repository layout

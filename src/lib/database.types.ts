@@ -1444,6 +1444,25 @@ export type Database = {
         }
         Returns: number
       }
+      read_content: {
+        Args: { target_id: string; target_kind: string }
+        Returns: {
+          body_text: string
+          gym_name: string
+          published_at: string
+          title: string
+        }[]
+      }
+      search_content: {
+        Args: { query: string }
+        Returns: {
+          gym_name: string
+          id: string
+          kind: string
+          snippet: string
+          title: string
+        }[]
+      }
       send_ack_reminders: { Args: { as_of?: string }; Returns: number }
       shares_gym_with: { Args: { target_user: string }; Returns: boolean }
       start_dm: { Args: { target_ids: string[] }; Returns: string }
