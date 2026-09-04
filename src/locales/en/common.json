@@ -58,6 +58,22 @@
     "save": "Save",
     "saveFailed": "The change could not be saved. Try again.",
     "saving": "Saving…",
+    "usage": {
+      "cacheRead": "Cached tokens",
+      "calls": "Questions",
+      "cap": "Questions per person per day",
+      "capHint": "How many questions each person may ask per day (UTC). The Ask page and @assistant in chat count together.",
+      "capTitle": "Daily limit",
+      "empty": "Nobody has asked the assistant in the last 30 days.",
+      "inputTokens": "Input tokens",
+      "last30Days": "Last 30 days",
+      "outputTokens": "Output tokens",
+      "saveFailed": "The limit could not be saved.",
+      "saved": "Saved.",
+      "title": "Assistant usage",
+      "total": "Total",
+      "user": "Person"
+    },
     "users": {
       "active": "Active",
       "admin": "Admin",

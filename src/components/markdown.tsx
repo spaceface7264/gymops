@@ -2,7 +2,8 @@ import { Fragment, type ReactNode } from 'react'
 
 /**
  * The "light markdown" of spec §2.2: `**bold**`, `*italic*`, `` `code` `` and
- * bare links, plus the line breaks somebody actually typed.
+ * bare links, plus the line breaks somebody actually typed. Chat messages and
+ * the assistant's answers (P8-04) are both rendered with it.
  *
  * Written out rather than pulled in, and it returns React nodes rather than
  * HTML: a chat message is the one thing in this app that arrives from another
@@ -13,7 +14,7 @@ import { Fragment, type ReactNode } from 'react'
 const pattern =
   /(\*\*[^*\n]+\*\*)|(\*[^*\n]+\*)|(`[^`\n]+`)|(https?:\/\/[^\s<]+[^\s<.,:;"')\]])/g
 
-export function ChatMarkdown({ body }: { body: string }) {
+export function Markdown({ body }: { body: string }) {
   return (
     <p className="text-sm break-words whitespace-pre-wrap">
       {body.split('\n').map((line, index) => (

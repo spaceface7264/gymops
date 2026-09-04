@@ -1,7 +1,6 @@
 export { ChannelList } from './channel-list'
 export { channelName, personName } from './channel-name'
 export { Attachments } from './attachments'
-export { ChatMarkdown } from './markdown'
 export { Composer } from './composer'
 export { ChatPage } from './chat-page'
 export { MessageList } from './message-list'

@@ -1,7 +1,7 @@
 import { wrapCreateBrowserRouterV7 } from '@sentry/react'
 import { createBrowserRouter } from 'react-router'
 import { AuditPanel, GymsPanel, UsersPanel } from '@/features/admin'
-import { AskPage } from '@/features/assistant'
+import { AskPage, AssistantUsagePanel } from '@/features/assistant'
 import { RequireAuth } from '@/features/auth'
 import { ChatPage } from '@/features/chat'
 import { DailyLogPage } from '@/features/daily-log'
@@ -118,6 +118,14 @@ export const router = createRouter([
                 element: (
                   <RequireSuperadmin>
                     <AuditPanel />
+                  </RequireSuperadmin>
+                ),
+              },
+              {
+                path: 'usage',
+                element: (
+                  <RequireSuperadmin>
+                    <AssistantUsagePanel />
                   </RequireSuperadmin>
                 ),
               },

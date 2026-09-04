@@ -2,13 +2,9 @@ import { ArrowLeft, Send, Sparkles, Square, Trash2 } from 'lucide-react'
 import { useState, type KeyboardEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router'
-import { EmptyState, LoadingState } from '@/components'
+import { EmptyState, LoadingState, Markdown } from '@/components'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-// From the file, not the chat barrel: chat imports this feature for the
-// @assistant handle, and a barrel-to-barrel cycle left `assistantHandle`
-// uninitialised when the composer evaluated first.
-import { ChatMarkdown } from '@/features/chat/markdown'
 import { cn } from '@/lib/utils'
 import {
   useConversationMessages,
@@ -174,7 +170,7 @@ function Turn({
             {placeholder}
           </p>
         ) : (
-          <ChatMarkdown body={body} />
+          <Markdown body={body} />
         )}
         {sources.length > 0 && (
           <div className="pt-2">

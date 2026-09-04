@@ -58,6 +58,22 @@
     "save": "Gem",
     "saveFailed": "Ændringen kunne ikke gemmes. Prøv igen.",
     "saving": "Gemmer…",
+    "usage": {
+      "cacheRead": "Cachede tokens",
+      "calls": "Spørgsmål",
+      "cap": "Spørgsmål pr. person pr. dag",
+      "capHint": "Hvor mange spørgsmål hver person må stille om dagen (UTC). Spørg-siden og @assistant i chatten tæller sammen.",
+      "capTitle": "Daglig grænse",
+      "empty": "Ingen har spurgt assistenten de seneste 30 dage.",
+      "inputTokens": "Input-tokens",
+      "last30Days": "Seneste 30 dage",
+      "outputTokens": "Output-tokens",
+      "saveFailed": "Grænsen kunne ikke gemmes.",
+      "saved": "Gemt.",
+      "title": "Assistent-forbrug",
+      "total": "I alt",
+      "user": "Person"
+    },
     "users": {
       "active": "Aktiv",
       "admin": "Administrator",

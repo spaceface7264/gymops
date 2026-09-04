@@ -102,7 +102,7 @@ RLS helpers: `is_superadmin()`, `is_admin()`, `member_gym_ids()`, `managed_gym_i
 gymops/
   src/
     components/             shared composition layer (Logo, PageHeader, EmptyState,
-                             LoadingState, StatusBadge); features compose these and
+                             LoadingState, StatusBadge, Markdown); features compose these and
                              reach into components/ui/ only for what these don't cover
     components/ui/          shadcn/ui primitives
     features/<module>/      components, hooks, queries, types per feature

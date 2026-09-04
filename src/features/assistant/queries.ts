@@ -185,6 +185,117 @@ export async function askStream(input: {
   return response.body
 }
 
+const capKey = 'assistant_daily_cap'
+const defaultCap = 50
+
+/** The daily cap as `app_settings` holds it; everyone may read it, a superadmin move it. */
+export function useAssistantSettings() {
+  return useQuery({
+    queryKey: assistantKeys.settings,
+    queryFn: async (): Promise<{ dailyCap: number }> => {
+      const { data, error } = await supabase
+        .from('app_settings')
+        .select('value')
+        .eq('key', capKey)
+        .single()
+      if (error) throw error
+      const cap = Number(data.value)
+      return { dailyCap: Number.isFinite(cap) && cap > 0 ? cap : defaultCap }
+    },
+  })
+}
+
+export function useSetDailyCap() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (dailyCap: number) => {
+      const { error } = await supabase
+        .from('app_settings')
+        .update({ value: dailyCap })
+        .eq('key', capKey)
+      if (error) throw error
+    },
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: assistantKeys.settings }),
+        queryClient.invalidateQueries({ queryKey: assistantKeys.quota }),
+      ])
+    },
+  })
+}
+
+/** One call, as `assistant_usage` records it, with who made it. */
+export type UsageRow = {
+  user_id: string
+  surface: string
+  input_tokens: number
+  output_tokens: number
+  cache_creation_input_tokens: number
+  cache_read_input_tokens: number
+  created_at: string
+  user: { full_name: string | null; email: string } | null
+}
+
+export type UsageLine = {
+  userId: string
+  name: string
+  calls: number
+  inputTokens: number
+  outputTokens: number
+  cacheReadTokens: number
+}
+
+/** One line per person, most calls first. */
+export function summariseUsage(rows: UsageRow[]): UsageLine[] {
+  const lines = new Map<string, UsageLine>()
+
+  for (const row of rows) {
+    const line = lines.get(row.user_id) ?? {
+      userId: row.user_id,
+      name: row.user?.full_name?.trim() || row.user?.email || row.user_id,
+      calls: 0,
+      inputTokens: 0,
+      outputTokens: 0,
+      cacheReadTokens: 0,
+    }
+    line.calls += 1
+    line.inputTokens += row.input_tokens
+    line.outputTokens += row.output_tokens
+    line.cacheReadTokens += row.cache_read_input_tokens
+    lines.set(row.user_id, line)
+  }
+
+  return [...lines.values()].sort(
+    (a, b) => b.calls - a.calls || a.name.localeCompare(b.name),
+  )
+}
+
+export const usageWindowDays = 30
+
+/**
+ * Every call of the last thirty days. `assistant_usage_select` lets a
+ * superadmin read them all and everyone else their own, so the same query
+ * would serve a personal view; only the superadmin screen asks today.
+ */
+export function useAssistantUsage() {
+  return useQuery({
+    queryKey: assistantKeys.usage,
+    queryFn: async (): Promise<UsageRow[]> => {
+      const since = new Date(Date.now() - usageWindowDays * 24 * 60 * 60 * 1000)
+      const { data, error } = await supabase
+        .from('assistant_usage')
+        .select(
+          'user_id, surface, input_tokens, output_tokens, cache_creation_input_tokens, cache_read_input_tokens, created_at, user:user_id(full_name, email)',
+        )
+        .gte('created_at', since.toISOString())
+        .order('created_at', { ascending: false })
+      if (error) throw error
+      return data
+    },
+  })
+}
+
 /**
  * Once an @assistant message is in the channel, its sender asks the function
  * to answer it (P8-05). The sender's own JWT is what the function reads with,

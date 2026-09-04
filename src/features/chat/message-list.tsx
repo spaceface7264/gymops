@@ -1,12 +1,11 @@
 import { MessageCircle, Sparkles } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ConfirmDialog, EmptyState, LoadingState } from '@/components'
+import { ConfirmDialog, EmptyState, LoadingState, Markdown } from '@/components'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { useAuth } from '@/features/auth'
 import { Attachments } from './attachments'
-import { ChatMarkdown } from './markdown'
 import {
   useDeleteMessage,
   useEditMessage,
@@ -161,7 +160,7 @@ function MessageRow({
         />
       ) : (
         <>
-          <ChatMarkdown body={message.body} />
+          <Markdown body={message.body} />
           <Attachments attachments={message.message_attachments} />
         </>
       )}
