@@ -97,6 +97,27 @@
       "installing": "Opdaterer…"
     }
   },
+  "assistant": {
+    "back": "Tilbage til samtaler",
+    "capReached": "Du har nået dagens grænse for assistenten.",
+    "conversations": "Samtaler",
+    "deleteConversation": "Slet samtale",
+    "description": "Spørg om de guides og nyheder, du kan læse. Hvert svar nævner sine kilder.",
+    "empty": "Hvad vil du vide?",
+    "failed": "Assistenten kunne ikke svare. Prøv igen om lidt.",
+    "loadFailed": "Kunne ikke hente samtalen.",
+    "newConversation": "Ny samtale",
+    "noConversations": "Intet spurgt endnu.",
+    "notConfigured": "Assistenten er ikke sat op endnu.",
+    "quota": "{{used}} af {{cap}} i dag",
+    "send": "Send",
+    "sources": "Kilder",
+    "stop": "Stop",
+    "thinking": "Slår det op…",
+    "title": "Spørg",
+    "untitled": "Uden titel",
+    "write": "Stil et spørgsmål"
+  },
   "auth": {
     "acceptInvite": {
       "confirm": "Gentag adgangskode",
@@ -648,6 +669,7 @@
   },
   "nav": {
     "admin": "Administration",
+    "ask": "Spørg",
     "chat": "Chat",
     "checklists": "Tjeklister",
     "dailyLog": "Dagbog",

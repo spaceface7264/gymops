@@ -7,6 +7,7 @@ import {
   Newspaper,
   NotebookPen,
   Settings,
+  Sparkles,
   TriangleAlert,
   type LucideIcon,
 } from 'lucide-react'
@@ -23,6 +24,7 @@ export type NavEntry = {
     | 'nav.dailyLog'
     | 'nav.incidents'
     | 'nav.chat'
+    | 'nav.ask'
     | 'nav.admin'
   icon: LucideIcon
   /**
@@ -48,6 +50,7 @@ export const navEntries: NavEntry[] = [
   { to: '/daily-log', labelKey: 'nav.dailyLog', icon: NotebookPen },
   { to: '/incidents', labelKey: 'nav.incidents', icon: TriangleAlert },
   { to: '/chat', labelKey: 'nav.chat', icon: MessagesSquare },
+  { to: '/ask', labelKey: 'nav.ask', icon: Sparkles },
   { to: '/admin', labelKey: 'nav.admin', icon: Settings, adminOnly: true },
 ]
 
@@ -57,11 +60,12 @@ export function visibleNavEntries(canAdminister: boolean): NavEntry[] {
 
 /**
  * Screens that take the whole frame instead of the shell's centred column,
- * because they scroll their own panes: the chat list and conversation would
- * otherwise move the composer off the bottom of a phone. Kept here rather than
- * in the shell so the routes stay the one place that knows about routes.
+ * because they scroll their own panes: the chat list and conversation, and
+ * the assistant's thread, would otherwise move the composer off the bottom of
+ * a phone. Kept here rather than in the shell so the routes stay the one
+ * place that knows about routes.
  */
-export const fullBleedRoutes = ['/chat']
+export const fullBleedRoutes = ['/chat', '/ask']
 
 export function isFullBleed(pathname: string): boolean {
   return fullBleedRoutes.some(

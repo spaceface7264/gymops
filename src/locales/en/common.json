@@ -97,6 +97,27 @@
       "installing": "Updating…"
     }
   },
+  "assistant": {
+    "back": "Back to conversations",
+    "capReached": "You have reached today’s limit for the assistant.",
+    "conversations": "Conversations",
+    "deleteConversation": "Delete conversation",
+    "description": "Ask about the guides and news you can read. Every answer names its sources.",
+    "empty": "What do you want to know?",
+    "failed": "The assistant could not answer. Try again in a moment.",
+    "loadFailed": "Could not load the conversation.",
+    "newConversation": "New conversation",
+    "noConversations": "Nothing asked yet.",
+    "notConfigured": "The assistant is not set up yet.",
+    "quota": "{{used}} of {{cap}} today",
+    "send": "Send",
+    "sources": "Sources",
+    "stop": "Stop",
+    "thinking": "Looking it up…",
+    "title": "Ask",
+    "untitled": "Untitled",
+    "write": "Ask a question"
+  },
   "auth": {
     "acceptInvite": {
       "confirm": "Repeat password",
@@ -648,6 +669,7 @@
   },
   "nav": {
     "admin": "Admin",
+    "ask": "Ask",
     "chat": "Chat",
     "checklists": "Checklists",
     "dailyLog": "Daily log",

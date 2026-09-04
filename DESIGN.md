@@ -52,7 +52,7 @@ Five tones, each a tinted background, dark text of the same hue and a dot, expos
 
 ## Layout
 
-- Phone: a bottom tab bar (spec §4 rejects a drawer). Sidebar from `md` up. `/chat` is the one full-bleed route.
+- Phone: a bottom tab bar (spec §4 rejects a drawer). Sidebar from `md` up. `/chat` and `/ask` are the full-bleed routes.
 - Signed-in screens render inside `AppShell` in a `max-w-3xl` column. Signed-out screens use `AuthLayout`: the logo above a `max-w-sm` card.
 - The header carries the gym switcher, the bell and an initials avatar whose menu holds Account, Notification preferences and Sign out. There is no standing Sign out button.
 
