@@ -74,6 +74,7 @@
     }
   },
   "app": {
+    "close": "Luk",
     "error": {
       "body": "Skærmen kunne ikke vises. Prøv at genindlæse; sker det igen, så sig det til den, der passer appen.",
       "home": "Gå til forsiden",

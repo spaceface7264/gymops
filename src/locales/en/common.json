@@ -74,6 +74,7 @@
     }
   },
   "app": {
+    "close": "Close",
     "error": {
       "body": "This screen could not be shown. Reloading usually helps; if it keeps happening, tell whoever looks after the app.",
       "home": "Go to the home page",

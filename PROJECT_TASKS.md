@@ -112,6 +112,19 @@ Legend: P1 = Phase 1 etc. Effort: S (< half day), M (1–2 days), L (3+ days).
 | P7C-04 | Shell: logo, pill nav, avatar menu in the header, auth layout                 | P7C-03       | S      |
 | P7C-05 | Screen sweep: every route on the shared layer, touch targets, en/da check     | P7C-04       | L      |
 
+## Phase 7d — refinement (decided 2026-09-04, plan in `docs/superpowers/plans/2026-09-04-refine.md`)
+
+| ID     | Task                                                                          | Depends on   | Effort |
+| ------ | ----------------------------------------------------------------------------- | ------------ | ------ |
+| P7D-01 | Primitives: `checkbox`, `alert-dialog`, `tabs`, `toggle-group` vendored and restyled; 150 ms and 44 px gaps in the existing `ui/` closed | P7C-05 | S |
+| P7D-02 | Checkbox rollout: the ten raw `<input type="checkbox">`, whole-row tap target on the checklist | P7D-01 | S |
+| P7D-03 | `ConfirmDialog` on `AlertDialog`; the four hand-rolled confirms folded in; the five unguarded deletes guarded | P7D-01 | M |
+| P7D-04 | Toasts: success where the result leaves the screen, errors on fire-and-forget toggles | P7D-01 | M |
+| P7D-05 | Admin `h1` and `Tabs`; `ToggleGroup` for the segmented filters and multi-select values | P7D-01 | M |
+| P7D-06 | `Tooltip` wired: provider in `App`, the four `title=` sites                    | P7D-01       | S      |
+| P7D-07 | Polish sweep: `NativeSelect`, `UnreadCount`, radii, headings, empty/loading states, skip link | P7D-02 … 06 | L |
+| P7D-08 | Docs, screenshots, PR                                                         | P7D-07       | S      |
+
 ## Phase 8 — AI assistant (V1.5)
 
 | ID    | Task                                                                                                      | Depends on   | Effort |
@@ -128,7 +141,8 @@ Legend: P1 = Phase 1 etc. Effort: S (< half day), M (1–2 days), L (3+ days).
 - V2: tasks (`tasks`, recurrence, assignment, incident → task). Calendars shipped early as P4-11.
 - V3: dashboards, `brp-sync` Edge Function (needs BRP API key, service account, rate limits, webhook info).
 - Chat follow-ups: threads, reactions, search.
-- Phone bottom bar: five primary tabs plus a More sheet, instead of nine entries scrolling sideways (noted in the facelift spec, P7C).
+- Phone bottom bar: five primary tabs plus a More sheet, instead of nine entries scrolling sideways (noted in the facelift spec, P7C; needs `sheet` vendored, deferred from P7D).
+- Deferred from P7D (2026-09-04): `command`/cmdk for the chat @mention listbox and a global search palette; `progress` for checklist completion; `collapsible` for the guide category tree; `scroll-area` for the chat lists; `react-hook-form` (every form is `useState` + `MissingRequirements`, and that is fine).
 - Global "search anything" in the header: relocate `ContentSearch`, then add `search_vector` columns and branches for incidents, events, daily log and people; chat last.
 - Branded en/da auth mail templates — before the cutover. (Acknowledgement reminders were listed here as missing; `send_ack_reminders()` has raised them nightly since P5-02, confirmed by the P7-07 walkthrough on 2026-09-04.)
 - Assistant follow-ups: pgvector retrieval, live ops data, actions.
