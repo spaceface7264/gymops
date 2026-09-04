@@ -130,7 +130,7 @@ Legend: P1 = Phase 1 etc. Effort: S (< half day), M (1–2 days), L (3+ days).
 - Chat follow-ups: threads, reactions, search.
 - Phone bottom bar: five primary tabs plus a More sheet, instead of nine entries scrolling sideways (noted in the facelift spec, P7C).
 - Global "search anything" in the header: relocate `ContentSearch`, then add `search_vector` columns and branches for incidents, events, daily log and people; chat last.
-- Acknowledgement reminders (the `ack_reminder` type exists, nothing raises it) and branded en/da auth mail templates — both before the cutover.
+- Branded en/da auth mail templates — before the cutover. (Acknowledgement reminders were listed here as missing; `send_ack_reminders()` has raised them nightly since P5-02, confirmed by the P7-07 walkthrough on 2026-09-04.)
 - Assistant follow-ups: pgvector retrieval, live ops data, actions.
 
 ## Critical path
