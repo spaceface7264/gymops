@@ -48,7 +48,7 @@ Five tones, each a tinted background, dark text of the same hue and a dot, expos
 - **Radius:** `--radius: 1rem`. Cards and dialogs `rounded-2xl` (16 px), inputs and selects `rounded-xl` (12 px), menu items `rounded-lg` (12 px), buttons and badges pill. Inputs are less round than the card they sit in.
 - **Surfaces:** cards are white with a 1 px border and no shadow. Dialogs are the one lifted surface (they keep a shadow).
 - **Touch:** every control a thumb hits is at least 44 px tall: `Button` default `h-11`, `size="icon"` `size-11`, inputs and selects `h-11`, phone nav items `min-h-11`, `Switch` has a padded hit area. `size="sm"` (`h-9`) is for dense desktop-only rows.
-- **Motion:** 150 ms ease-out on hover and press, skeleton shimmer while loading. Everything respects `prefers-reduced-motion`. No layout animation; no route transitions.
+- **Motion:** 150 ms ease-out on hover, press and every dialog, menu and tooltip enter (100 ms for tooltips); skeleton pulse while loading. Everything respects `prefers-reduced-motion`. No layout animation; no route transitions.
 
 ## Layout
 
@@ -68,20 +68,37 @@ Everything in `src/components/` (exported from `@/components`); the vendored sha
 | `StatusBadge`  | any state or label: `tone`, optional `dot`                                     | tones per the table above; `neutral` for labels; never the raw `Badge` for a state                                                                                                 |
 | `Logo`         | the bolt from the app icon, `wordmark` for the text                            | sidebar head and the auth frame                                                                                                                                                    |
 | `CardTitle`    | (in `ui/card`) a section title inside a card                                   | a real heading, `h2` by default, `as` to change                                                                                                                                    |
+| `ConfirmDialog` | the one question before something irreversible: `title`, `body`, `confirmLabel`, `pending`, `error`, `onConfirm` | an `AlertDialog`: no close button, Cancel focused, the failure shown inside it. Reversible toggles (deactivate, pin, mute) never confirm. |
+| `UnreadCount`  | the violet pill with a count: nav, channel list, bell                          | pass the `aria-label` that spells the count out; `99+` past ninety-nine                                                                                                              |
+| `Checkbox`     | (in `ui/`) a yes/no on a form, or a row that can be picked                     | 20 px box with a 44 px hit area; wrap it and its text in a `<label className="min-h-11">` so the row is the target                                                                    |
+| `NativeSelect` | (in `ui/`) a `<select>` that stays native, in the `Input` look                 | the phone's own picker, keyboard and screen reader for free; a Radix `Select` only when options need more than text                                                                 |
+| `Tabs`         | (in `ui/`) switching between panels of one screen                              | a segmented pill; when the panels are routes, `TabsTrigger asChild` around a `NavLink` so the URL is the state                                                                       |
+| `ToggleGroup`  | (in `ui/`) a filter or a value: `type="single"` for one-of, `"multiple"` for a set | looks like `Tabs`, means something else (a radio group or pressed buttons); always `aria-label`; `variant="outline"` for chips a form collects                                     |
 
 Error lines stay as they are: `<p role="alert" className="text-destructive text-sm">`.
+
+## Feedback
+
+A form that stays on screen reports its failure inline, next to the buttons. A toast (`toast` from `sonner`; the `Toaster` in `App` sits above the phone bar) is for when the result leaves the screen: saved and navigated away, a dialog that closed, or an action with no form at all (pin, mute, activate, mark read: at least an error toast, a success toast where the change is consequential). Success toasts are short nouns ("Post published", "Invitation sent"); errors reuse the feature's `*Failed` string. Nobody is toasted for their own checklist tick or chat message.
+
+## Tooltips
+
+`Tooltip` (one `TooltipProvider` in `App`: the first waits 400 ms, the next opens at once) explains a control or spells out what was truncated. It never carries the only copy of something essential, because touch has no hover; the full gym list a badge counts is also in the event form. A disabled button hears no pointer, so the trigger is a focusable `<span>` around it.
 
 ## Do and don't
 
 - Do put every string through `t()` with a key in both `en` and `da`; Danish runs long, check it first.
-- Do keep native `<select>` elements native (spec §4) and give them the input classes.
+- Do keep native `<select>` elements native (spec §4): use `NativeSelect`.
+- Do confirm anything irreversible through `ConfirmDialog`, and nothing else.
 - Do use `Textarea` from `ui/` for multi-line input; it auto-grows.
 - Don't add `dark:` classes; there is no dark theme and the variant is gone.
 - Don't use `bg-background` on a control; controls sit on `bg-card`.
-- Don't reach for `rounded-md`, `h-9`, `shadow-xs` on anything a user touches; those are the pre-facelift defaults.
+- Don't reach for `rounded-md`, `h-9`, `shadow-xs` on anything a user touches; those are the pre-facelift defaults. `size="sm"` is for dense desktop-only rows; a control on a phone screen is `default` or `icon`.
+- Don't build a row of `aria-pressed` buttons; that is a `ToggleGroup`.
+- Don't write a bottom padding for the phone bar; use `pb-(--nav-bar-clearance)`.
 - Don't introduce a new colour. If a state needs one, it is one of the five tones.
 
 ## Known follow-ups
 
-- The phone bottom bar scrolls sideways past five entries. The fix (five primary tabs plus a More sheet) is logged under Later in `PROJECT_TASKS.md`.
-- `Toaster` is mounted and `Tooltip` is vendored; nothing calls them yet.
+- The phone bottom bar scrolls sideways past five entries. The fix (five primary tabs plus a More sheet, which needs `sheet` vendored) is logged under Later in `PROJECT_TASKS.md`.
+- Also under Later from the 2026-09-04 refinement: `command` for the chat @mention listbox and a search palette, `progress` for checklist completion, `collapsible` for the guide category tree, `scroll-area` for the chat lists.

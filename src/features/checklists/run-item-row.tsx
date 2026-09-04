@@ -77,21 +77,23 @@ export function RunItemRow({
         </div>
       </div>
 
-      <Input
-        className="ml-8 max-w-md"
-        aria-label={t('checklists.noteOn', { label: item.label })}
-        placeholder={t('checklists.notePlaceholder')}
-        disabled={!canComplete}
-        value={note}
-        onChange={(event) => setNote_(event.target.value)}
-        onBlur={() => {
-          if ((item.note ?? '') !== note)
-            setNote.mutate(
-              { id: item.id, note },
-              { onError: () => toast.error(t('checklists.tickFailed')) },
-            )
-        }}
-      />
+      <div className="pl-8">
+        <Input
+          className="max-w-md"
+          aria-label={t('checklists.noteOn', { label: item.label })}
+          placeholder={t('checklists.notePlaceholder')}
+          disabled={!canComplete}
+          value={note}
+          onChange={(event) => setNote_(event.target.value)}
+          onBlur={() => {
+            if ((item.note ?? '') !== note)
+              setNote.mutate(
+                { id: item.id, note },
+                { onError: () => toast.error(t('checklists.tickFailed')) },
+              )
+          }}
+        />
+      </div>
     </div>
   )
 }

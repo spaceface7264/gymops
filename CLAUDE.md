@@ -44,7 +44,8 @@ that drives a Realtime client needs Node 22+.
 End-to-end tests (P5-06) are Playwright against the local stack and its seed
 users: `npm run e2e` uses Playwright's own Chromium, `npm run e2e:chrome` drives
 the Google Chrome already installed on the machine. Both start the dev server
-themselves and reuse one that is already running.
+themselves and reuse one that is already running. `e2e/screens.spec.ts` re-captures
+`docs/design/screens/` and only runs with `E2E_SCREENS=1`.
 
 CI is `.github/workflows/ci.yml`: a `web` job running those gates on Node 20, and a `database` job that starts the local stack (minus the services the tests do not need) and runs `db reset` + `test db`.
 
