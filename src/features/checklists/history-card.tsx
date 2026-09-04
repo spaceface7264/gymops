@@ -1,5 +1,6 @@
+import { History } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { Badge } from '@/components/ui/badge'
+import { EmptyState, LoadingState, StatusBadge } from '@/components'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { usePublishScope } from '@/features/content'
 import { useGymScope } from '@/features/gyms'
@@ -37,9 +38,7 @@ export function ChecklistHistoryCard() {
         <CardTitle>{t('home.checklists.title')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        {runs.isPending && (
-          <p className="text-muted-foreground text-sm">{t('checklists.loading')}</p>
-        )}
+        {runs.isPending && <LoadingState rows={3} />}
         {runs.isError && (
           <p role="alert" className="text-destructive text-sm">
             {t('checklists.runsLoadFailed')}
@@ -47,7 +46,11 @@ export function ChecklistHistoryCard() {
         )}
 
         {runs.data && all.length === 0 && (
-          <p className="text-muted-foreground text-sm">{t('home.checklists.noRuns')}</p>
+          <EmptyState
+            bordered={false}
+            icon={History}
+            title={t('home.checklists.noRuns')}
+          />
         )}
 
         {all.length > 0 && (
@@ -73,7 +76,9 @@ export function ChecklistHistoryCard() {
 
               return (
                 <li key={run.id} className="flex flex-wrap items-center gap-2 text-sm">
-                  <Badge variant="secondary">{t('home.checklists.missedBadge')}</Badge>
+                  <StatusBadge tone="danger">
+                    {t('home.checklists.missedBadge')}
+                  </StatusBadge>
                   <span className="font-medium">
                     {run.checklist_templates?.name ?? t('checklists.untitledRun')}
                   </span>

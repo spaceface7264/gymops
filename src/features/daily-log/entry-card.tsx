@@ -2,6 +2,7 @@ import { TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
+import { StatusBadge } from '@/components'
 import { Badge } from '@/components/ui/badge'
 import {
   Select,
@@ -14,6 +15,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { useAuth } from '@/features/auth'
 import { incidentDraftPath } from './incident-draft'
 import {
@@ -60,10 +62,12 @@ export function EntryCard({
   return (
     <Card className="space-y-2 p-4">
       <div className="flex flex-wrap items-center gap-1.5">
-        <Badge variant={entry.kind === 'issue' ? 'default' : 'outline'}>
+        <StatusBadge tone={entry.kind === 'issue' ? 'warning' : 'neutral'}>
           {t(`dailyLog.kind.${entry.kind}`)}
-        </Badge>
-        {showGym && entry.gyms && <Badge variant="outline">{entry.gyms.name}</Badge>}
+        </StatusBadge>
+        {showGym && entry.gyms && (
+          <StatusBadge tone="neutral">{entry.gyms.name}</StatusBadge>
+        )}
         <span className="text-muted-foreground text-xs">
           {t('dailyLog.writtenBy', {
             who: entry.author?.full_name ?? t('dailyLog.someone'),
@@ -88,9 +92,9 @@ export function EntryCard({
               </SelectGroup>
             </SelectContent>
           </Select>
-          <textarea
+          <Textarea
             aria-label={t('dailyLog.entry')}
-            className="border-input bg-background min-h-20 w-full rounded-md border p-2 text-sm"
+            className="min-h-20 text-sm"
             value={body}
             onChange={(event) => setBody(event.target.value)}
           />

@@ -1,4 +1,6 @@
+import { CalendarDays } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { EmptyState, LoadingState } from '@/components'
 import { EventCard } from './event-card'
 import { useEvents, type EventType, type GymEvent } from './queries'
 
@@ -28,7 +30,7 @@ export function EventsList({
   )
 
   if (events.isPending) {
-    return <p className="text-muted-foreground text-sm">{t('events.loading')}</p>
+    return <LoadingState rows={5} />
   }
 
   if (events.isError) {
@@ -41,9 +43,10 @@ export function EventsList({
 
   if (visible.length === 0) {
     return (
-      <p className="text-muted-foreground text-sm">
-        {showPast ? t('events.emptyPast') : t('events.emptyUpcoming')}
-      </p>
+      <EmptyState
+        icon={CalendarDays}
+        title={showPast ? t('events.emptyPast') : t('events.emptyUpcoming')}
+      />
     )
   }
 

@@ -1,6 +1,7 @@
+import { Users } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Badge } from '@/components/ui/badge'
+import { EmptyState, LoadingState, StatusBadge } from '@/components'
 import { Button } from '@/components/ui/button'
 import {
   Table,
@@ -26,18 +27,18 @@ function RoleBadges({ user }: { user: AdminUser }) {
 
   if (user.is_superadmin || user.is_admin) {
     return (
-      <Badge>
+      <StatusBadge tone="neutral">
         {user.is_superadmin ? t('admin.users.superadmin') : t('admin.users.admin')}
-      </Badge>
+      </StatusBadge>
     )
   }
 
   return (
     <div className="flex flex-wrap gap-1">
       {user.gym_memberships.map((membership) => (
-        <Badge key={`${membership.gyms?.id}-${membership.role}`} variant="outline">
+        <StatusBadge key={`${membership.gyms?.id}-${membership.role}`} tone="neutral">
           {membership.gyms?.name}: {t(`admin.users.${membership.role}`)}
-        </Badge>
+        </StatusBadge>
       ))}
     </div>
   )
@@ -89,9 +90,7 @@ export function UsersPanel() {
         reasons={assignableGyms.length === 0 ? [t('admin.users.noAssignableGyms')] : []}
       />
 
-      {users.isPending && (
-        <p className="text-muted-foreground text-sm">{t('admin.loading')}</p>
-      )}
+      {users.isPending && <LoadingState rows={6} />}
       {users.isError && (
         <p role="alert" className="text-destructive text-sm">
           {t('admin.loadFailed')}
@@ -121,9 +120,9 @@ export function UsersPanel() {
                   <RoleBadges user={user} />
                 </TableCell>
                 <TableCell>
-                  <Badge variant={user.active ? 'default' : 'outline'}>
+                  <StatusBadge tone={user.active ? 'success' : 'neutral'}>
                     {user.active ? t('admin.users.active') : t('admin.users.inactive')}
-                  </Badge>
+                  </StatusBadge>
                 </TableCell>
                 <TableCell className="space-x-2 text-right whitespace-nowrap">
                   <Button variant="outline" size="sm" onClick={() => setEditing(user)}>
@@ -177,7 +176,7 @@ export function UsersPanel() {
       )}
 
       {users.data?.length === 0 && (
-        <p className="text-muted-foreground text-sm">{t('admin.users.empty')}</p>
+        <EmptyState icon={Users} title={t('admin.users.empty')} />
       )}
     </section>
   )

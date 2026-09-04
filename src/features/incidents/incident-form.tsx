@@ -2,6 +2,7 @@ import { ArrowLeft, Camera, ImagePlus, X } from 'lucide-react'
 import { useId, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useSearchParams } from 'react-router'
+import { PageHeader } from '@/components'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -14,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
 import { useCompletionScope } from '@/features/checklists'
 import { MissingRequirements } from '@/features/content'
 import { useGymScope } from '@/features/gyms'
@@ -79,11 +81,11 @@ export function IncidentFormPage() {
         </Link>
       </Button>
 
-      <h1 className="text-2xl font-semibold">{t('incidents.report')}</h1>
+      <PageHeader title={t('incidents.report')} />
 
       <Card className="p-4">
         <form
-          className="space-y-3"
+          className="space-y-4"
           onSubmit={(event) => {
             event.preventDefault()
             // Both mutations record their own failure; catching here only keeps
@@ -149,9 +151,9 @@ export function IncidentFormPage() {
 
           <div className="space-y-1">
             <Label htmlFor={`${fieldId}-body`}>{t('incidents.bodyLabel')}</Label>
-            <textarea
+            <Textarea
               id={`${fieldId}-body`}
-              className="border-input bg-background min-h-24 w-full rounded-md border p-2 text-sm"
+              className="min-h-24 text-sm"
               value={body}
               onChange={(event) => setBody(event.target.value)}
             />

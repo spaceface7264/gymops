@@ -2,6 +2,7 @@ import { ArrowDown, ArrowUp, Plus, X } from 'lucide-react'
 import { useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router'
+import { LoadingState, PageHeader } from '@/components'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -41,7 +42,7 @@ export function ChecklistTemplateEditorPage() {
   const existing = useChecklistTemplate(templateId)
 
   if (templateId && existing.isPending) {
-    return <p className="text-muted-foreground text-sm">{t('checklists.loading')}</p>
+    return <LoadingState rows={5} />
   }
   if (templateId && !existing.data) {
     return (
@@ -143,9 +144,9 @@ function TemplateEditor({ template }: { template?: ChecklistTemplate }) {
         )
       }}
     >
-      <h1 className="text-2xl font-semibold">
-        {template ? t('checklists.editTitle') : t('checklists.createTitle')}
-      </h1>
+      <PageHeader
+        title={template ? t('checklists.editTitle') : t('checklists.createTitle')}
+      />
 
       <div className="space-y-2">
         <Label htmlFor={`${fieldId}-scope`}>{t('checklists.scope')}</Label>

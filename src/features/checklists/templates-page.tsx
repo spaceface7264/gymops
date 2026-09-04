@@ -1,7 +1,7 @@
-import { Plus } from 'lucide-react'
+import { LayoutTemplate, Plus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
-import { Badge } from '@/components/ui/badge'
+import { EmptyState, LoadingState, PageHeader, StatusBadge } from '@/components'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { usePublishScope } from '@/features/content'
@@ -15,33 +15,35 @@ export function ChecklistTemplatesPage() {
   const templates = useChecklistTemplates()
   const setActive = useSetTemplateActive()
 
+  const newTemplateAction = scope.canPublishSomewhere && (
+    <Button asChild>
+      <Link to="/checklists/templates/new">
+        <Plus className="size-4" />
+        {t('checklists.newTemplate')}
+      </Link>
+    </Button>
+  )
+
   return (
     <div className="space-y-4">
-      <header className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h1 className="text-2xl font-semibold">{t('checklists.templates')}</h1>
-          <p className="text-muted-foreground text-sm">{t('checklists.generatedAt')}</p>
-        </div>
-        {scope.canPublishSomewhere && (
-          <Button asChild>
-            <Link to="/checklists/templates/new">
-              <Plus className="size-4" />
-              {t('checklists.newTemplate')}
-            </Link>
-          </Button>
-        )}
-      </header>
+      <PageHeader
+        title={t('checklists.templates')}
+        description={t('checklists.generatedAt')}
+        action={newTemplateAction}
+      />
 
-      {templates.isPending && (
-        <p className="text-muted-foreground text-sm">{t('checklists.loading')}</p>
-      )}
+      {templates.isPending && <LoadingState rows={5} />}
       {templates.isError && (
         <p role="alert" className="text-destructive text-sm">
           {t('checklists.loadFailed')}
         </p>
       )}
       {templates.data?.length === 0 && (
-        <p className="text-muted-foreground text-sm">{t('checklists.empty')}</p>
+        <EmptyState
+          icon={LayoutTemplate}
+          title={t('checklists.empty')}
+          action={newTemplateAction}
+        />
       )}
 
       <ul aria-label={t('checklists.templates')} className="space-y-3">
@@ -54,17 +56,17 @@ export function ChecklistTemplatesPage() {
               <Card className="flex flex-wrap items-start justify-between gap-3 p-4">
                 <div className="space-y-2">
                   <div className="flex flex-wrap items-center gap-1.5">
-                    <Badge variant="outline">
+                    <StatusBadge tone="neutral">
                       {template.gyms?.name ?? t('checklists.companyWide')}
-                    </Badge>
-                    <Badge variant="outline">
+                    </StatusBadge>
+                    <StatusBadge tone="neutral">
                       {t(`checklists.kind.${template.kind}`)}
-                    </Badge>
+                    </StatusBadge>
                     {!template.active && (
-                      <Badge variant="secondary">{t('checklists.inactive')}</Badge>
+                      <StatusBadge tone="neutral">{t('checklists.inactive')}</StatusBadge>
                     )}
                   </div>
-                  <h2 className="text-lg font-medium">{template.name}</h2>
+                  <h2 className="text-lg font-semibold">{template.name}</h2>
                   <p className="text-muted-foreground text-sm">
                     {days ?? t('checklists.everyDay')} ·{' '}
                     {t('checklists.itemCount', {

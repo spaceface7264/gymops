@@ -1,7 +1,7 @@
 import { Check } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { LoadingState } from '@/components'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
 import { useAuth } from '@/features/auth'
 import { useAcknowledgePost, useAckReport, useMyPostRead, type NewsPost } from './queries'
 
@@ -21,10 +21,10 @@ export function AcknowledgeButton({
   const acknowledgedAt = myRead.data?.acknowledged_at
 
   return (
-    <Card className="flex flex-wrap items-center justify-between gap-3 p-4">
+    <div className="bg-tone-new-bg text-tone-new-fg flex flex-wrap items-center justify-between gap-3 rounded-2xl p-4">
       <p className="text-sm">{t('news.ack.prompt')}</p>
       {acknowledgedAt ? (
-        <p className="text-muted-foreground flex items-center gap-2 text-sm">
+        <p className="flex items-center gap-2 text-sm">
           <Check className="size-4" />
           {t('news.ack.confirmedAt', {
             when: new Date(acknowledgedAt).toLocaleString(i18n.language, {
@@ -41,7 +41,7 @@ export function AcknowledgeButton({
           {t('news.ack.confirm')}
         </Button>
       )}
-    </Card>
+    </div>
   )
 }
 
@@ -67,9 +67,7 @@ export function AckReport({
     <section className="space-y-2">
       <h2 className="text-lg font-medium">{t('news.ack.reportTitle')}</h2>
 
-      {report.isPending && (
-        <p className="text-muted-foreground text-sm">{t('news.loading')}</p>
-      )}
+      {report.isPending && <LoadingState rows={3} />}
       {report.isError && (
         <p role="alert" className="text-destructive text-sm">
           {t('news.ack.reportFailed')}

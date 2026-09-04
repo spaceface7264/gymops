@@ -1,6 +1,8 @@
+import { NotebookPen } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
-import { Badge } from '@/components/ui/badge'
+import { EmptyState, LoadingState, StatusBadge } from '@/components'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useGymScope } from '@/features/gyms'
 import { useLatestLogEntry } from './queries'
@@ -22,26 +24,28 @@ export function LatestLogEntryCard() {
         <CardTitle>{t('home.dailyLog.title')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        {latest.isPending && (
-          <p className="text-muted-foreground text-sm">{t('dailyLog.loading')}</p>
-        )}
+        {latest.isPending && <LoadingState rows={3} />}
         {latest.isError && (
           <p role="alert" className="text-destructive text-sm">
             {t('dailyLog.loadFailed')}
           </p>
         )}
         {latest.data === null && (
-          <p className="text-muted-foreground text-sm">{t('home.dailyLog.empty')}</p>
+          <EmptyState
+            bordered={false}
+            icon={NotebookPen}
+            title={t('home.dailyLog.empty')}
+          />
         )}
 
         {entry && (
           <div className="space-y-1">
             <div className="flex flex-wrap items-center gap-2">
-              <Badge variant={entry.kind === 'issue' ? 'default' : 'outline'}>
+              <StatusBadge tone={entry.kind === 'issue' ? 'warning' : 'neutral'}>
                 {t(`dailyLog.kind.${entry.kind}`)}
-              </Badge>
+              </StatusBadge>
               {gymId === null && entry.gyms && (
-                <Badge variant="outline">{entry.gyms.name}</Badge>
+                <StatusBadge tone="neutral">{entry.gyms.name}</StatusBadge>
               )}
               <span className="text-muted-foreground text-xs">
                 {t('dailyLog.writtenBy', {
@@ -59,9 +63,9 @@ export function LatestLogEntryCard() {
           </div>
         )}
 
-        <Link to="/daily-log" className="text-sm underline">
-          {t('home.dailyLog.wholeLog')}
-        </Link>
+        <Button asChild variant="link" className="h-auto p-0">
+          <Link to="/daily-log">{t('home.dailyLog.wholeLog')}</Link>
+        </Button>
       </CardContent>
     </Card>
   )

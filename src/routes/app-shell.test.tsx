@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { AuthProvider } from '@/features/auth'
 import { GymProvider } from '@/features/gyms'
 import { i18next } from '@/lib/i18n'
-import { AppShell } from '@/routes/app-shell'
+import { AppShell, initials } from '@/routes/app-shell'
 import { renderWithProviders } from '@/test/render'
 
 type SessionResult = { data: { session: Session | null }; error: null }
@@ -254,7 +254,10 @@ describe('AppShell gym switcher', () => {
 
 describe('AppShell session', () => {
   it('names the signed-in user so a shared machine shows whose session it is', async () => {
+    const user = userEvent.setup()
     renderShell()
+
+    await user.click(screen.getByRole('button', { name: i18next.t('auth.account.menu') }))
 
     expect(await screen.findByText('staff@gymops.test')).toBeInTheDocument()
   })
@@ -263,7 +266,10 @@ describe('AppShell session', () => {
     const user = userEvent.setup()
     renderShell()
 
-    await user.click(await screen.findByRole('button', { name: 'Sign out' }))
+    await user.click(screen.getByRole('button', { name: i18next.t('auth.account.menu') }))
+    await user.click(
+      await screen.findByRole('menuitem', { name: i18next.t('auth.signOut') }),
+    )
 
     await waitFor(() => expect(signOut).toHaveBeenCalled())
   })
@@ -274,5 +280,14 @@ describe('AppShell session', () => {
 
     expect(await screen.findByRole('link', { name: 'Nyheder' })).toBeInTheDocument()
     expect(i18next.language).toBe('da')
+  })
+})
+
+describe('initials', () => {
+  it('takes the first letters of the first and last name', () => {
+    expect(initials('Mads Bo Hansen', 'mads@gymops.test')).toBe('MH')
+  })
+  it('falls back to the email when there is no name', () => {
+    expect(initials(null, 'staff@gymops.test')).toBe('S')
   })
 })

@@ -2,7 +2,7 @@ import { Search } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
-import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { minSearchLength, useContentSearch, useDebounced } from './search'
@@ -50,16 +50,16 @@ export function ContentSearch() {
               <li key={`${hit.kind}-${hit.id}`}>
                 <Card className="space-y-1 p-3">
                   <div className="flex flex-wrap items-center gap-1.5">
-                    <Badge variant="secondary">
+                    <StatusBadge tone="neutral">
                       {hit.kind === 'news'
                         ? t('content.kindNews')
                         : t('content.kindGuide')}
-                    </Badge>
-                    <Badge variant="outline">
+                    </StatusBadge>
+                    <StatusBadge tone="neutral">
                       {hit.scopeName ?? t('content.companyWide')}
-                    </Badge>
+                    </StatusBadge>
                     {hit.isDraft && (
-                      <Badge variant="secondary">{t('content.draft')}</Badge>
+                      <StatusBadge tone="warning">{t('content.draft')}</StatusBadge>
                     )}
                   </div>
                   <p className="font-medium">

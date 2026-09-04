@@ -131,7 +131,7 @@ function GymForm({ gym, onDone }: { gym?: AdminGym; onDone: () => void }) {
         {/* Checklist runs are generated at 03:00 in this zone (P4-02). */}
         <select
           id={`${fieldId}-timezone`}
-          className="border-input bg-background h-9 w-full rounded-md border px-2 text-sm"
+          className="border-input bg-card focus-visible:border-ring focus-visible:ring-ring/40 h-11 w-full rounded-xl border px-3.5 py-1 text-base outline-none focus-visible:ring-[3px]"
           value={values.timezone}
           onChange={(event) =>
             setValues((current) => ({ ...current, timezone: event.target.value }))

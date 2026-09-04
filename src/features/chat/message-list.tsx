@@ -1,6 +1,9 @@
+import { MessageCircle } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { EmptyState, LoadingState } from '@/components'
 import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
 import { useAuth } from '@/features/auth'
 import { Attachments } from './attachments'
 import { ChatMarkdown } from './markdown'
@@ -76,8 +79,10 @@ export function MessageList({
         </div>
       )}
 
+      {messages.isPending && <LoadingState rows={5} />}
+
       {!messages.isPending && rows.length === 0 && (
-        <p className="text-muted-foreground text-sm">{t('chat.noMessages')}</p>
+        <EmptyState icon={MessageCircle} title={t('chat.noMessages')} />
       )}
 
       <ol className="space-y-3">
@@ -197,9 +202,9 @@ function EditForm({
         if (body.trim()) onSave(body.trim())
       }}
     >
-      <textarea
+      <Textarea
         aria-label={t('chat.editMessage')}
-        className="border-input bg-background w-full rounded-md border p-2 text-sm"
+        className="text-sm"
         rows={2}
         value={body}
         autoFocus

@@ -1,4 +1,6 @@
+import { ScrollText } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { EmptyState, LoadingState } from '@/components'
 import {
   Table,
   TableBody,
@@ -48,9 +50,7 @@ export function AuditPanel() {
     <section className="space-y-4">
       <h2 className="text-lg font-semibold">{t('admin.audit.title')}</h2>
 
-      {entries.isPending && (
-        <p className="text-muted-foreground text-sm">{t('admin.loading')}</p>
-      )}
+      {entries.isPending && <LoadingState rows={6} />}
       {entries.isError && (
         <p role="alert" className="text-destructive text-sm">
           {t('admin.loadFailed')}
@@ -58,7 +58,7 @@ export function AuditPanel() {
       )}
 
       {entries.data?.length === 0 && (
-        <p className="text-muted-foreground text-sm">{t('admin.audit.empty')}</p>
+        <EmptyState icon={ScrollText} title={t('admin.audit.empty')} />
       )}
 
       {entries.data && entries.data.length > 0 && (

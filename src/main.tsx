@@ -5,6 +5,8 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { registerSW } from 'virtual:pwa-register'
 import { App } from '@/App'
+// P7C-01: Inter, self-hosted so the desktop bundle renders it offline.
+import '@fontsource-variable/inter'
 import '@/index.css'
 import '@/lib/i18n'
 import { isDesktop } from '@/lib/platform'

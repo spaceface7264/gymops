@@ -170,18 +170,20 @@ describe('preferences', () => {
   it('shows every channel on for a type nobody has touched', async () => {
     renderWithProviders(<NotificationPreferencesPage />)
 
-    const boxes = await screen.findAllByRole('checkbox')
+    const switches = await screen.findAllByRole('switch')
     // Every type the enum carries, times the three channels — counted rather
     // than written down, so adding a type (P6-08 added two) is not a failure.
-    expect(boxes).toHaveLength(notificationTypes.length * notificationChannels.length)
-    expect(boxes.every((box) => (box as HTMLInputElement).checked)).toBe(true)
+    expect(switches).toHaveLength(notificationTypes.length * notificationChannels.length)
+    expect(switches.every((box) => box.getAttribute('aria-checked') === 'true')).toBe(
+      true,
+    )
   })
 
   it('writes the whole row when one channel is switched off', async () => {
     renderWithProviders(<NotificationPreferencesPage />)
 
     await userEvent.click(
-      await screen.findByRole('checkbox', { name: 'Email for New incident' }),
+      await screen.findByRole('switch', { name: 'Email for New incident' }),
     )
 
     await waitFor(() =>
@@ -204,9 +206,9 @@ describe('preferences', () => {
     ])
     renderWithProviders(<NotificationPreferencesPage />)
 
-    const box = await screen.findByRole('checkbox', { name: 'Push for Still to confirm' })
+    const box = await screen.findByRole('switch', { name: 'Push for Still to confirm' })
     await waitFor(() => expect(box).not.toBeChecked())
-    expect(screen.getByRole('checkbox', { name: 'Push for New incident' })).toBeChecked()
+    expect(screen.getByRole('switch', { name: 'Push for New incident' })).toBeChecked()
   })
 })
 

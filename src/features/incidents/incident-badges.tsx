@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Badge } from '@/components/ui/badge'
+import { StatusBadge, type Tone } from '@/components'
 import type { Incident } from './queries'
 
 /**
@@ -7,6 +7,17 @@ import type { Incident } from './queries'
  * because a high one is the reason somebody scans this list at all; a resolved
  * incident is deliberately quiet.
  */
+const statusTone: Record<Incident['status'], Tone> = {
+  open: 'danger',
+  in_progress: 'info',
+  resolved: 'success',
+}
+const severityTone: Record<Incident['severity'], Tone> = {
+  high: 'danger',
+  medium: 'warning',
+  low: 'neutral',
+}
+
 export function IncidentBadges({
   incident,
   showGym,
@@ -18,22 +29,16 @@ export function IncidentBadges({
 
   return (
     <div className="flex flex-wrap items-center gap-1.5">
-      <Badge variant={incident.status === 'resolved' ? 'outline' : 'default'}>
+      <StatusBadge tone={statusTone[incident.status]}>
         {t(`incidents.status.${incident.status}`)}
-      </Badge>
-      <Badge
-        variant={
-          incident.severity === 'high'
-            ? 'destructive'
-            : incident.severity === 'medium'
-              ? 'secondary'
-              : 'outline'
-        }
-      >
+      </StatusBadge>
+      <StatusBadge tone={severityTone[incident.severity]}>
         {t(`incidents.severity.${incident.severity}`)}
-      </Badge>
-      <Badge variant="secondary">{t(`incidents.kind.${incident.kind}`)}</Badge>
-      {showGym && incident.gyms && <Badge variant="outline">{incident.gyms.name}</Badge>}
+      </StatusBadge>
+      <StatusBadge tone="neutral">{t(`incidents.kind.${incident.kind}`)}</StatusBadge>
+      {showGym && incident.gyms && (
+        <StatusBadge tone="neutral">{incident.gyms.name}</StatusBadge>
+      )}
     </div>
   )
 }

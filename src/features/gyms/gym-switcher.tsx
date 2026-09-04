@@ -28,7 +28,7 @@ export function GymSwitcher() {
       <select
         id="gym-switcher"
         aria-label={t('gym.label')}
-        className="border-input bg-background h-9 max-w-44 rounded-md border px-2 text-sm"
+        className="border-input bg-card focus-visible:border-ring focus-visible:ring-ring/40 h-11 max-w-44 rounded-xl border px-3.5 py-1 text-base outline-none focus-visible:ring-[3px]"
         value={gymId ?? allGymsValue}
         onChange={(event) =>
           selectGym(event.target.value === allGymsValue ? null : event.target.value)

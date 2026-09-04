@@ -79,6 +79,12 @@ export default tseslint.config(
     rules: { 'react-refresh/only-export-components': 'off' },
   },
   {
+    // `initials` is exported alongside `AppShell` so its unit tests don't
+    // need a separate module.
+    files: ['src/routes/app-shell.tsx'],
+    rules: { 'react-refresh/only-export-components': 'off' },
+  },
+  {
     // Config files are plain JS and outside the type-checked program.
     files: ['**/*.js'],
     languageOptions: { globals: globals.node },

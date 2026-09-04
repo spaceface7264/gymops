@@ -1,6 +1,9 @@
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
+import { PageHeader } from '@/components'
 import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 import { isDesktop } from '@/lib/platform'
 import { DesktopNotificationOptIn } from './desktop-notification-opt-in'
 import { PushOptIn } from './push-opt-in'
@@ -37,12 +40,14 @@ export function NotificationPreferencesPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-2xl font-semibold">{t('notifications.preferences')}</h1>
-        <Button size="sm" variant="outline" asChild>
-          <Link to="/notifications">{t('notifications.backToInbox')}</Link>
-        </Button>
-      </div>
+      <PageHeader
+        title={t('notifications.preferences')}
+        action={
+          <Button size="sm" variant="outline" asChild>
+            <Link to="/notifications">{t('notifications.backToInbox')}</Link>
+          </Button>
+        }
+      />
 
       <p className="text-muted-foreground text-sm">
         {t('notifications.preferencesHint')}
@@ -83,22 +88,18 @@ export function NotificationPreferencesPage() {
                 </th>
                 {notificationChannels.map((channel) => (
                   <td key={channel} className="px-2 py-2">
-                    <label className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        className="size-4"
-                        checked={effective(type)[channel]}
-                        disabled={prefs.isPending || setPref.isPending}
-                        onChange={() => toggle(type, channel)}
-                        aria-label={t('notifications.channelFor', {
-                          channel: t(`notifications.channel.${channel}`),
-                          type: t(`notifications.type.${type}`),
-                        })}
-                      />
-                      <span className="sr-only">
-                        {t(`notifications.channel.${channel}`)}
-                      </span>
-                    </label>
+                    <Label htmlFor={`pref-${type}-${channel}`} className="sr-only">
+                      {t('notifications.channelFor', {
+                        channel: t(`notifications.channel.${channel}`),
+                        type: t(`notifications.type.${type}`),
+                      })}
+                    </Label>
+                    <Switch
+                      id={`pref-${type}-${channel}`}
+                      checked={effective(type)[channel]}
+                      disabled={prefs.isPending || setPref.isPending}
+                      onCheckedChange={() => toggle(type, channel)}
+                    />
                   </td>
                 ))}
               </tr>

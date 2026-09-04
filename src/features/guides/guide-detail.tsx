@@ -2,9 +2,8 @@ import { ArrowLeft, Check, Pencil, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useParams } from 'react-router'
-import { Badge } from '@/components/ui/badge'
+import { LoadingState, PageHeader, StatusBadge } from '@/components'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
 import {
   Dialog,
   DialogContent,
@@ -36,7 +35,7 @@ export function GuideDetailPage() {
   const [confirmingDelete, setConfirmingDelete] = useState(false)
 
   if (guide.isPending) {
-    return <p className="text-muted-foreground text-sm">{t('guides.loading')}</p>
+    return <LoadingState rows={5} />
   }
   if (!guide.data) {
     return (
@@ -59,20 +58,20 @@ export function GuideDetailPage() {
 
       <header className="space-y-2">
         <div className="flex flex-wrap items-center gap-1.5">
-          <Badge variant="outline">
+          <StatusBadge tone="neutral">
             {guide.data.gyms?.name ?? t('guides.companyWide')}
-          </Badge>
+          </StatusBadge>
           {guide.data.guide_categories && (
-            <Badge variant="outline">{guide.data.guide_categories.name}</Badge>
+            <StatusBadge tone="neutral">{guide.data.guide_categories.name}</StatusBadge>
           )}
           {guide.data.status === 'draft' && (
-            <Badge variant="secondary">{t('guides.draft')}</Badge>
+            <StatusBadge tone="warning">{t('guides.draft')}</StatusBadge>
           )}
-          <Badge variant="secondary">
+          <StatusBadge tone="neutral">
             {t('guides.version', { version: guide.data.version })}
-          </Badge>
+          </StatusBadge>
         </div>
-        <h1 className="text-2xl font-semibold">{guide.data.title}</h1>
+        <PageHeader title={guide.data.title} />
       </header>
 
       {canEdit && (
@@ -157,13 +156,13 @@ export function GuideAcknowledgement({
   const upToDate = ack != null && ack.version >= guide.version
 
   return (
-    <Card className="flex flex-wrap items-center justify-between gap-3 p-4">
+    <div className="bg-tone-new-bg text-tone-new-fg flex flex-wrap items-center justify-between gap-3 rounded-2xl p-4">
       <p className="text-sm">
         {ack && !upToDate ? t('guides.ack.changed') : t('guides.ack.prompt')}
       </p>
 
       {upToDate ? (
-        <p className="text-muted-foreground flex items-center gap-2 text-sm">
+        <p className="flex items-center gap-2 text-sm">
           <Check className="size-4" />
           {t('guides.ack.confirmedAt', {
             when: new Date(ack.acknowledged_at).toLocaleString(i18n.language, {
@@ -187,6 +186,6 @@ export function GuideAcknowledgement({
           {ack ? t('guides.ack.confirmAgain') : t('guides.ack.confirm')}
         </Button>
       )}
-    </Card>
+    </div>
   )
 }

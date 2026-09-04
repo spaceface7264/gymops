@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Logo } from '@/components'
 import {
   Card,
   CardContent,
@@ -21,14 +21,10 @@ export function AuthLayout({
   description?: string
   children: ReactNode
 }) {
-  const { t } = useTranslation()
-
   return (
-    <main className="bg-muted/40 flex min-h-svh items-center justify-center p-4">
+    <main className="bg-background flex min-h-svh items-center justify-center p-4">
       <div className="w-full max-w-sm space-y-6">
-        <p className="text-center text-lg font-semibold tracking-tight">
-          {t('app.name')}
-        </p>
+        <Logo wordmark className="flex justify-center text-xl" />
         <Card>
           <CardHeader>
             <CardTitle>{title}</CardTitle>

@@ -2,6 +2,7 @@ import type { JSONContent } from '@tiptap/react'
 import { useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router'
+import { LoadingState, PageHeader } from '@/components'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -42,7 +43,7 @@ export function GuideEditorPage() {
   const existing = useGuide(guideId)
 
   if (guideId && existing.isPending) {
-    return <p className="text-muted-foreground text-sm">{t('guides.loading')}</p>
+    return <LoadingState rows={5} />
   }
   if (guideId && !existing.data) {
     return (
@@ -119,9 +120,7 @@ function GuideEditor({ guide }: { guide?: Guide }) {
         submit(guide?.status ?? 'draft')
       }}
     >
-      <h1 className="text-2xl font-semibold">
-        {guide ? t('guides.editTitle') : t('guides.createTitle')}
-      </h1>
+      <PageHeader title={guide ? t('guides.editTitle') : t('guides.createTitle')} />
 
       <div className="space-y-2">
         <Label htmlFor={`${fieldId}-scope`}>{t('guides.scope')}</Label>

@@ -102,6 +102,16 @@ Legend: P1 = Phase 1 etc. Effort: S (< half day), M (1–2 days), L (3+ days).
 | P7B-02 | `content_search()` SQL function with `ts_rank`; search results ordered by it   | P3-06        | S      |
 | P7B-03 | `profiles_select` shows active admins to everyone; staff → admin DMs           | P6-06        | S      |
 
+## Phase 7c — facelift (decided 2026-09-03, spec in `docs/superpowers/specs/2026-09-03-facelift-design.md`)
+
+| ID     | Task                                                                          | Depends on   | Effort |
+| ------ | ----------------------------------------------------------------------------- | ------------ | ------ |
+| P7C-01 | Foundation: violet tokens, Inter self-hosted, radius and type scale, no dark   | P7-05        | S      |
+| P7C-02 | Primitives restyled; `CardTitle` a heading; skeleton/avatar/sonner/tooltip/textarea/switch added | P7C-01 | M |
+| P7C-03 | Shared layer: `Logo`, `PageHeader`, `EmptyState`, `LoadingState`, `StatusBadge` | P7C-02       | M      |
+| P7C-04 | Shell: logo, pill nav, avatar menu in the header, auth layout                 | P7C-03       | S      |
+| P7C-05 | Screen sweep: every route on the shared layer, touch targets, en/da check     | P7C-04       | L      |
+
 ## Phase 8 — AI assistant (V1.5)
 
 | ID    | Task                                                                                                      | Depends on   | Effort |
@@ -118,6 +128,7 @@ Legend: P1 = Phase 1 etc. Effort: S (< half day), M (1–2 days), L (3+ days).
 - V2: tasks (`tasks`, recurrence, assignment, incident → task). Calendars shipped early as P4-11.
 - V3: dashboards, `brp-sync` Edge Function (needs BRP API key, service account, rate limits, webhook info).
 - Chat follow-ups: threads, reactions, search.
+- Phone bottom bar: five primary tabs plus a More sheet, instead of nine entries scrolling sideways (noted in the facelift spec, P7C).
 - Global "search anything" in the header: relocate `ContentSearch`, then add `search_vector` columns and branches for incidents, events, daily log and people; chat last.
 - Acknowledgement reminders (the `ack_reminder` type exists, nothing raises it) and branded en/da auth mail templates — both before the cutover.
 - Assistant follow-ups: pgvector retrieval, live ops data, actions.

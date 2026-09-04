@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components'
 import { eventGymNames, isCompanyWide, type GymEvent } from './queries'
 
 /** How many gyms are named before the badge switches to a count. */
@@ -20,21 +20,21 @@ export function EventBadges({
 
   return (
     <div className="flex flex-wrap items-center gap-1.5">
-      <Badge variant="secondary">{t(`events.type.${event.event_type}`)}</Badge>
+      <StatusBadge tone="info">{t(`events.type.${event.event_type}`)}</StatusBadge>
 
       {isCompanyWide(event) ? (
-        <Badge variant="outline">{t('events.companyWide')}</Badge>
+        <StatusBadge tone="neutral">{t('events.companyWide')}</StatusBadge>
       ) : names.length > namedGyms ? (
         // Naming five gyms costs more room than it earns; the form is where
         // the full list is read.
-        <Badge variant="outline" title={names.join(', ')}>
+        <StatusBadge tone="neutral" title={names.join(', ')}>
           {t('events.gymCount', { count: names.length })}
-        </Badge>
+        </StatusBadge>
       ) : (
         names.map((name) => (
-          <Badge key={name} variant="outline">
+          <StatusBadge key={name} tone="neutral">
             {name}
-          </Badge>
+          </StatusBadge>
         ))
       )}
     </div>

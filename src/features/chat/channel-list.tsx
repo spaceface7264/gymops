@@ -1,6 +1,7 @@
-import { Hash, Lock, MessageCircle, Users, VolumeX } from 'lucide-react'
+import { Hash, Lock, MessageCircle, MessagesSquare, Users, VolumeX } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { NavLink } from 'react-router'
+import { EmptyState, LoadingState } from '@/components'
 import { useAuth } from '@/features/auth'
 import { cn } from '@/lib/utils'
 import { channelName } from './channel-name'
@@ -43,6 +44,8 @@ export function ChannelList({ activeId }: { activeId?: string }) {
 
   return (
     <div className="space-y-4 p-3">
+      {channels.isPending && <LoadingState rows={6} />}
+
       {groups.map((group) => {
         const inGroup = named
           .filter((row) => groupOf(row.channel) === group)
@@ -84,7 +87,7 @@ export function ChannelList({ activeId }: { activeId?: string }) {
       })}
 
       {!channels.isPending && named.length === 0 && (
-        <p className="text-muted-foreground px-2 text-sm">{t('chat.empty')}</p>
+        <EmptyState bordered={false} icon={MessagesSquare} title={t('chat.empty')} />
       )}
     </div>
   )
@@ -117,7 +120,7 @@ function ChannelRow({
       to={`/chat/${channel.id}`}
       aria-current={active ? 'page' : undefined}
       className={cn(
-        'flex items-center gap-2 rounded-md px-2 py-2 text-sm',
+        'flex min-h-11 items-center gap-2 rounded-xl px-2 py-2 text-sm',
         active ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/60',
       )}
     >
@@ -133,7 +136,7 @@ function ChannelRow({
       )}
       {unread > 0 && (
         <span
-          className="bg-primary text-primary-foreground min-w-5 rounded-full px-1.5 py-0.5 text-center text-xs font-medium"
+          className="bg-primary text-primary-foreground min-w-5 rounded-full px-1.5 text-[11px] font-semibold"
           aria-label={t('chat.unread', { count: unread })}
         >
           {unread > 99 ? '99+' : unread}

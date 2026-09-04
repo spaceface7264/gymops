@@ -107,7 +107,7 @@ const logEntry = (overrides: Row = {}): Row => ({
   ...overrides,
 })
 
-/** One card on the page, addressed by its title (`CardTitle` is a div). */
+/** One card on the page, addressed by its title (`CardTitle` renders an `h2`). */
 const block = (title: string) =>
   screen.getByText(title).closest('[data-slot="card"]') as HTMLElement
 

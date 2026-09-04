@@ -1,6 +1,8 @@
+import { ListChecks } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
-import { Badge } from '@/components/ui/badge'
+import { EmptyState, LoadingState, StatusBadge } from '@/components'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useGymScope } from '@/features/gyms'
 import { isRunComplete, runProgress, useTodaysRuns } from './queries'
@@ -28,16 +30,18 @@ export function TodaysChecklistsCard() {
         <CardTitle>{t('home.today.title')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        {runs.isPending && (
-          <p className="text-muted-foreground text-sm">{t('checklists.loading')}</p>
-        )}
+        {runs.isPending && <LoadingState rows={3} />}
         {runs.isError && (
           <p role="alert" className="text-destructive text-sm">
             {t('checklists.runsLoadFailed')}
           </p>
         )}
         {runs.data && all.length === 0 && (
-          <p className="text-muted-foreground text-sm">{t('checklists.nothingToday')}</p>
+          <EmptyState
+            bordered={false}
+            icon={ListChecks}
+            title={t('checklists.nothingToday')}
+          />
         )}
 
         <ul className="space-y-2">
@@ -47,14 +51,14 @@ export function TodaysChecklistsCard() {
 
             return (
               <li key={run.id} className="flex flex-wrap items-center gap-2">
-                <Badge variant={complete ? 'outline' : 'secondary'}>
+                <StatusBadge tone={complete ? 'success' : 'warning'}>
                   {complete
                     ? t('checklists.complete')
                     : t('checklists.progress', {
                         done: progress.done,
                         total: progress.total,
                       })}
-                </Badge>
+                </StatusBadge>
                 <span className="font-medium">
                   {run.checklist_templates?.name ?? t('checklists.untitledRun')}
                 </span>
@@ -67,9 +71,9 @@ export function TodaysChecklistsCard() {
         </ul>
 
         {all.length > 0 && (
-          <Link to="/checklists" className="text-sm underline">
-            {t('home.today.openChecklists')}
-          </Link>
+          <Button asChild variant="link" className="h-auto p-0">
+            <Link to="/checklists">{t('home.today.openChecklists')}</Link>
+          </Button>
         )}
       </CardContent>
     </Card>

@@ -1,8 +1,8 @@
-import { FolderPlus, Plus } from 'lucide-react'
+import { BookOpen, FolderPlus, Plus } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
-import { Badge } from '@/components/ui/badge'
+import { EmptyState, LoadingState, PageHeader, StatusBadge } from '@/components'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { ContentSearch, excerpt, toDoc, usePublishScope } from '@/features/content'
@@ -36,31 +36,34 @@ export function GuidesPage() {
     (guide) => !visible || (guide.category_id && visible.has(guide.category_id)),
   )
 
+  const newGuideAction = scope.canPublishSomewhere && (
+    <Button asChild>
+      <Link to="/guides/new">
+        <Plus className="size-4" />
+        {t('guides.newGuide')}
+      </Link>
+    </Button>
+  )
+
+  const headerAction = scope.canPublishSomewhere && (
+    <>
+      <Button
+        variant="outline"
+        onClick={() => {
+          setEditingCategory(undefined)
+          setCategoryDialogOpen(true)
+        }}
+      >
+        <FolderPlus className="size-4" />
+        {t('guides.newCategory')}
+      </Button>
+      {newGuideAction}
+    </>
+  )
+
   return (
     <div className="space-y-4">
-      <header className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-2xl font-semibold">{t('guides.title')}</h1>
-        {scope.canPublishSomewhere && (
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setEditingCategory(undefined)
-                setCategoryDialogOpen(true)
-              }}
-            >
-              <FolderPlus className="size-4" />
-              {t('guides.newCategory')}
-            </Button>
-            <Button asChild>
-              <Link to="/guides/new">
-                <Plus className="size-4" />
-                {t('guides.newGuide')}
-              </Link>
-            </Button>
-          </div>
-        )}
-      </header>
+      <PageHeader title={t('guides.title')} action={headerAction} />
 
       <ContentSearch />
 
@@ -95,16 +98,18 @@ export function GuidesPage() {
         </nav>
 
         <div className="space-y-3">
-          {guides.isPending && (
-            <p className="text-muted-foreground text-sm">{t('guides.loading')}</p>
-          )}
+          {guides.isPending && <LoadingState rows={5} />}
           {guides.isError && (
             <p role="alert" className="text-destructive text-sm">
               {t('guides.loadFailed')}
             </p>
           )}
           {guides.data && shown.length === 0 && (
-            <p className="text-muted-foreground text-sm">{t('guides.empty')}</p>
+            <EmptyState
+              icon={BookOpen}
+              title={t('guides.empty')}
+              action={newGuideAction}
+            />
           )}
 
           <ul aria-label={t('guides.title')} className="space-y-3">
@@ -112,18 +117,22 @@ export function GuidesPage() {
               <li key={guide.id}>
                 <Card className="space-y-2 p-4">
                   <div className="flex flex-wrap items-center gap-1.5">
-                    <Badge variant="outline">
+                    <StatusBadge tone="neutral">
                       {guide.gyms?.name ?? t('guides.companyWide')}
-                    </Badge>
+                    </StatusBadge>
                     {guide.guide_categories && (
-                      <Badge variant="outline">{guide.guide_categories.name}</Badge>
+                      <StatusBadge tone="neutral">
+                        {guide.guide_categories.name}
+                      </StatusBadge>
                     )}
                     {guide.status === 'draft' && (
-                      <Badge variant="secondary">{t('guides.draft')}</Badge>
+                      <StatusBadge tone="warning">{t('guides.draft')}</StatusBadge>
                     )}
-                    {guide.requires_ack && <Badge>{t('guides.mustConfirm')}</Badge>}
+                    {guide.requires_ack && (
+                      <StatusBadge tone="new">{t('guides.mustConfirm')}</StatusBadge>
+                    )}
                   </div>
-                  <h2 className="text-lg font-medium">
+                  <h2 className="text-lg font-semibold">
                     <Link to={`/guides/${guide.id}`} className="hover:underline">
                       {guide.title}
                     </Link>

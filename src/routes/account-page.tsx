@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { PageHeader } from '@/components'
 import {
   PasswordFields,
   checkPassword,
@@ -25,8 +26,8 @@ export function AccountPage() {
   const { t } = useTranslation()
 
   return (
-    <div className="max-w-xl space-y-4">
-      <h1 className="text-2xl font-semibold">{t('auth.account.title')}</h1>
+    <div className="max-w-xl space-y-5">
+      <PageHeader title={t('auth.account.title')} />
       <NameCard />
       <LanguageCard />
       <PasswordCard />
@@ -158,7 +159,7 @@ function LanguageCard() {
             <Label htmlFor="account-locale">{t('auth.account.language')}</Label>
             <select
               id="account-locale"
-              className="border-input bg-background h-9 w-full rounded-md border px-3 py-1 text-sm shadow-xs"
+              className="border-input bg-card focus-visible:border-ring focus-visible:ring-ring/40 h-11 w-full rounded-xl border px-3.5 py-1 text-base outline-none focus-visible:ring-[3px]"
               value={locale}
               onChange={(event) => {
                 setPicked(event.target.value as Locale)

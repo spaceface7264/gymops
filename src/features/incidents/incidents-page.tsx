@@ -1,7 +1,8 @@
-import { ChevronDown, Plus } from 'lucide-react'
+import { ChevronDown, Plus, TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
+import { EmptyState, LoadingState, PageHeader } from '@/components'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import {
@@ -39,19 +40,18 @@ export function IncidentsPage() {
   const kindLabel =
     filters.kind === 'all' ? t('incidents.allKinds') : t(`incidents.kind.${filters.kind}`)
 
+  const reportAction = canReport && (
+    <Button asChild size="sm">
+      <Link to="/incidents/new">
+        <Plus className="size-4" />
+        {t('incidents.report')}
+      </Link>
+    </Button>
+  )
+
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-2xl font-semibold">{t('incidents.title')}</h1>
-        {canReport && (
-          <Button asChild size="sm">
-            <Link to="/incidents/new">
-              <Plus className="size-4" />
-              {t('incidents.report')}
-            </Link>
-          </Button>
-        )}
-      </div>
+      <PageHeader title={t('incidents.title')} action={reportAction} />
 
       <div className="flex flex-wrap items-center gap-2">
         <div className="flex flex-wrap gap-1">
@@ -101,16 +101,18 @@ export function IncidentsPage() {
         </DropdownMenu>
       </div>
 
-      {incidents.isPending && (
-        <p className="text-muted-foreground text-sm">{t('incidents.loading')}</p>
-      )}
+      {incidents.isPending && <LoadingState rows={5} />}
       {incidents.isError && (
         <p role="alert" className="text-destructive text-sm">
           {t('incidents.loadFailed')}
         </p>
       )}
       {incidents.data?.length === 0 && (
-        <p className="text-muted-foreground text-sm">{t('incidents.empty')}</p>
+        <EmptyState
+          icon={TriangleAlert}
+          title={t('incidents.empty')}
+          action={reportAction}
+        />
       )}
 
       <ul className="space-y-2">

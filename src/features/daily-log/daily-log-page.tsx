@@ -1,5 +1,7 @@
+import { NotebookPen } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { EmptyState, LoadingState, PageHeader } from '@/components'
 import { Button } from '@/components/ui/button'
 import { useCompletionScope, localDate } from '@/features/checklists'
 import { usePublishScope } from '@/features/content'
@@ -37,7 +39,7 @@ export function DailyLogPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-semibold">{t('dailyLog.title')}</h1>
+      <PageHeader title={t('dailyLog.title')} />
 
       {canWriteHere ? (
         <EntryComposer gymId={gymId} />
@@ -65,7 +67,7 @@ export function DailyLogPage() {
         {(tags.length > 0 || tag) && (
           <select
             aria-label={t('dailyLog.filterByTag')}
-            className="border-input bg-background h-8 rounded-md border px-2 text-sm"
+            className="border-input bg-card focus-visible:border-ring focus-visible:ring-ring/40 h-11 rounded-xl border px-3.5 py-1 text-base outline-none focus-visible:ring-[3px]"
             value={tag ?? ''}
             onChange={(event) => setTag(event.target.value || null)}
           >
@@ -79,16 +81,14 @@ export function DailyLogPage() {
         )}
       </div>
 
-      {entries.isPending && (
-        <p className="text-muted-foreground text-sm">{t('dailyLog.loading')}</p>
-      )}
+      {entries.isPending && <LoadingState rows={5} />}
       {entries.isError && (
         <p role="alert" className="text-destructive text-sm">
           {t('dailyLog.loadFailed')}
         </p>
       )}
       {entries.data && shown.length === 0 && (
-        <p className="text-muted-foreground text-sm">{t('dailyLog.empty')}</p>
+        <EmptyState icon={NotebookPen} title={t('dailyLog.empty')} />
       )}
 
       <div className="space-y-4">

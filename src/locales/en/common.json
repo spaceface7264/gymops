@@ -80,6 +80,7 @@
       "reload": "Reload",
       "title": "Something went wrong"
     },
+    "loading": "Loading…",
     "name": "GymOps",
     "update": {
       "available": "GymOps {{version}} is ready.",
@@ -104,12 +105,14 @@
       "current": "Current password",
       "language": "Language",
       "languageSaved": "Language saved.",
+      "menu": "Account menu",
       "name": "Full name",
       "nameEmpty": "Enter your name.",
       "nameSaved": "Name saved.",
       "newPassword": "New password",
       "password": "Password",
       "passwordSaved": "Password changed.",
+      "preferences": "Notification preferences",
       "repeat": "Repeat new password",
       "save": "Save",
       "saveFailed": "The change could not be saved. Try again.",

@@ -80,6 +80,7 @@
       "reload": "Genindlæs",
       "title": "Noget gik galt"
     },
+    "loading": "Indlæser…",
     "name": "GymOps",
     "update": {
       "available": "GymOps {{version}} er klar.",
@@ -104,12 +105,14 @@
       "current": "Nuværende adgangskode",
       "language": "Sprog",
       "languageSaved": "Sprog gemt.",
+      "menu": "Kontomenu",
       "name": "Fulde navn",
       "nameEmpty": "Skriv dit navn.",
       "nameSaved": "Navn gemt.",
       "newPassword": "Ny adgangskode",
       "password": "Adgangskode",
       "passwordSaved": "Adgangskoden er ændret.",
+      "preferences": "Notifikationsindstillinger",
       "repeat": "Gentag ny adgangskode",
       "save": "Gem",
       "saveFailed": "Ændringen kunne ikke gemmes. Prøv igen.",
