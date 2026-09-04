@@ -1,4 +1,4 @@
-import { MessageCircle } from 'lucide-react'
+import { MessageCircle, Sparkles } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ConfirmDialog, EmptyState, LoadingState } from '@/components'
@@ -121,8 +121,9 @@ function MessageRow({
   const remove = useDeleteMessage(channelId)
 
   const mine = message.created_by === user?.id
-  const author =
-    message.author?.full_name?.trim() || message.author?.email || t('chat.someone')
+  const author = message.from_assistant
+    ? t('chat.assistant')
+    : message.author?.full_name?.trim() || message.author?.email || t('chat.someone')
   const when = new Date(message.created_at).toLocaleTimeString(i18n.language, {
     hour: '2-digit',
     minute: '2-digit',
@@ -137,7 +138,10 @@ function MessageRow({
   return (
     <li className="group">
       <div className="flex items-baseline gap-2">
-        <span className="text-sm font-medium">{author}</span>
+        <span className="flex items-center gap-1 text-sm font-medium">
+          {message.from_assistant && <Sparkles className="size-3.5" aria-hidden="true" />}
+          {author}
+        </span>
         <time dateTime={message.created_at} className="text-muted-foreground text-xs">
           {when}
         </time>

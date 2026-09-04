@@ -178,6 +178,12 @@
   "chat": {
     "add": "Tilføj",
     "addMembers": "Tilføj nogen",
+    "askAssistant": "Spørg assistenten",
+    "assistant": "Assistent",
+    "assistantAnswering": "Assistenten svarer…",
+    "assistantCapReached": "Du har nået dagens grænse for assistenten.",
+    "assistantFailed": "Assistenten kunne ikke svare. Prøv igen om lidt.",
+    "assistantNotConfigured": "Assistenten er ikke sat op endnu.",
     "attach": "Vedhæft en fil",
     "attachmentAlt": "Vedhæftet fil",
     "attachmentFailed": "Filen kunne ikke åbnes.",

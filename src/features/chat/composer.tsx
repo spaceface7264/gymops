@@ -3,12 +3,26 @@ import { useRef, useState, type KeyboardEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
+import { assistantHandle } from '@/features/assistant'
 import { useAuth, useProfile } from '@/features/auth'
 import { cn } from '@/lib/utils'
 import { useChannelMembers, useSendMessage, type ChannelMember } from './queries'
 
 /** What a colleague is called in the member list and in an @mention. */
 const memberName = (member: ChannelMember) => member.full_name?.trim() || member.email
+
+/**
+ * The assistant sits in the list beside the colleagues (P8-05), but it is a
+ * handle, not a person: it is never sent as a mention, and it is answered by
+ * `onSent`, not by the notification trigger.
+ */
+const assistant: ChannelMember = {
+  channel_id: '',
+  user_id: assistantHandle,
+  full_name: assistantHandle,
+  email: '',
+}
+const isAssistant = (member: ChannelMember) => member === assistant
 
 /** The partial @name immediately before the caret, if there is one. */
 function mentionQuery(text: string, caret: number): string | null {
@@ -24,9 +38,12 @@ function mentionQuery(text: string, caret: number): string | null {
 export function Composer({
   channelId,
   onTyping,
+  onSent,
 }: {
   channelId: string
   onTyping: (name: string) => void
+  /** The message is in the channel; what was sent, in case it asks for more. */
+  onSent?: (messageId: string, body: string) => void
 }) {
   const { t } = useTranslation()
   const { user } = useAuth()
@@ -45,11 +62,12 @@ export function Composer({
   const suggestions =
     query === null
       ? []
-      : others
-          .filter((member) =>
+      : [
+          ...(assistantHandle.startsWith(query.toLowerCase()) ? [assistant] : []),
+          ...others.filter((member) =>
             memberName(member).toLowerCase().includes(query.toLowerCase()),
-          )
-          .slice(0, 5)
+          ),
+        ].slice(0, 5)
 
   const myName = profile?.full_name?.trim() || user?.email || ''
 
@@ -84,9 +102,10 @@ export function Composer({
     send.mutate(
       { body: text, mentions, files },
       {
-        onSuccess: () => {
+        onSuccess: (messageId) => {
           setBody('')
           setFiles([])
+          onSent?.(messageId, text)
         },
       },
     )
@@ -149,7 +168,17 @@ export function Composer({
                   choose(member)
                 }}
               >
-                {memberName(member)}
+                {isAssistant(member) ? (
+                  <>
+                    @{assistantHandle}
+                    <span className="text-muted-foreground">
+                      {' '}
+                      — {t('chat.askAssistant')}
+                    </span>
+                  </>
+                ) : (
+                  memberName(member)
+                )}
               </button>
             </li>
           ))}

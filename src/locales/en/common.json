@@ -178,6 +178,12 @@
   "chat": {
     "add": "Add",
     "addMembers": "Add somebody",
+    "askAssistant": "Ask the assistant",
+    "assistant": "Assistant",
+    "assistantAnswering": "The assistant is answering…",
+    "assistantCapReached": "You have reached today’s limit for the assistant.",
+    "assistantFailed": "The assistant could not answer. Try again in a moment.",
+    "assistantNotConfigured": "The assistant is not set up yet.",
     "attach": "Attach a file",
     "attachmentAlt": "Attachment",
     "attachmentFailed": "This file could not be opened.",

@@ -17,6 +17,7 @@ const inserted = vi.fn<(table: string, values: Row) => void>()
 const deleted = vi.fn<(table: string, filters: [string, unknown][]) => void>()
 const uploaded = vi.fn<(bucket: string, path: string) => void>()
 const tracked = vi.fn<(state: Row) => void>()
+const invoked = vi.fn<(name: string, options: Row) => Promise<Row>>()
 
 function builder(table: string) {
   let cursor: string | null = null
@@ -89,6 +90,8 @@ vi.mock('@/lib/supabase', () => ({
       return subscription
     },
     removeChannel: vi.fn(),
+    // The assistant (P8-05) is asked through its Edge Function.
+    functions: { invoke: (name: string, options: Row) => invoked(name, options) },
     storage: {
       from: (bucket: string) => ({
         upload: (path: string) => {
@@ -156,6 +159,7 @@ beforeEach(() => {
   memberRows.mockReturnValue([])
   profileRows.mockReturnValue([])
   overviewRows.mockReturnValue([activity()])
+  invoked.mockResolvedValue({ data: { message_id: 'messages-reply' }, error: null })
 })
 
 describe('the channel list', () => {
@@ -766,5 +770,101 @@ describe('custom channels', () => {
         description: null,
       }),
     )
+  })
+})
+
+describe('asking the assistant', () => {
+  const write = async () => screen.findByRole('textbox', { name: 'Write a message' })
+
+  it('offers @assistant in the mention list, without treating it as a person', async () => {
+    openChannel()
+
+    const box = await write()
+    await userEvent.type(box, '@ass')
+    await userEvent.click(await screen.findByRole('option', { name: /@assistant/ }))
+    expect(box).toHaveValue('@assistant ')
+
+    await userEvent.type(box, 'chalk?{Enter}')
+    await waitFor(() =>
+      expect(inserted).toHaveBeenCalledWith('messages', {
+        channel_id: 'channel-nord',
+        body: '@assistant chalk?',
+        mentions: [],
+      }),
+    )
+  })
+
+  it('asks the function to answer once the mention is sent, and says so meanwhile', async () => {
+    let finish!: (value: Row) => void
+    invoked.mockReturnValue(new Promise<Row>((resolve) => (finish = resolve)))
+    openChannel()
+
+    await userEvent.type(await write(), '@assistant chalk?{Enter}')
+
+    await waitFor(() =>
+      expect(invoked).toHaveBeenCalledWith('assistant', {
+        body: {
+          surface: 'channel',
+          channel_id: 'channel-nord',
+          message_id: 'messages-new',
+        },
+      }),
+    )
+    expect(screen.getByText('The assistant is answering…')).toBeInTheDocument()
+
+    finish({ data: { message_id: 'messages-reply' }, error: null })
+    await waitFor(() =>
+      expect(screen.queryByText('The assistant is answering…')).not.toBeInTheDocument(),
+    )
+  })
+
+  it('leaves the function alone for an ordinary message', async () => {
+    openChannel()
+
+    await userEvent.type(await write(), 'Wall 4 is open{Enter}')
+
+    await waitFor(() => expect(inserted).toHaveBeenCalled())
+    expect(invoked).not.toHaveBeenCalled()
+  })
+
+  it('says when the day’s limit is reached', async () => {
+    invoked.mockResolvedValue({
+      data: null,
+      error: { context: { json: () => Promise.resolve({ error: 'cap_reached' }) } },
+    })
+    openChannel()
+
+    await userEvent.type(await write(), '@assistant chalk?{Enter}')
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'You have reached today’s limit for the assistant.',
+    )
+  })
+
+  it('shows a reply as the assistant’s: nobody edits it, a manager can delete it', async () => {
+    profile.mockReturnValue({
+      id: 'user-sam',
+      is_admin: false,
+      is_superadmin: false,
+      gym_memberships: [
+        { role: 'manager', gyms: { id: 'gym-nord', name: 'Copenhagen Nord' } },
+      ],
+    })
+    messageRows.mockReturnValue([
+      message({
+        id: 'message-a',
+        body: 'Liquid chalk only.',
+        created_by: null,
+        author: null,
+        from_assistant: true,
+      }),
+    ])
+    openChannel()
+
+    const row = await screen.findByRole('listitem')
+    expect(row).toHaveTextContent('Assistant')
+    expect(row).not.toHaveTextContent('someone')
+    expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument()
   })
 })

@@ -41,6 +41,7 @@ export type Message = Pick<
   | 'edited_at'
   | 'deleted_at'
   | 'created_by'
+  | 'from_assistant'
 > & {
   author: { full_name: string | null; email: string } | null
   message_attachments: ChatAttachment[]
@@ -84,7 +85,7 @@ export const messagePageSize = 30
 // One literal, however long: supabase-js infers the row type from the string
 // itself, and a concatenated one infers nothing.
 const messageColumns =
-  'id, channel_id, body, mentions, created_at, edited_at, deleted_at, created_by, author:created_by(full_name, email), message_attachments(id, path, mime_type, size_bytes)'
+  'id, channel_id, body, mentions, created_at, edited_at, deleted_at, created_by, from_assistant, author:created_by(full_name, email), message_attachments(id, path, mime_type, size_bytes)'
 
 /**
  * The channels this person is *in*, not every channel they may read: a gym
@@ -585,7 +586,7 @@ export function useSendMessage(channelId: string) {
       body: string
       mentions?: string[]
       files?: File[]
-    }) => {
+    }): Promise<string> => {
       const { data, error } = await supabase
         .from('messages')
         .insert({ channel_id: channelId, body, mentions })
@@ -609,6 +610,9 @@ export function useSendMessage(channelId: string) {
         })
         if (attached.error) throw attached.error
       }
+
+      // The id, so a message that names the assistant can be answered (P8-05).
+      return data.id
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: chatKeys.messages(channelId) })
