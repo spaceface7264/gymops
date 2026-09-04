@@ -1,11 +1,9 @@
 import {
   ArrowLeft,
-  Bell,
   BellOff,
   LogOut,
   MessageCircle,
-  Plus,
-  Search,
+  MoreHorizontal,
   Settings,
   SquarePen,
   Trash2,
@@ -17,6 +15,14 @@ import { toast } from 'sonner'
 import { Link, useNavigate, useParams } from 'react-router'
 import { ConfirmDialog, EmptyState } from '@/components'
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { mentionsAssistant, useAssistantReply } from '@/features/assistant'
 import { useAuth } from '@/features/auth'
 import { usePublishScope } from '@/features/content'
@@ -58,7 +64,7 @@ export function ChatPage() {
       <aside
         aria-label={t('chat.title')}
         className={cn(
-          'md:w-72 md:shrink-0 md:overflow-y-auto md:border-r',
+          'min-h-0 flex-1 overflow-y-auto md:w-72 md:flex-none md:border-r',
           'pb-(--nav-bar-clearance) md:pb-0',
           channelId && 'hidden md:block',
         )}
@@ -69,8 +75,11 @@ export function ChatPage() {
             {t('chat.newDm')}
           </Button>
           <div className="flex gap-2">
-            <Button variant="ghost" className="flex-1" onClick={() => setBrowsing(true)}>
-              <Search className="size-4" aria-hidden="true" />
+            <Button
+              variant="ghost"
+              className="min-w-0 flex-1 px-2"
+              onClick={() => setBrowsing(true)}
+            >
               {t('chat.browse')}
             </Button>
             {/* Creating a channel is `can_publish_content()` (spec §2.1): a
@@ -78,10 +87,9 @@ export function ChatPage() {
             {canPublishSomewhere && (
               <Button
                 variant="ghost"
-                className="flex-1"
+                className="min-w-0 flex-1 px-2"
                 onClick={() => setNewChannel(true)}
               >
-                <Plus className="size-4" aria-hidden="true" />
                 {t('chat.newChannel')}
               </Button>
             )}
@@ -95,10 +103,14 @@ export function ChatPage() {
       <BrowseChannelsDialog open={browsing} onOpenChange={setBrowsing} />
 
       <section
-        className={cn('flex min-w-0 flex-1 flex-col', !channelId && 'hidden md:flex')}
+        className={cn(
+          'flex min-h-0 min-w-0 flex-1 flex-col',
+          !channelId && 'hidden md:flex',
+        )}
       >
         {channelId ? (
-          <ChannelView channelId={channelId} />
+          // Keyed, so a channel's draft and read marker start fresh with it.
+          <ChannelView key={channelId} channelId={channelId} />
         ) : (
           <EmptyState
             icon={MessageCircle}
@@ -114,7 +126,7 @@ export function ChatPage() {
 
 /** The conversation: its header, and the messages under it. */
 function ChannelView({ channelId }: { channelId: string }) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { user } = useAuth()
   const channels = useChannels()
   const channel = (channels.data ?? []).find((row) => row.id === channelId)
@@ -129,7 +141,7 @@ function ChannelView({ channelId }: { channelId: string }) {
   )
 
   // One subscription for the channel: the messages and who is typing.
-  const { typing, startTyping } = useChannelLive(channelId)
+  const { typing, startTyping, live } = useChannelLive(channelId)
   // A message that names the assistant is answered by its sender's own call
   // (P8-05); the reply comes back through the subscription above.
   const reply = useAssistantReply()
@@ -156,12 +168,23 @@ function ChannelView({ channelId }: { channelId: string }) {
         <Link
           to="/chat"
           aria-label={t('chat.back')}
-          className="hover:bg-accent/60 flex size-11 items-center justify-center rounded-full md:hidden"
+          className="hover:bg-accent/60 flex size-11 shrink-0 items-center justify-center rounded-full transition-colors duration-150 md:hidden"
         >
           <ArrowLeft className="size-5" aria-hidden="true" />
         </Link>
         <div className="min-w-0 flex-1">
-          <h1 className="truncate text-lg font-semibold">{name}</h1>
+          <h1 className="flex items-center gap-2 text-lg font-semibold">
+            <span className="truncate">{name}</span>
+            {channel?.muted && (
+              <>
+                <BellOff
+                  className="text-muted-foreground size-4 shrink-0"
+                  aria-hidden="true"
+                />
+                <span className="sr-only">{t('chat.muted')}</span>
+              </>
+            )}
+          </h1>
           {channel?.description && (
             <p className="text-muted-foreground truncate text-sm">
               {channel.description}
@@ -169,81 +192,77 @@ function ChannelView({ channelId }: { channelId: string }) {
           )}
         </div>
 
-        {isCustom && channel && (
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label={t('chat.members')}
-            onClick={() => setMembers(true)}
-          >
-            <Users className="size-4" aria-hidden="true" />
-          </Button>
-        )}
-
-        {isCustom && canModerate && (
-          <>
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label={t('chat.editChannel')}
-              onClick={() => setEditing(true)}
-            >
-              <Settings className="size-4" aria-hidden="true" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label={t('chat.deleteChannel')}
-              onClick={() => setConfirmingDelete(true)}
-            >
-              <Trash2 className="size-4" aria-hidden="true" />
-            </Button>
-          </>
-        )}
-
-        {isCustom && channel && (
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label={t('chat.leave')}
-            onClick={() => setConfirmingLeave(true)}
-          >
-            <LogOut className="size-4" aria-hidden="true" />
-          </Button>
-        )}
-
-        {/* The mute switch the channel list has been marking since P6-03. */}
+        {/* One menu for everything about the channel: what it offers depends
+            on its kind. A gym channel's roster is the gym's (P6-02) and is
+            read here; only a custom one has members to manage, a name to
+            change and a door out; a DM has none of those. */}
         {channel && (
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-pressed={channel.muted}
-            aria-label={channel.muted ? t('chat.unmute') : t('chat.mute')}
-            disabled={setMuted.isPending}
-            onClick={() =>
-              setMuted.mutate(
-                { channelId: channel.id, muted: !channel.muted },
-                { onError: () => toast.error(t('chat.saveFailed')) },
-              )
-            }
-          >
-            {channel.muted ? (
-              <BellOff className="size-4" aria-hidden="true" />
-            ) : (
-              <Bell className="size-4" aria-hidden="true" />
-            )}
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" aria-label={t('chat.channelMenu')}>
+                <MoreHorizontal className="size-4" aria-hidden="true" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              {channel.kind !== 'dm' && (
+                <DropdownMenuItem onSelect={() => setMembers(true)}>
+                  <Users aria-hidden="true" />
+                  {t('chat.members')}
+                </DropdownMenuItem>
+              )}
+              {/* The mute switch the channel list has been marking since P6-03. */}
+              <DropdownMenuCheckboxItem
+                checked={channel.muted}
+                disabled={setMuted.isPending}
+                onCheckedChange={(muted) =>
+                  setMuted.mutate(
+                    { channelId: channel.id, muted: muted === true },
+                    { onError: () => toast.error(t('chat.saveFailed')) },
+                  )
+                }
+              >
+                {t('chat.muted')}
+              </DropdownMenuCheckboxItem>
+              {isCustom && canModerate && (
+                <DropdownMenuItem onSelect={() => setEditing(true)}>
+                  <Settings aria-hidden="true" />
+                  {t('chat.editChannel')}
+                </DropdownMenuItem>
+              )}
+              {isCustom && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onSelect={() => setConfirmingLeave(true)}>
+                    <LogOut aria-hidden="true" />
+                    {t('chat.leave')}
+                  </DropdownMenuItem>
+                  {canModerate && (
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onSelect={() => setConfirmingDelete(true)}
+                    >
+                      <Trash2 aria-hidden="true" />
+                      {t('chat.deleteChannel')}
+                    </DropdownMenuItem>
+                  )}
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         )}
       </header>
 
+      {channel && channel.kind !== 'dm' && (
+        <ChannelMembersDialog
+          channel={channel}
+          canModerate={isCustom && canModerate}
+          open={members}
+          onOpenChange={setMembers}
+        />
+      )}
+
       {isCustom && channel && (
         <>
-          <ChannelMembersDialog
-            channel={channel}
-            canModerate={canModerate}
-            open={members}
-            onOpenChange={setMembers}
-          />
           <ChannelDialog channel={channel} open={editing} onOpenChange={setEditing} />
 
           {/* Deleting a channel takes every message in it. */}
@@ -286,28 +305,38 @@ function ChannelView({ channelId }: { channelId: string }) {
 
       {channel && <MessageList channel={channel} canModerate={canModerate} />}
 
-      {typing.length > 0 && (
-        <p aria-live="polite" className="text-muted-foreground px-4 text-xs">
-          {t('chat.typing', { names: typing.join(', '), count: typing.length })}
-        </p>
-      )}
-
-      {reply.isPending && (
-        <p aria-live="polite" className="text-muted-foreground px-4 pb-1 text-xs">
-          {t('chat.assistantAnswering')}
-        </p>
-      )}
-      {reply.isError && (
-        <p role="alert" className="text-destructive px-4 pb-1 text-sm">
-          {t(
-            reply.error.problem === 'cap_reached'
-              ? 'chat.assistantCapReached'
-              : reply.error.problem === 'not_configured'
-                ? 'chat.assistantNotConfigured'
-                : 'chat.assistantFailed',
-          )}
-        </p>
-      )}
+      {/* One reserved line between the list and the box, so what it says
+          never moves the box under a thumb. */}
+      <div className="min-h-6 px-4 text-sm">
+        {!live ? (
+          <p role="status" className="text-muted-foreground">
+            {t('chat.notLive')}
+          </p>
+        ) : reply.isError ? (
+          <p role="alert" className="text-destructive">
+            {t(
+              reply.error.problem === 'cap_reached'
+                ? 'chat.assistantCapReached'
+                : reply.error.problem === 'not_configured'
+                  ? 'chat.assistantNotConfigured'
+                  : 'chat.assistantFailed',
+            )}
+          </p>
+        ) : reply.isPending ? (
+          <p role="status" className="text-muted-foreground">
+            {t('chat.assistantAnswering')}
+          </p>
+        ) : typing.length > 0 ? (
+          <p aria-live="polite" className="text-muted-foreground">
+            {t('chat.typing', {
+              names: new Intl.ListFormat(i18n.language, { type: 'conjunction' }).format(
+                typing,
+              ),
+              count: typing.length,
+            })}
+          </p>
+        ) : null}
+      </div>
       {channel && (
         <Composer
           channelId={channel.id}

@@ -1,4 +1,4 @@
-import { Hash, Lock, MessageCircle, MessagesSquare, Users, VolumeX } from 'lucide-react'
+import { BellOff, Hash, Lock, MessageCircle, MessagesSquare, Users } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { NavLink } from 'react-router'
 import { EmptyState, LoadingState, UnreadCount } from '@/components'
@@ -73,16 +73,17 @@ export function ChannelList({ activeId }: { activeId?: string }) {
           >
             <h2
               id={`chat-group-${group}`}
-              className="text-muted-foreground px-2 text-xs font-medium tracking-wide uppercase"
+              className="text-muted-foreground px-2 text-xs font-medium"
             >
               {t(`chat.group.${group}`)}
             </h2>
-            {inGroup.map(({ channel, name, unread }) => (
+            {inGroup.map(({ channel, name, unread, lastMessageAt }) => (
               <ChannelRow
                 key={channel.id}
                 channel={channel}
                 name={name}
                 unread={unread}
+                lastMessageAt={lastMessageAt}
                 active={channel.id === activeId}
               />
             ))}
@@ -106,25 +107,46 @@ function ChannelIcon({ channel }: { channel: Channel }) {
   return <Hash className="size-4 shrink-0" aria-hidden="true" />
 }
 
+/**
+ * When something was last said, short enough for the edge of a row: the time
+ * today, the weekday this week, the date otherwise.
+ */
+function lastSaid(iso: string, language: string): string {
+  const date = new Date(iso)
+  const now = new Date()
+  const days = (now.getTime() - date.getTime()) / 86_400_000
+
+  if (date.toDateString() === now.toDateString())
+    return date.toLocaleTimeString(language, {
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: 'h23',
+    })
+  if (days < 6) return date.toLocaleDateString(language, { weekday: 'short' })
+  return date.toLocaleDateString(language, { day: 'numeric', month: 'short' })
+}
+
 function ChannelRow({
   channel,
   name,
   unread,
+  lastMessageAt,
   active,
 }: {
   channel: Channel
   name: string
   unread: number
+  lastMessageAt: string | null
   active: boolean
 }) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   return (
     <NavLink
       to={`/chat/${channel.id}`}
       aria-current={active ? 'page' : undefined}
       className={cn(
-        'flex min-h-11 items-center gap-2 rounded-xl px-2 py-2 text-sm',
+        'flex min-h-11 items-center gap-2 rounded-xl px-2 py-2 text-sm transition-colors duration-150',
         active ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/60',
       )}
     >
@@ -133,12 +155,23 @@ function ChannelRow({
         {name}
       </span>
       {channel.muted && (
-        <VolumeX
-          className="text-muted-foreground size-4 shrink-0"
-          aria-label={t('chat.muted')}
-        />
+        <>
+          <BellOff className="text-muted-foreground size-4 shrink-0" aria-hidden="true" />
+          <span className="sr-only">{t('chat.muted')}</span>
+        </>
       )}
-      <UnreadCount count={unread} aria-label={t('chat.unread', { count: unread })} />
+      {unread > 0 ? (
+        <UnreadCount count={unread} aria-label={t('chat.unread', { count: unread })} />
+      ) : (
+        lastMessageAt && (
+          <time
+            dateTime={lastMessageAt}
+            className="text-muted-foreground shrink-0 text-xs tabular-nums"
+          >
+            {lastSaid(lastMessageAt, i18n.language)}
+          </time>
+        )
+      )}
     </NavLink>
   )
 }

@@ -27,7 +27,6 @@ export {
   useRemoveChannelMember,
   useUpdateChannel,
   useChannelMembers,
-  useEditMessage,
   useMarkChannelRead,
   useMessages,
   useSendMessage,

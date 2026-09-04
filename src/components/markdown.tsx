@@ -16,7 +16,7 @@ const pattern =
 
 export function Markdown({ body }: { body: string }) {
   return (
-    <p className="text-sm break-words whitespace-pre-wrap">
+    <p className="break-words whitespace-pre-wrap">
       {body.split('\n').map((line, index) => (
         <Fragment key={index}>
           {index > 0 && '\n'}
@@ -49,14 +49,19 @@ function Token({ token }: { token: string }) {
   if (token.startsWith('*')) return <em>{token.slice(1, -1)}</em>
   if (token.startsWith('`'))
     return (
-      <code className="bg-muted rounded px-1 py-0.5 text-xs">{token.slice(1, -1)}</code>
+      <code className="bg-muted rounded px-1 py-0.5 text-[0.875em]">
+        {token.slice(1, -1)}
+      </code>
     )
+
+  // A link into this app stays in this app: a new tab would leave the PWA.
+  const internal = token.startsWith(`${window.location.origin}/`)
 
   return (
     <a
       href={token}
-      target="_blank"
-      rel="noreferrer noopener"
+      target={internal ? undefined : '_blank'}
+      rel={internal ? undefined : 'noreferrer noopener'}
       className="underline underline-offset-2"
     >
       {token}

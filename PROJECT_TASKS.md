@@ -150,11 +150,21 @@ Legend: P1 = Phase 1 etc. Effort: S (< half day), M (1–2 days), L (3+ days).
 | P9-08 | First desktop release (v0.1.0) and the updater line (v0.1.1); Actions secrets              | P9-07      | M      |
 | P9-09 | Pilot at one gym for a week; findings into Known gaps                                      | P9-08      | L      |
 
+## Chat critique fixes (decided 2026-09-05, from `/impeccable critique`)
+
+| ID     | Task                                                                                                                                   | Depends on | Effort |
+| ------ | -------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ------ |
+| P6C-01 | Phone: lock the full-bleed frame at every width, scroll the list inside itself, follow the newest line only at the bottom, "New messages" pill | P6-04      | S      |
+| P6C-02 | Composer: Enter starts a line on touch, draft kept per channel, 10 MB cap, sending state and retry, files uploaded before the row       | P6-05      | S      |
+| P6C-03 | Stream: day headings, same-author grouping, 24-hour times, "You", the New rule, the mention tint, Edit removed, one menu per message     | P6-04      | M      |
+| P6C-04 | Header: one channel menu (members for any non-DM channel, muted, settings, leave, delete), muted mark beside the title, `BellOff` everywhere | P6-07      | S      |
+| P6C-05 | Copy and a11y: "Join a channel", "Conversations", DA `Annuller`/`Haller`, `Intl.ListFormat` for the typing line, combobox ARIA on the box, socket status line | P6C-03     | S      |
+
 ## Later (not scheduled)
 
 - V2: tasks (`tasks`, recurrence, assignment, incident → task). Calendars shipped early as P4-11.
 - V3: dashboards, `brp-sync` Edge Function (needs BRP API key, service account, rate limits, webhook info).
-- Chat follow-ups: threads, reactions, search.
+- Chat follow-ups: threads, reactions, search, a last-message preview in the channel list (needs `chat_overview()` to carry the body), a time on hover for grouped lines.
 - Phone bottom bar: five primary tabs plus a More sheet, instead of nine entries scrolling sideways (noted in the facelift spec, P7C; needs `sheet` vendored, deferred from P7D).
 - Deferred from P7D (2026-09-04): `command`/cmdk for the chat @mention listbox and a global search palette; `progress` for checklist completion; `collapsible` for the guide category tree; `scroll-area` for the chat lists; `react-hook-form` (every form is `useState` + `MissingRequirements`, and that is fine).
 - Global "search anything" in the header: relocate `ContentSearch`, then add `search_vector` columns and branches for incidents, events, daily log and people; chat last.

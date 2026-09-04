@@ -51,9 +51,9 @@ function Attachment({ attachment }: { attachment: ChatAttachment }) {
       href={url.data}
       target="_blank"
       rel="noreferrer noopener"
-      className="bg-muted flex min-h-9 items-center gap-1 rounded-lg px-2 py-1 text-xs underline-offset-2 hover:underline"
+      className="bg-muted flex min-h-11 items-center gap-1.5 rounded-full px-3 py-1 text-sm underline-offset-2 hover:underline"
     >
-      <Paperclip className="size-3" aria-hidden="true" />
+      <Paperclip className="size-4" aria-hidden="true" />
       {name}
     </a>
   )

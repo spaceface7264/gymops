@@ -18,6 +18,9 @@ const deleted = vi.fn<(table: string, filters: [string, unknown][]) => void>()
 const uploaded = vi.fn<(bucket: string, path: string) => void>()
 const tracked = vi.fn<(state: Row) => void>()
 const invoked = vi.fn<(name: string, options: Row) => Promise<Row>>()
+// What the next insert answers, and what the socket says when it is joined.
+const failing = { insert: false }
+const socket = { status: 'SUBSCRIBED' }
 
 function builder(table: string) {
   let cursor: string | null = null
@@ -50,7 +53,10 @@ function builder(table: string) {
       deleting = true
       return chain
     },
-    single: () => Promise.resolve({ data: { id: `${table}-new` }, error: null }),
+    single: () =>
+      failing.insert
+        ? Promise.resolve({ data: null, error: { message: 'insert failed' } })
+        : Promise.resolve({ data: { id: `${table}-new` }, error: null }),
     then: (resolve: (value: unknown) => unknown) => {
       if (deleting) deleted(table, filters)
       return Promise.resolve({ data: rowsFor(table, cursor), error: null }).then(resolve)
@@ -80,7 +86,10 @@ vi.mock('@/lib/supabase', () => ({
     channel: () => {
       const subscription = {
         on: () => subscription,
-        subscribe: () => subscription,
+        subscribe: (report?: (status: string) => void) => {
+          report?.(socket.status)
+          return subscription
+        },
         track: (state: Row) => {
           tracked(state)
           return Promise.resolve('ok')
@@ -145,6 +154,9 @@ function renderChat(path = '/chat', route = '/chat') {
 
 beforeEach(() => {
   vi.clearAllMocks()
+  failing.insert = false
+  socket.status = 'SUBSCRIBED'
+  sessionStorage.clear()
   messageRows.mockReturnValue([])
   profile.mockReturnValue({
     id: 'user-sam',
@@ -204,7 +216,7 @@ describe('the channel list', () => {
 
     // A DM is named by whoever else is in it, never by the reader themselves.
     // Its name arrives with the member list, one query after the channels.
-    const dms = screen.getByRole('region', { name: 'Direct messages' })
+    const dms = screen.getByRole('region', { name: 'Conversations' })
     expect(
       await within(dms).findByRole('link', { name: /Mette Holm/ }),
     ).toBeInTheDocument()
@@ -229,7 +241,7 @@ describe('the channel list', () => {
     renderChat()
 
     const link = await screen.findByRole('link', { name: /Copenhagen Nord/ })
-    expect(within(link).getByLabelText('Muted')).toBeInTheDocument()
+    expect(within(link).getByText('Muted')).toBeInTheDocument()
     expect(within(link).getByLabelText('2 unread')).toBeInTheDocument()
   })
 
@@ -307,6 +319,37 @@ describe('the message list', () => {
     ).toHaveAttribute('href', 'https://gymops.test/guides')
   })
 
+  it('cuts the day into headings, and names somebody once for lines said together', async () => {
+    const today = new Date()
+    const at = (minutes: number) =>
+      new Date(today.getTime() - minutes * 60_000).toISOString()
+    messageRows.mockReturnValue([
+      message({ id: 'message-3', body: 'Third', created_at: at(1) }),
+      message({ id: 'message-2', body: 'Second', created_at: at(2) }),
+      message({ id: 'message-1', body: 'First', created_at: '2026-09-03T09:00:00Z' }),
+    ])
+    openChannel()
+
+    expect(await screen.findByRole('heading', { name: 'Today' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /September/ })).toBeInTheDocument()
+    // Two lines by Mette a minute apart carry her name once.
+    const rows = screen.getAllByRole('listitem')
+    expect(rows[1]).toHaveTextContent('Mette Holm')
+    expect(rows[2]).not.toHaveTextContent('Mette Holm')
+    expect(rows[2]).toHaveTextContent('Third')
+  })
+
+  it('draws the New line before the first line said since it was last read', async () => {
+    messageRows.mockReturnValue([
+      message({ id: 'message-2', body: 'After', created_at: '2026-09-03T09:00:00Z' }),
+      message({ id: 'message-1', body: 'Before', created_at: '2026-09-03T07:00:00Z' }),
+    ])
+    openChannel()
+
+    const marker = await screen.findByRole('separator', { name: 'New' })
+    expect(marker.nextElementSibling).toHaveTextContent('After')
+  })
+
   it('says a deleted message is gone rather than showing an empty line', async () => {
     messageRows.mockReturnValue([
       message({ body: '', deleted_at: '2026-09-03T10:00:00Z' }),
@@ -352,27 +395,13 @@ describe('the message list', () => {
   })
 })
 
-describe('editing and deleting', () => {
-  it('lets somebody rewrite their own message', async () => {
-    messageRows.mockReturnValue([message({ created_by: 'user-sam' })])
-    openChannel()
-
-    await userEvent.click(await screen.findByRole('button', { name: 'Edit' }))
-    const box = screen.getByRole('textbox', { name: 'Edit the message' })
-    await userEvent.clear(box)
-    await userEvent.type(box, 'Wall 4 is open again')
-    await userEvent.click(screen.getByRole('button', { name: 'Save' }))
-
-    await waitFor(() =>
-      expect(updated).toHaveBeenCalledWith('messages', { body: 'Wall 4 is open again' }),
-    )
-  })
-
+describe('deleting', () => {
   it('deletes by stamping deleted_at, which is what the trigger acts on', async () => {
     messageRows.mockReturnValue([message({ created_by: 'user-sam' })])
     openChannel()
 
-    await userEvent.click(await screen.findByRole('button', { name: 'Delete' }))
+    await userEvent.click(await screen.findByRole('button', { name: 'Message options' }))
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Delete' }))
     // Deleting asks first (P7D-03).
     const dialog = await screen.findByRole('alertdialog')
     await userEvent.click(within(dialog).getByRole('button', { name: 'Delete' }))
@@ -387,13 +416,18 @@ describe('editing and deleting', () => {
     expect(typeof values.deleted_at).toBe('string')
   })
 
-  it('offers staff neither on a colleague’s message', async () => {
-    messageRows.mockReturnValue([message()])
+  it('offers staff nothing on a colleague’s message, and no edit on their own', async () => {
+    messageRows.mockReturnValue([
+      message({ id: 'message-mine', body: 'On it', created_by: 'user-sam' }),
+      message(),
+    ])
     openChannel()
 
     expect(await screen.findByText('Wall 4 is taped off')).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument()
+    // One menu, on the own line; a message is said once and deleted, never rewritten.
+    await userEvent.click(screen.getByRole('button', { name: 'Message options' }))
+    expect(await screen.findByRole('menuitem', { name: 'Delete' })).toBeInTheDocument()
+    expect(screen.queryByRole('menuitem', { name: 'Edit' })).not.toBeInTheDocument()
   })
 
   it('offers a manager the delete, in their own gym’s channel', async () => {
@@ -408,9 +442,8 @@ describe('editing and deleting', () => {
     messageRows.mockReturnValue([message()])
     openChannel()
 
-    expect(await screen.findByRole('button', { name: 'Delete' })).toBeInTheDocument()
-    // Somebody else's words stay theirs, moderator or not.
-    expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument()
+    await userEvent.click(await screen.findByRole('button', { name: 'Message options' }))
+    expect(await screen.findByRole('menuitem', { name: 'Delete' })).toBeInTheDocument()
   })
 })
 
@@ -442,6 +475,94 @@ describe('the composer', () => {
     expect(inserted).not.toHaveBeenCalled()
   })
 
+  it('starts a line on Enter on a touch screen, and sends from the button', async () => {
+    // jsdom has no `matchMedia`; a phone answers "no fine pointer".
+    const matchMedia = vi.fn().mockReturnValue({ matches: false })
+    window.matchMedia = matchMedia
+    try {
+      openChannel()
+
+      const box = await screen.findByRole('textbox', { name: 'Write a message' })
+      await userEvent.type(box, 'One{Enter}Two')
+      expect(matchMedia).toHaveBeenCalledWith('(pointer: fine)')
+      expect(box).toHaveValue('One\nTwo')
+      expect(inserted).not.toHaveBeenCalled()
+
+      await userEvent.click(screen.getByRole('button', { name: 'Send' }))
+      await waitFor(() =>
+        expect(inserted).toHaveBeenCalledWith('messages', {
+          channel_id: 'channel-nord',
+          body: 'One\nTwo',
+          mentions: [],
+        }),
+      )
+    } finally {
+      // @ts-expect-error -- back to jsdom's nothing, not a stub.
+      delete window.matchMedia
+    }
+  })
+
+  it('keeps a half-written message when somebody looks at another channel', async () => {
+    channelRows.mockReturnValue([
+      channel(),
+      channel({ id: 'channel-company', kind: 'company', gym_id: null, name: 'Company' }),
+    ])
+    openChannel()
+
+    await userEvent.type(
+      await screen.findByRole('textbox', { name: 'Write a message' }),
+      'Half a',
+    )
+    await userEvent.click(screen.getByRole('link', { name: /Company/ }))
+    await screen.findByRole('heading', { name: 'Company' })
+    expect(screen.getByRole('textbox', { name: 'Write a message' })).toHaveValue('')
+
+    await userEvent.click(screen.getByRole('link', { name: /Copenhagen Nord/ }))
+    await screen.findByRole('heading', { name: 'Copenhagen Nord' })
+    expect(screen.getByRole('textbox', { name: 'Write a message' })).toHaveValue('Half a')
+  })
+
+  it('leaves out a file over 10 MB and says so', async () => {
+    openChannel()
+    await screen.findByRole('textbox', { name: 'Write a message' })
+
+    const heavy = new File(['x'], 'reset.mov', { type: 'video/quicktime' })
+    Object.defineProperty(heavy, 'size', { value: 11 * 1024 * 1024 })
+    await userEvent.upload(screen.getByTestId('chat-files'), heavy)
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'reset.mov is over 10 MB and was left out.',
+    )
+    expect(screen.queryByText('reset.mov')).not.toBeInTheDocument()
+  })
+
+  it('keeps what was typed when sending fails, and offers to try again', async () => {
+    failing.insert = true
+    openChannel()
+
+    const box = await screen.findByRole('textbox', { name: 'Write a message' })
+    await userEvent.type(box, 'Wall 4 is open{Enter}')
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'The message could not be sent.',
+    )
+    expect(box).toHaveValue('Wall 4 is open')
+
+    failing.insert = false
+    await userEvent.click(screen.getByRole('button', { name: 'Try again' }))
+    await waitFor(() => expect(inserted).toHaveBeenCalledTimes(2))
+    await waitFor(() => expect(box).toHaveValue(''))
+  })
+
+  it('says so when the socket is not there', async () => {
+    socket.status = 'CHANNEL_ERROR'
+    openChannel()
+
+    expect(await screen.findByRole('status')).toHaveTextContent(
+      'Not connected. New messages arrive when you reload.',
+    )
+  })
+
   it('mentions a colleague by name, and sends the person rather than the string', async () => {
     memberRows.mockReturnValue([
       {
@@ -469,15 +590,18 @@ describe('the composer', () => {
     )
   })
 
-  it('says somebody is typing while they type', async () => {
+  it('says somebody is typing while they type, once per window', async () => {
     openChannel()
 
     await userEvent.type(
       await screen.findByRole('textbox', { name: 'Write a message' }),
-      'W',
+      'Wall',
     )
 
     await waitFor(() => expect(tracked).toHaveBeenCalled())
+    // Four keystrokes, one `track()`: a burst of them is what makes Realtime
+    // close the channel for exceeding the presence rate limit.
+    expect(tracked).toHaveBeenCalledTimes(1)
     const [state] = tracked.mock.calls[0] as [{ name: string; typing_until: string }]
     expect(state.name).toBe('Sam Ruiz')
     expect(new Date(state.typing_until).getTime()).toBeGreaterThan(Date.now())
@@ -500,10 +624,14 @@ describe('the composer', () => {
     // The channel first: the storage policies resolve the permission from it.
     expect(path.startsWith('channel-nord/')).toBe(true)
     expect(path.endsWith('.png')).toBe(true)
-    expect(inserted).toHaveBeenCalledWith(
-      'message_attachments',
-      expect.objectContaining({ message_id: 'messages-new', path }),
+    // The file went up before the message was inserted: nothing is said
+    // with its attachment missing.
+    expect(uploaded.mock.invocationCallOrder[0]).toBeLessThan(
+      inserted.mock.invocationCallOrder[0]!,
     )
+    expect(inserted).toHaveBeenCalledWith('message_attachments', [
+      expect.objectContaining({ message_id: 'messages-new', path }),
+    ])
   })
 })
 
@@ -544,9 +672,8 @@ describe('muting a channel', () => {
   it('silences it from the channel it is open in', async () => {
     openChannel()
 
-    await userEvent.click(
-      await screen.findByRole('button', { name: 'Mute this channel' }),
-    )
+    await userEvent.click(await screen.findByRole('button', { name: 'Channel' }))
+    await userEvent.click(await screen.findByRole('menuitemcheckbox', { name: 'Muted' }))
 
     await waitFor(() =>
       expect(
@@ -566,10 +693,13 @@ describe('muting a channel', () => {
     ])
     openChannel()
 
-    const button = await screen.findByRole('button', { name: 'Unmute this channel' })
-    expect(button).toHaveAttribute('aria-pressed', 'true')
+    // The header says so before the menu is opened.
+    expect(await screen.findByRole('heading', { name: /Muted/ })).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Channel' }))
+    const item = await screen.findByRole('menuitemcheckbox', { name: 'Muted' })
+    expect(item).toHaveAttribute('aria-checked', 'true')
 
-    await userEvent.click(button)
+    await userEvent.click(item)
     await waitFor(() =>
       expect(
         updated.mock.calls.some(
@@ -640,7 +770,9 @@ describe('custom channels', () => {
 
   it('offers the channel button to a manager and not to staff', async () => {
     renderChat()
-    expect(await screen.findByRole('button', { name: 'Browse' })).toBeInTheDocument()
+    expect(
+      await screen.findByRole('button', { name: 'Join a channel' }),
+    ).toBeInTheDocument()
     // Staff by default: creating a channel is `can_publish_content()` (§2.1).
     expect(screen.queryByRole('button', { name: 'New channel' })).not.toBeInTheDocument()
 
@@ -696,7 +828,7 @@ describe('custom channels', () => {
     ])
     renderChat()
 
-    await userEvent.click(await screen.findByRole('button', { name: 'Browse' }))
+    await userEvent.click(await screen.findByRole('button', { name: 'Join a channel' }))
     // The one this person is already in is not offered again.
     const rows = await screen.findAllByRole('button', { name: 'Join' })
     expect(rows).toHaveLength(1)
@@ -723,7 +855,8 @@ describe('custom channels', () => {
     ])
     renderChat('/chat/channel-setting', '/chat/:channelId')
 
-    await userEvent.click(await screen.findByRole('button', { name: 'Members' }))
+    await userEvent.click(await screen.findByRole('button', { name: 'Channel' }))
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Members' }))
     expect(await screen.findByText('Mette Holm')).toBeInTheDocument()
     // Staff read the list; they do not seat or unseat anybody.
     expect(
@@ -733,7 +866,10 @@ describe('custom channels', () => {
     // its own, and two buttons of that name is the known gap, not this test's.
     await userEvent.keyboard('{Escape}')
 
-    await userEvent.click(screen.getByRole('button', { name: 'Leave this channel' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Channel' }))
+    await userEvent.click(
+      await screen.findByRole('menuitem', { name: 'Leave this channel' }),
+    )
     // Leaving asks first (P7D-03).
     const leaveDialog = await screen.findByRole('alertdialog')
     await userEvent.click(
@@ -754,7 +890,10 @@ describe('custom channels', () => {
     ])
     renderChat('/chat/channel-setting', '/chat/:channelId')
 
-    await userEvent.click(await screen.findByRole('button', { name: 'Channel settings' }))
+    await userEvent.click(await screen.findByRole('button', { name: 'Channel' }))
+    await userEvent.click(
+      await screen.findByRole('menuitem', { name: 'Channel settings' }),
+    )
     // The scope and the privacy are what the people in it joined (P6-07).
     expect(screen.queryByLabelText('Who it belongs to')).not.toBeInTheDocument()
     expect(screen.queryByLabelText(/Private channel/)).not.toBeInTheDocument()
@@ -864,7 +1003,7 @@ describe('asking the assistant', () => {
     const row = await screen.findByRole('listitem')
     expect(row).toHaveTextContent('Assistant')
     expect(row).not.toHaveTextContent('someone')
-    expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Message options' }))
+    expect(await screen.findByRole('menuitem', { name: 'Delete' })).toBeInTheDocument()
   })
 })
