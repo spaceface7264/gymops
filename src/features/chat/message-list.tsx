@@ -1,7 +1,7 @@
 import { MessageCircle } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { EmptyState, LoadingState } from '@/components'
+import { ConfirmDialog, EmptyState, LoadingState } from '@/components'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { useAuth } from '@/features/auth'
@@ -113,6 +113,7 @@ function MessageRow({
   const { t, i18n } = useTranslation()
   const { user } = useAuth()
   const [editing, setEditing] = useState(false)
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
 
   const edit = useEditMessage(channelId)
   const remove = useDeleteMessage(channelId)
@@ -166,16 +167,24 @@ function MessageRow({
               {t('chat.edit')}
             </Button>
           )}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => remove.mutate(message.id)}
-            disabled={remove.isPending}
-          >
+          <Button variant="ghost" size="sm" onClick={() => setConfirmingDelete(true)}>
             {t('chat.delete')}
           </Button>
         </div>
       )}
+
+      <ConfirmDialog
+        open={confirmingDelete}
+        onOpenChange={setConfirmingDelete}
+        title={t('chat.deleteMessageConfirm')}
+        body={t('chat.deleteMessageDescription')}
+        confirmLabel={t('chat.delete')}
+        pending={remove.isPending}
+        error={remove.isError ? t('chat.deleteFailed') : undefined}
+        onConfirm={() =>
+          remove.mutate(message.id, { onSuccess: () => setConfirmingDelete(false) })
+        }
+      />
     </li>
   )
 }

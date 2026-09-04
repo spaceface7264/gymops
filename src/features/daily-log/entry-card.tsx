@@ -2,7 +2,7 @@ import { TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
-import { StatusBadge } from '@/components'
+import { ConfirmDialog, StatusBadge } from '@/components'
 import { Badge } from '@/components/ui/badge'
 import {
   Select,
@@ -50,6 +50,7 @@ export function EntryCard({
 
   const isAuthor = entry.created_by === user?.id
   const [editing, setEditing] = useState(false)
+  const [confirmingRemove, setConfirmingRemove] = useState(false)
   const [kind, setKind] = useState<DailyLogKind>(entry.kind)
   const [body, setBody] = useState(entry.body)
   const [tags, setTags] = useState(entry.tags.join(', '))
@@ -152,16 +153,24 @@ export function EntryCard({
               {t('dailyLog.edit')}
             </Button>
           )}
-          <Button
-            variant="ghost"
-            size="sm"
-            disabled={remove.isPending}
-            onClick={() => remove.mutate(entry.id)}
-          >
+          <Button variant="ghost" size="sm" onClick={() => setConfirmingRemove(true)}>
             {t('dailyLog.remove')}
           </Button>
         </div>
       )}
+
+      <ConfirmDialog
+        open={confirmingRemove}
+        onOpenChange={setConfirmingRemove}
+        title={t('dailyLog.removeConfirm')}
+        body={t('dailyLog.removeDescription')}
+        confirmLabel={t('dailyLog.remove')}
+        pending={remove.isPending}
+        error={remove.isError ? t('dailyLog.removeFailed') : undefined}
+        onConfirm={() =>
+          remove.mutate(entry.id, { onSuccess: () => setConfirmingRemove(false) })
+        }
+      />
     </Card>
   )
 }

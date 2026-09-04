@@ -74,6 +74,7 @@
     }
   },
   "app": {
+    "cancel": "Cancel",
     "close": "Close",
     "error": {
       "body": "This screen could not be shown. Reloading usually helps; if it keeps happening, tell whoever looks after the app.",
@@ -191,6 +192,9 @@
     "delete": "Delete",
     "deleteChannel": "Delete this channel",
     "deleteChannelHint": "Everything said in it goes too. This cannot be undone.",
+    "deleteFailed": "That could not be deleted. Try again.",
+    "deleteMessageConfirm": "Delete this message?",
+    "deleteMessageDescription": "It disappears for everyone in the channel.",
     "deletedMessage": "This message was deleted.",
     "edit": "Edit",
     "editChannel": "Channel settings",
@@ -208,6 +212,9 @@
     "join": "Join",
     "joinFailed": "The channel could not be joined.",
     "leave": "Leave this channel",
+    "leaveConfirm": "Leave this channel?",
+    "leaveDescription": "You stop seeing its messages until someone adds you again.",
+    "leaveFailed": "The channel could not be left. Try again.",
     "loadFail": "The channels could not be loaded.",
     "loadMessagesFail": "The messages could not be loaded.",
     "loadOlder": "Load older",
@@ -229,8 +236,11 @@
     "noMessages": "Nothing has been said here yet.",
     "nothingToJoin": "There is nothing else to join.",
     "pickChannel": "Pick a channel to read it.",
+    "remove": "Remove",
     "removeFile": "Remove {{name}}",
     "removeMember": "Remove {{name}}",
+    "removeMemberConfirm": "Remove {{name}} from the channel?",
+    "removeMemberDescription": "They can be added again later.",
     "save": "Save",
     "send": "Send",
     "sendFailed": "The message could not be sent.",
@@ -344,6 +354,9 @@
     "pickGym": "Pick a gym to write in its log.",
     "readOnly": "Only this gym's team can write in its log.",
     "remove": "Remove",
+    "removeConfirm": "Remove this entry?",
+    "removeDescription": "It disappears from the log for everyone.",
+    "removeFailed": "The entry could not be removed. Try again.",
     "removed": "Removed from the timeline.",
     "reportAsIncident": "Report as an incident",
     "save": "Save",
@@ -431,7 +444,10 @@
     "createTitle": "New guide",
     "delete": "Delete",
     "deleteCategory": "Delete {{name}}",
+    "deleteCategoryConfirm": "Delete the category {{name}}?",
+    "deleteCategoryDescription": "It disappears from the tree. A category with guides in it cannot be deleted.",
     "deleteDescription": "It disappears from the tree. The row is kept, so it can be brought back.",
+    "deleteFailed": "The guide could not be deleted. Try again.",
     "deleteTitle": "Delete this guide?",
     "draft": "Draft",
     "edit": "Edit",
@@ -566,35 +582,35 @@
     "uploadFailed": "The photo could not be uploaded. Try again."
   },
   "install": {
-    "title": "Install GymOps",
-    "intro": "GymOps runs in the browser, but installed it opens like an app, keeps you signed in and — on iPhone, only then — can send you push notifications.",
+    "android": {
+      "steps": [
+        "Open GymOps in Chrome.",
+        "Tap the menu, then “Install app” or “Add to Home screen”.",
+        "In Notifications → Preferences, turn push on for this device."
+      ],
+      "title": "Android (Chrome)"
+    },
     "backToPreferences": "Back to preferences",
+    "desktop": {
+      "steps": [
+        "Use the desktop app once it is released; until then, install the browser version.",
+        "In Chrome or Edge, open the install icon at the right of the address bar.",
+        "In Notifications → Preferences, turn push on for this device."
+      ],
+      "title": "Windows and Mac"
+    },
+    "intro": "GymOps runs in the browser, but installed it opens like an app, keeps you signed in and — on iPhone, only then — can send you push notifications.",
     "ios": {
-      "title": "iPhone and iPad (Safari)",
       "steps": [
         "Open GymOps in Safari. Chrome on iPhone cannot install it.",
         "Tap the Share button, then “Add to Home Screen”.",
         "Open GymOps from the Home Screen icon, not from Safari.",
         "In Notifications → Preferences, turn push on for this device."
-      ]
+      ],
+      "title": "iPhone and iPad (Safari)"
     },
-    "android": {
-      "title": "Android (Chrome)",
-      "steps": [
-        "Open GymOps in Chrome.",
-        "Tap the menu, then “Install app” or “Add to Home screen”.",
-        "In Notifications → Preferences, turn push on for this device."
-      ]
-    },
-    "desktop": {
-      "title": "Windows and Mac",
-      "steps": [
-        "Use the desktop app once it is released; until then, install the browser version.",
-        "In Chrome or Edge, open the install icon at the right of the address bar.",
-        "In Notifications → Preferences, turn push on for this device."
-      ]
-    },
-    "pushNote": "Push is per device and per browser: turning it on here does not turn it on anywhere else, and signing out of a browser leaves its subscription behind until you turn it off."
+    "pushNote": "Push is per device and per browser: turning it on here does not turn it on anywhere else, and signing out of a browser leaves its subscription behind until you turn it off.",
+    "title": "Install GymOps"
   },
   "language": {
     "da": "Danish",
@@ -636,6 +652,7 @@
     "createTitle": "New post",
     "delete": "Delete",
     "deleteDescription": "It disappears from the feed. The row is kept, so it can be brought back.",
+    "deleteFailed": "The post could not be deleted. Try again.",
     "deleteTitle": "Delete this post?",
     "draft": "Draft",
     "edit": "Edit",

@@ -300,7 +300,7 @@ describe('PostDetailPage', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Delete' }))
     expect(update).not.toHaveBeenCalled()
 
-    const dialog = await screen.findByRole('dialog')
+    const dialog = await screen.findByRole('alertdialog')
     await userEvent.click(within(dialog).getByRole('button', { name: 'Delete' }))
 
     await waitFor(() => expect(update).toHaveBeenCalled())

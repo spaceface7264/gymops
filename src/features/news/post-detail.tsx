@@ -2,16 +2,8 @@ import { ArrowLeft, Pencil, Pin, PinOff, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useParams } from 'react-router'
-import { LoadingState, PageHeader } from '@/components'
+import { ConfirmDialog, LoadingState, PageHeader } from '@/components'
 import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import { RichText, toDoc, usePublishScope } from '@/features/content'
 import { AcknowledgeButton, AckReport } from './acknowledgement'
 import { useTrackPostRead } from './use-track-post-read'
@@ -107,30 +99,18 @@ export function PostDetailPage() {
       <AcknowledgeButton post={post.data} />
       {canEdit && <AckReport post={post.data} />}
 
-      {/* A dialog rather than window.confirm: it is translated, and a browser
-          modal would block the app. */}
-      <Dialog open={confirmingDelete} onOpenChange={setConfirmingDelete}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('news.deleteTitle')}</DialogTitle>
-            <DialogDescription>{t('news.deleteDescription')}</DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmingDelete(false)}>
-              {t('news.cancel')}
-            </Button>
-            <Button
-              variant="destructive"
-              disabled={remove.isPending}
-              onClick={() =>
-                remove.mutate(post.data.id, { onSuccess: () => void navigate('/news') })
-              }
-            >
-              {t('news.delete')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ConfirmDialog
+        open={confirmingDelete}
+        onOpenChange={setConfirmingDelete}
+        title={t('news.deleteTitle')}
+        body={t('news.deleteDescription')}
+        confirmLabel={t('news.delete')}
+        pending={remove.isPending}
+        error={remove.isError ? t('news.deleteFailed') : undefined}
+        onConfirm={() =>
+          remove.mutate(post.data.id, { onSuccess: () => void navigate('/news') })
+        }
+      />
     </article>
   )
 }

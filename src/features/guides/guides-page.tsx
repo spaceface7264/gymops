@@ -2,7 +2,13 @@ import { BookOpen, FolderPlus, Plus } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
-import { EmptyState, LoadingState, PageHeader, StatusBadge } from '@/components'
+import {
+  ConfirmDialog,
+  EmptyState,
+  LoadingState,
+  PageHeader,
+  StatusBadge,
+} from '@/components'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { ContentSearch, excerpt, toDoc, usePublishScope } from '@/features/content'
@@ -27,6 +33,7 @@ export function GuidesPage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [editingCategory, setEditingCategory] = useState<GuideCategory | undefined>()
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false)
+  const [deletingCategory, setDeletingCategory] = useState<GuideCategory | undefined>()
 
   const categoryList = categories.data ?? []
   const visible = selectedCategory
@@ -88,14 +95,29 @@ export function GuidesPage() {
               setEditingCategory(node)
               setCategoryDialogOpen(true)
             }}
-            onDelete={(node) => removeCategory.mutate(node.id)}
+            onDelete={(node) => setDeletingCategory(node)}
           />
-          {removeCategory.isError && (
-            <p role="alert" className="text-destructive text-xs">
-              {t('guides.categoryInUse')}
-            </p>
-          )}
         </nav>
+
+        <ConfirmDialog
+          open={deletingCategory !== undefined}
+          onOpenChange={(open) => {
+            if (!open) setDeletingCategory(undefined)
+          }}
+          title={t('guides.deleteCategoryConfirm', {
+            name: deletingCategory?.name ?? '',
+          })}
+          body={t('guides.deleteCategoryDescription')}
+          confirmLabel={t('guides.delete')}
+          pending={removeCategory.isPending}
+          error={removeCategory.isError ? t('guides.categoryInUse') : undefined}
+          onConfirm={() => {
+            if (!deletingCategory) return
+            removeCategory.mutate(deletingCategory.id, {
+              onSuccess: () => setDeletingCategory(undefined),
+            })
+          }}
+        />
 
         <div className="space-y-3">
           {guides.isPending && <LoadingState rows={5} />}

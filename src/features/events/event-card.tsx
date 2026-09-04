@@ -1,15 +1,9 @@
 import { ExternalLink, MoreHorizontal } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { ConfirmDialog } from '@/components'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -84,32 +78,17 @@ export function EventCard({
         </a>
       )}
 
-      <Dialog open={confirming} onOpenChange={setConfirming}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('events.deleteConfirm')}</DialogTitle>
-          </DialogHeader>
-          {remove.isError && (
-            <p role="alert" className="text-destructive text-sm">
-              {t('events.deleteFailed')}
-            </p>
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirming(false)}>
-              {t('events.cancel')}
-            </Button>
-            <Button
-              variant="destructive"
-              disabled={remove.isPending}
-              onClick={() =>
-                remove.mutate(event.id, { onSuccess: () => setConfirming(false) })
-              }
-            >
-              {t('events.delete')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ConfirmDialog
+        open={confirming}
+        onOpenChange={setConfirming}
+        title={t('events.deleteConfirm')}
+        confirmLabel={t('events.delete')}
+        pending={remove.isPending}
+        error={remove.isError ? t('events.deleteFailed') : undefined}
+        onConfirm={() =>
+          remove.mutate(event.id, { onSuccess: () => setConfirming(false) })
+        }
+      />
     </Card>
   )
 }

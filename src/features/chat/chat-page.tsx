@@ -13,15 +13,8 @@ import {
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useParams } from 'react-router'
+import { ConfirmDialog } from '@/components'
 import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import { useAuth } from '@/features/auth'
 import { usePublishScope } from '@/features/content'
 import { cn } from '@/lib/utils'
@@ -148,6 +141,7 @@ function ChannelView({ channelId }: { channelId: string }) {
   const [members, setMembers] = useState(false)
   const [editing, setEditing] = useState(false)
   const [confirmingDelete, setConfirmingDelete] = useState(false)
+  const [confirmingLeave, setConfirmingLeave] = useState(false)
 
   // The three things only a custom channel has: a member list to manage, a
   // name to change, and a door out. A gym channel's roster is the gym's
@@ -212,10 +206,7 @@ function ChannelView({ channelId }: { channelId: string }) {
             variant="ghost"
             size="sm"
             aria-label={t('chat.leave')}
-            disabled={leave.isPending}
-            onClick={() =>
-              leave.mutate(channel.id, { onSuccess: () => void navigate('/chat') })
-            }
+            onClick={() => setConfirmingLeave(true)}
           >
             <LogOut className="size-4" aria-hidden="true" />
           </Button>
@@ -252,33 +243,31 @@ function ChannelView({ channelId }: { channelId: string }) {
           />
           <ChannelDialog channel={channel} open={editing} onOpenChange={setEditing} />
 
-          {/* A dialog rather than `window.confirm`: it is translated, and a
-              browser modal would block the app (as news does it). Deleting a
-              channel takes every message in it. */}
-          <Dialog open={confirmingDelete} onOpenChange={setConfirmingDelete}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>{t('chat.deleteChannel')}</DialogTitle>
-                <DialogDescription>{t('chat.deleteChannelHint')}</DialogDescription>
-              </DialogHeader>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setConfirmingDelete(false)}>
-                  {t('chat.cancel')}
-                </Button>
-                <Button
-                  variant="destructive"
-                  disabled={remove.isPending}
-                  onClick={() =>
-                    remove.mutate(channel.id, {
-                      onSuccess: () => void navigate('/chat'),
-                    })
-                  }
-                >
-                  {t('chat.delete')}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          {/* Deleting a channel takes every message in it. */}
+          <ConfirmDialog
+            open={confirmingDelete}
+            onOpenChange={setConfirmingDelete}
+            title={t('chat.deleteChannel')}
+            body={t('chat.deleteChannelHint')}
+            confirmLabel={t('chat.delete')}
+            pending={remove.isPending}
+            error={remove.isError ? t('chat.deleteFailed') : undefined}
+            onConfirm={() =>
+              remove.mutate(channel.id, { onSuccess: () => void navigate('/chat') })
+            }
+          />
+          <ConfirmDialog
+            open={confirmingLeave}
+            onOpenChange={setConfirmingLeave}
+            title={t('chat.leaveConfirm')}
+            body={t('chat.leaveDescription')}
+            confirmLabel={t('chat.leave')}
+            pending={leave.isPending}
+            error={leave.isError ? t('chat.leaveFailed') : undefined}
+            onConfirm={() =>
+              leave.mutate(channel.id, { onSuccess: () => void navigate('/chat') })
+            }
+          />
         </>
       )}
 

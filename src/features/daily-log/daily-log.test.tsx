@@ -189,6 +189,9 @@ describe('the daily log', () => {
       within(managed).queryByRole('button', { name: 'Edit' }),
     ).not.toBeInTheDocument()
     await userEvent.click(within(managed).getByRole('button', { name: 'Remove' }))
+    // Removing asks first (P7D-03).
+    const dialog = await screen.findByRole('alertdialog')
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Remove' }))
 
     await waitFor(() => expect(update).toHaveBeenCalledTimes(1))
     const [table, values] = update.mock.calls[0] as [string, { deleted_at: string }]

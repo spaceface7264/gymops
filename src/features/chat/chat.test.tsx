@@ -369,6 +369,9 @@ describe('editing and deleting', () => {
     openChannel()
 
     await userEvent.click(await screen.findByRole('button', { name: 'Delete' }))
+    // Deleting asks first (P7D-03).
+    const dialog = await screen.findByRole('alertdialog')
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Delete' }))
 
     await waitFor(() =>
       expect(updated.mock.calls.some(([table]) => table === 'messages')).toBe(true),
@@ -727,6 +730,11 @@ describe('custom channels', () => {
     await userEvent.keyboard('{Escape}')
 
     await userEvent.click(screen.getByRole('button', { name: 'Leave this channel' }))
+    // Leaving asks first (P7D-03).
+    const leaveDialog = await screen.findByRole('alertdialog')
+    await userEvent.click(
+      within(leaveDialog).getByRole('button', { name: 'Leave this channel' }),
+    )
     await waitFor(() =>
       expect(deleted).toHaveBeenCalledWith('channel_members', [
         ['channel_id', 'channel-setting'],
