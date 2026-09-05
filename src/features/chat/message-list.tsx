@@ -611,7 +611,9 @@ function MessageRow({
         side="bottom"
         align={mine ? 'end' : 'start'}
         // The chip arrives with the first reaction; each new face pops in.
-        className="animate-in fade-in-0 zoom-in-75 duration-200 ease-out"
+        // White like a card, no grey fill behind the faces; the border and
+        // the ring keep it off the bubble.
+        className="bg-card animate-in fade-in-0 zoom-in-75 border duration-200 ease-out"
         onClick={(event) => event.stopPropagation()}
       >
         <button
