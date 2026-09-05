@@ -166,6 +166,7 @@ Legend: P1 = Phase 1 etc. Effort: S (< half day), M (1–2 days), L (3+ days).
 | P6C-11 | Follow state recomputed on box resize (keyboard, window), not only on scroll                                                            | P6C-01     | XS     |
 | P6C-12 | shadcn message kit: `MessageScroller` (`@shadcn/react`) as the transcript, `Marker` for day and "New" lines, `Message` + `Bubble` for DM channels only | P6C-11     | M      |
 | P6C-13 | Bubbles in every channel, not only DMs; "Mentions you" mark in the header                                                             | P6C-12     | XS     |
+| P6C-14 | WhatsApp bubble layout: name and time inside the bubble, clock while sending, chip markers                                              | P6C-13     | XS     |
 | P6C-05 | Copy and a11y: "Join a channel", "Conversations", DA `Annuller`/`Haller`, `Intl.ListFormat` for the typing line, combobox ARIA on the box, socket status line | P6C-03     | S      |
 
 ## Later (not scheduled)
