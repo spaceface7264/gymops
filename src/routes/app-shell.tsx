@@ -73,7 +73,9 @@ export function AppShell() {
     <div
       className={cn(
         'bg-background text-foreground min-h-dvh md:flex',
-        fullBleed && 'md:h-dvh md:overflow-hidden',
+        // Locked at every width, not only from `md`: on a phone the chat's
+        // list scrolls inside itself and the composer stays put above the bar.
+        fullBleed && 'h-dvh overflow-hidden',
       )}
     >
       <a
@@ -99,7 +101,7 @@ export function AppShell() {
         ))}
       </nav>
 
-      <div className={cn('flex min-w-0 flex-1 flex-col', fullBleed && 'md:min-h-0')}>
+      <div className={cn('flex min-w-0 flex-1 flex-col', fullBleed && 'h-full min-h-0')}>
         <UpdateBanner />
         <header className="bg-card flex items-center justify-between gap-3 border-b px-3 py-2 md:px-5">
           <GymSwitcher />

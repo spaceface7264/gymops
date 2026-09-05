@@ -477,17 +477,6 @@ function useMessageWrite<TVariables>(
   })
 }
 
-/** Your own words, and only the body: the guard trigger holds the rest (P6-01). */
-export function useEditMessage(channelId: string) {
-  return useMessageWrite(
-    channelId,
-    async ({ id, body }: { id: string; body: string }) => {
-      const { error } = await supabase.from('messages').update({ body }).eq('id', id)
-      if (error) throw error
-    },
-  )
-}
-
 /**
  * Deleting is setting `deleted_at`; the trigger empties the body. A manager
  * may do it to anybody's message in a channel they publish in, which is the
@@ -566,9 +555,11 @@ export function chatAttachmentPath(channelId: string, fileName: string): string 
 }
 
 /**
- * Saying something. The message row goes first and the files after it: an
- * attachment row points at a message, so there is nothing to attach to until
- * the message exists — the same order incident photographs take (P4-07).
+ * Saying something. The files go up first and the message row after them: a
+ * message that is in the channel with its file missing, and a box that then
+ * says it could not be sent, is worse than a file in the bucket nobody points
+ * at. (Incident photographs, P4-07, go the other way: the report exists
+ * before the photograph is taken.)
  *
  * `mentions` is resolved by the composer from the people actually in the
  * channel, never parsed out of the text here: an @name is a string, and the
@@ -587,6 +578,16 @@ export function useSendMessage(channelId: string) {
       mentions?: string[]
       files?: File[]
     }): Promise<string> => {
+      const uploaded: { path: string; file: File }[] = []
+      for (const file of files) {
+        const path = chatAttachmentPath(channelId, file.name)
+        const upload = await supabase.storage
+          .from('chat')
+          .upload(path, file, { contentType: file.type, upsert: false })
+        if (upload.error) throw upload.error
+        uploaded.push({ path, file })
+      }
+
       const { data, error } = await supabase
         .from('messages')
         .insert({ channel_id: channelId, body, mentions })
@@ -595,19 +596,15 @@ export function useSendMessage(channelId: string) {
 
       if (error) throw error
 
-      for (const file of files) {
-        const path = chatAttachmentPath(channelId, file.name)
-        const upload = await supabase.storage
-          .from('chat')
-          .upload(path, file, { contentType: file.type, upsert: false })
-        if (upload.error) throw upload.error
-
-        const attached = await supabase.from('message_attachments').insert({
-          message_id: data.id,
-          path,
-          mime_type: file.type,
-          size_bytes: file.size,
-        })
+      if (uploaded.length > 0) {
+        const attached = await supabase.from('message_attachments').insert(
+          uploaded.map(({ path, file }) => ({
+            message_id: data.id,
+            path,
+            mime_type: file.type,
+            size_bytes: file.size,
+          })),
+        )
         if (attached.error) throw attached.error
       }
 

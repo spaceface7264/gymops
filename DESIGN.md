@@ -52,7 +52,7 @@ Five tones, each a tinted background, dark text of the same hue and a dot, expos
 
 ## Layout
 
-- Phone: a bottom tab bar (spec §4 rejects a drawer). Sidebar from `md` up. `/chat` and `/ask` are the full-bleed routes.
+- Phone: a bottom tab bar (spec §4 rejects a drawer). Sidebar from `md` up. `/chat` and `/ask` are the full-bleed routes: the frame is `h-dvh overflow-hidden` at every width and the screen scrolls its own panes, so a composer stays above the bar.
 - Signed-in screens render inside `AppShell` in a `max-w-3xl` column. Signed-out screens use `AuthLayout`: the logo above a `max-w-sm` card.
 - The header carries the gym switcher, the bell and an initials avatar whose menu holds Account, Notification preferences and Sign out. There is no standing Sign out button.
 
@@ -80,7 +80,11 @@ Error lines stay as they are: `<p role="alert" className="text-destructive text-
 
 ## Feedback
 
-A form that stays on screen reports its failure inline, next to the buttons. A toast (`toast` from `sonner`; the `Toaster` in `App` sits above the phone bar) is for when the result leaves the screen: saved and navigated away, a dialog that closed, or an action with no form at all (pin, mute, activate, mark read: at least an error toast, a success toast where the change is consequential). Success toasts are short nouns ("Post published", "Invitation sent"); errors reuse the feature's `*Failed` string. Nobody is toasted for their own checklist tick or chat message.
+A form that stays on screen reports its failure inline, next to the buttons. A toast (`toast` from `sonner`; the `Toaster` in `App` sits above the phone bar) is for when the result leaves the screen: saved and navigated away, a dialog that closed, or an action with no form at all (pin, mute, activate, mark read: at least an error toast, a success toast where the change is consequential). Success toasts are short nouns ("Post published", "Invitation sent"); errors reuse the feature's `*Failed` string. Nobody is toasted for their own checklist tick or chat message; the chat box says "Sending…" in a `role="status"` line while it waits and keeps the text with a "Try again" when it fails.
+
+## Chat
+
+The stream is cut into days (`h2` Today / Yesterday / date), lines by the same speaker within five minutes share one name and time, times are 24-hour, the reader's own lines say "You", the first unread line has a "New" rule above it in the `new` tone, and a line that names the reader gets the `accent` tint: that is the one place in the stream the accent is spent. There is no Edit; Delete sits behind one `…` menu per message, hover-revealed from `md` up and always shown on a phone. The channel header is back, title (with a `BellOff` mark when muted) and one "Channel" menu. Enter sends only with a fine pointer; on touch, Enter is a line and the button sends. The composer's field is 16 px so iOS does not zoom into it.
 
 ## Tooltips
 
