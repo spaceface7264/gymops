@@ -102,6 +102,28 @@
   --color-tone-new-dot: var(--tone-new-dot);
 }
 
+/* A reaction landing on a bubble (P6C-18): the face pops in with a touch of
+   overshoot. The one bounce in the app, kept small and short; the reduced
+   motion rule below shortens it to nothing. */
+@keyframes reaction-pop {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@utility animate-reaction-pop {
+  animation: reaction-pop 260ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

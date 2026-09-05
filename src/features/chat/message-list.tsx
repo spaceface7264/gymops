@@ -610,6 +610,8 @@ function MessageRow({
       <BubbleReactions
         side="bottom"
         align={mine ? 'end' : 'start'}
+        // The chip arrives with the first reaction; each new face pops in.
+        className="animate-in fade-in-0 zoom-in-75 duration-200 ease-out"
         onClick={(event) => event.stopPropagation()}
       >
         <button
@@ -626,7 +628,9 @@ function MessageRow({
             className="flex items-center gap-0.5 text-base leading-none"
           >
             {reactionGroups.map(({ emoji }) => (
-              <span key={emoji}>{emoji}</span>
+              <span key={emoji} className="animate-reaction-pop inline-block">
+                {emoji}
+              </span>
             ))}
           </span>
           {reactionTotal > 1 && (
