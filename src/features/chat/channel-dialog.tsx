@@ -14,13 +14,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { NativeSelect } from '@/components/ui/native-select'
 import { usePublishScope } from '@/features/content'
 import { useCreateChannel, useUpdateChannel, type Channel } from './queries'
 
@@ -141,21 +135,20 @@ function ChannelForm({ channel, onDone }: { channel?: Channel; onDone: () => voi
         <>
           <div className="space-y-2">
             <Label htmlFor={`${fieldId}-scope`}>{t('chat.channelScope')}</Label>
-            <Select value={scope} onValueChange={setScope}>
-              <SelectTrigger id={`${fieldId}-scope`} className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {canPublishCompanyWide && (
-                  <SelectItem value={companyWide}>{t('chat.companyWide')}</SelectItem>
-                )}
-                {publishableGyms.map((gym) => (
-                  <SelectItem key={gym.id} value={gym.id}>
-                    {gym.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <NativeSelect
+              id={`${fieldId}-scope`}
+              value={scope}
+              onChange={(event) => setScope(event.target.value)}
+            >
+              {canPublishCompanyWide && (
+                <option value={companyWide}>{t('chat.companyWide')}</option>
+              )}
+              {publishableGyms.map((gym) => (
+                <option key={gym.id} value={gym.id}>
+                  {gym.name}
+                </option>
+              ))}
+            </NativeSelect>
           </div>
 
           <label className="flex min-h-11 items-start gap-3 py-1 text-sm">

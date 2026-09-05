@@ -158,6 +158,12 @@ Legend: P1 = Phase 1 etc. Effort: S (< half day), M (1–2 days), L (3+ days).
 | P6C-02 | Composer: Enter starts a line on touch, draft kept per channel, 10 MB cap, sending state and retry, files uploaded before the row       | P6-05      | S      |
 | P6C-03 | Stream: day headings, same-author grouping, 24-hour times, "You", the New rule, the mention tint, Edit removed, one menu per message     | P6-04      | M      |
 | P6C-04 | Header: one channel menu (members for any non-DM channel, muted, settings, leave, delete), muted mark beside the title, `BellOff` everywhere | P6-07      | S      |
+| P6C-06 | Phone bar: Chat in the first five entries (Home, Chat, Checklists, Daily log, Incidents), the rest after                                | P6C-01     | XS     |
+| P6C-07 | Mentions: only a pick from the list is a person (kept in state, not re-derived from text); `@Name` set in the accent; solid tint + "Mentions you" for the addressed line | P6C-03     | S      |
+| P6C-08 | Attachments: `file_name` column and the real name in the stream; image thumbnail in the composer chip                                  | P6-05      | S      |
+| P6C-09 | Controls: outline "Find a channel" / "New channel"; mute as a verb item with a toast; Delete as a direct icon, no one-item menu; `NativeSelect` for the scope | P6C-04     | S      |
+| P6C-10 | Sending: optimistic pending line in the stream; only the sent text is cleared from the box                                             | P6C-02     | S      |
+| P6C-11 | Follow state recomputed on box resize (keyboard, window), not only on scroll                                                            | P6C-01     | XS     |
 | P6C-05 | Copy and a11y: "Join a channel", "Conversations", DA `Annuller`/`Haller`, `Intl.ListFormat` for the typing line, combobox ARIA on the box, socket status line | P6C-03     | S      |
 
 ## Later (not scheduled)

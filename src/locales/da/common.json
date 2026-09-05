@@ -275,9 +275,10 @@
     "membersCount_other": "{{count}} personer",
     "membersFailed": "Medlemslisten kunne ikke ændres.",
     "mentionSomebody": "Nævn nogen",
+    "mentionsYou": "Nævner dig",
     "messageMenu": "Muligheder for beskeden",
-    "mute": "Slå lyden fra",
-    "muted": "Lyd slået fra",
+    "mute": "Slå notifikationer fra",
+    "muted": "Lydløs",
     "navUnread": "Chat, {{count}} ulæste",
     "newChannel": "Ny kanal",
     "newChannelHint": "En kanal for et center eller for hele virksomheden.",
@@ -309,11 +310,12 @@
     "today": "I dag",
     "typing": "{{names}} skriver…",
     "typing_other": "{{names}} skriver…",
-    "unmute": "Slå lyden til",
+    "unmute": "Slå notifikationer til",
+    "unmuted": "Lyd slået til",
     "unread": "{{count}} ulæste",
     "write": "Skriv en besked",
     "yesterday": "I går",
-    "you": "Dig"
+    "you": "Du"
   },
   "checklists": {
     "activate": "Aktivér",

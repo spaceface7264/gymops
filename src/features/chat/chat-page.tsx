@@ -1,5 +1,6 @@
 import {
   ArrowLeft,
+  Bell,
   BellOff,
   LogOut,
   MessageCircle,
@@ -17,7 +18,6 @@ import { ConfirmDialog, EmptyState } from '@/components'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
@@ -76,21 +76,21 @@ export function ChatPage() {
           </Button>
           <div className="flex gap-2">
             <Button
-              variant="ghost"
-              className="min-w-0 flex-1 px-2"
+              variant="outline"
+              className="min-w-0 flex-1 px-3"
               onClick={() => setBrowsing(true)}
             >
-              {t('chat.browse')}
+              <span className="truncate">{t('chat.browse')}</span>
             </Button>
             {/* Creating a channel is `can_publish_content()` (spec §2.1): a
                 manager in their gyms, an admin anywhere, staff never. */}
             {canPublishSomewhere && (
               <Button
-                variant="ghost"
-                className="min-w-0 flex-1 px-2"
+                variant="outline"
+                className="min-w-0 flex-1 px-3"
                 onClick={() => setNewChannel(true)}
               >
-                {t('chat.newChannel')}
+                <span className="truncate">{t('chat.newChannel')}</span>
               </Button>
             )}
           </div>
@@ -210,19 +210,29 @@ function ChannelView({ channelId }: { channelId: string }) {
                   {t('chat.members')}
                 </DropdownMenuItem>
               )}
-              {/* The mute switch the channel list has been marking since P6-03. */}
-              <DropdownMenuCheckboxItem
-                checked={channel.muted}
+              {/* The mute switch the channel list has been marking since
+                  P6-03: a verb, so the item says what it does, and the title's
+                  mark says what it is. Reversible, so a toast and no confirm. */}
+              <DropdownMenuItem
                 disabled={setMuted.isPending}
-                onCheckedChange={(muted) =>
+                onSelect={() =>
                   setMuted.mutate(
-                    { channelId: channel.id, muted: muted === true },
-                    { onError: () => toast.error(t('chat.saveFailed')) },
+                    { channelId: channel.id, muted: !channel.muted },
+                    {
+                      onSuccess: () =>
+                        toast.success(t(channel.muted ? 'chat.unmuted' : 'chat.muted')),
+                      onError: () => toast.error(t('chat.saveFailed')),
+                    },
                   )
                 }
               >
-                {t('chat.muted')}
-              </DropdownMenuCheckboxItem>
+                {channel.muted ? (
+                  <Bell aria-hidden="true" />
+                ) : (
+                  <BellOff aria-hidden="true" />
+                )}
+                {channel.muted ? t('chat.unmute') : t('chat.mute')}
+              </DropdownMenuItem>
               {isCustom && canModerate && (
                 <DropdownMenuItem onSelect={() => setEditing(true)}>
                   <Settings aria-hidden="true" />

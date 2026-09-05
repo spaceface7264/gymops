@@ -1,18 +1,13 @@
-import { ArrowDown, MessageCircle, MoreHorizontal, Sparkles } from 'lucide-react'
+import { ArrowDown, MessageCircle, Sparkles, Trash2 } from 'lucide-react'
 import { useEffect, useRef, useState, type UIEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ConfirmDialog, EmptyState, LoadingState, Markdown } from '@/components'
 import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import { useAuth } from '@/features/auth'
 import { cn } from '@/lib/utils'
 import { Attachments } from './attachments'
 import {
+  useChannelMembers,
   useDeleteMessage,
   useMarkChannelRead,
   useMessages,
@@ -53,6 +48,14 @@ export function MessageList({
   const { t, i18n } = useTranslation()
   const { user } = useAuth()
   const messages = useMessages(channel.id)
+  // The names an @ in a line can be set in the accent: the channel's people.
+  const members = useChannelMembers([channel.id])
+  const memberNames = new Map(
+    (members.data ?? []).map((member) => [
+      member.user_id,
+      member.full_name?.trim() || member.email,
+    ]),
+  )
 
   const markRead = useMarkChannelRead()
   const mark = markRead.mutate
@@ -116,11 +119,23 @@ export function MessageList({
     mark(channel.id)
   }, [channel.id, newestId, mark])
 
-  const scrolled = (event: UIEvent<HTMLDivElement>) => {
-    const box = event.currentTarget
+  const measure = (box: HTMLDivElement) => {
     following.current = box.scrollHeight - box.scrollTop - box.clientHeight < followPx
     if (following.current) setBehind(false)
   }
+
+  const scrolled = (event: UIEvent<HTMLDivElement>) => measure(event.currentTarget)
+
+  // A list that fit the box is "at the bottom" without ever scrolling; when
+  // the box then shrinks (a keyboard opens, a window is resized) the reader
+  // is suddenly a screen above the newest line and no scroll event says so.
+  useEffect(() => {
+    const box = scroller.current
+    if (!box || typeof ResizeObserver === 'undefined') return
+    const observer = new ResizeObserver(() => measure(box))
+    observer.observe(box)
+    return () => observer.disconnect()
+  }, [])
 
   const toBottom = () => {
     const box = scroller.current
@@ -207,6 +222,9 @@ export function MessageList({
                   key={message.id}
                   channelId={channel.id}
                   message={message}
+                  mentionNames={message.mentions
+                    .map((id) => memberNames.get(id))
+                    .filter((name): name is string => Boolean(name))}
                   continued={continued}
                   unreadFrom={message.id === firstUnread}
                   canModerate={canModerate}
@@ -237,12 +255,15 @@ export function MessageList({
 function MessageRow({
   channelId,
   message,
+  mentionNames,
   continued,
   unreadFrom,
   canModerate,
 }: {
   channelId: string
   message: Message
+  /** The people this line names, as their names appear after an @. */
+  mentionNames: string[]
   /** Follows a line by the same person moments ago: no name or time again. */
   continued: boolean
   /** The first line said since this person last read. */
@@ -267,7 +288,7 @@ function MessageRow({
     hourCycle: 'h23',
   })
   const namesMe = Boolean(user && message.mentions.includes(user.id))
-  const canDelete = !message.deleted_at && (mine || canModerate)
+  const canDelete = !message.deleted_at && !message.pending && (mine || canModerate)
 
   return (
     <>
@@ -290,9 +311,12 @@ function MessageRow({
           canDelete && 'pr-12',
           // The one line addressed to this person is the one line that may
           // spend the accent.
-          namesMe && 'bg-accent/50 -mx-2 rounded-xl px-2 py-1',
+          namesMe && 'bg-accent -mx-2 rounded-xl px-2 py-1',
+          message.pending && 'text-muted-foreground',
         )}
+        aria-busy={message.pending || undefined}
       >
+        {namesMe && <span className="sr-only">{t('chat.mentionsYou')}. </span>}
         {continued ? (
           <time dateTime={message.created_at} className="sr-only">
             {when}
@@ -317,37 +341,39 @@ function MessageRow({
           </p>
         ) : (
           <>
-            <Markdown body={message.body} />
-            <Attachments attachments={message.message_attachments} />
+            <Markdown body={message.body} mentions={mentionNames} />
+            {message.pending ? (
+              message.message_attachments.length > 0 && (
+                <p className="text-muted-foreground text-sm">
+                  {message.message_attachments.map((file) => file.file_name).join(', ')}
+                </p>
+              )
+            ) : (
+              <Attachments attachments={message.message_attachments} />
+            )}
+            {message.pending && (
+              <span className="sr-only" role="status">
+                {t('chat.sending')}
+              </span>
+            )}
           </>
         )}
 
         {canDelete && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label={t('chat.messageMenu')}
-                className={cn(
-                  'text-muted-foreground absolute top-0 right-0 -mt-2',
-                  // A thumb has no hover, so the phone keeps it in view; a
-                  // pointer finds it on the line it is over.
-                  'md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100 md:data-[state=open]:opacity-100',
-                )}
-              >
-                <MoreHorizontal className="size-4" aria-hidden="true" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                variant="destructive"
-                onSelect={() => setConfirmingDelete(true)}
-              >
-                {t('chat.delete')}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={t('chat.delete')}
+            onClick={() => setConfirmingDelete(true)}
+            className={cn(
+              'text-muted-foreground hover:text-destructive absolute top-0 right-0 -mt-2',
+              // A thumb has no hover, so the phone keeps it in view; a
+              // pointer finds it on the line it is over.
+              'md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100',
+            )}
+          >
+            <Trash2 className="size-4" aria-hidden="true" />
+          </Button>
         )}
 
         <ConfirmDialog
