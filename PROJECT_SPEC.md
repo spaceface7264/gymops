@@ -75,7 +75,7 @@ Permission matrix (also the RLS test spec):
 
 ## 3. Architecture
 
-- **Frontend:** Vite + React + TypeScript, React Router, TanStack Query, Tailwind + shadcn/ui, react-i18next (`en`, `da`), Tiptap for rich text (stored as JSON).
+- **Frontend:** Vite + React + TypeScript, React Router, TanStack Query, Tailwind + shadcn/ui (plus `@shadcn/react` for the chat transcript's scroller, vendored wrappers in `components/ui/`), react-i18next (`en`, `da`), Tiptap for rich text (stored as JSON).
 - **Backend:** one Supabase project. Postgres row-level security is the only permission layer. Storage buckets `content` (news/guides), `incidents`, `chat` with storage RLS mirroring table RLS. Realtime (`postgres_changes`, private channels) for checklists, incidents, chat and notifications. Presence for typing indicators.
 - **Server-side jobs:** Edge Functions `invite`, `notify` (web push + email), later `assistant` and `brp-sync`. pg_cron for daily checklist generation. Database webhooks trigger `notify` on `notifications` insert.
 - **Desktop:** Tauri 2 wrapping the built web assets (not a remote URL) with plugins `updater` (+ `process` for the relaunch), `deep-link` (`gymops://`), `notification`, `single-instance`. GitHub Releases on the public `gymops-releases` repository as the update feed (the source repository is private).
@@ -106,6 +106,7 @@ gymops/
                              reach into components/ui/ only for what these don't cover
     components/ui/          shadcn/ui primitives
     features/<module>/      components, hooks, queries, types per feature
+    hooks/                  app-wide hooks (a media query, for DOM that differs by width)
                             (auth also owns the shared password fields and their rule)
     lib/                    supabase client, generated database.types.ts, query client,
                             i18n, platform shims (web vs tauri)
@@ -275,6 +276,7 @@ gymops/
 | A free emoji picker for reactions | Rejected 2026-09-05 (P6C-18): four fixed ones (👍 ✅ 👀 ❤️) are the whole vocabulary a shift needs, a `text` column with a check beats an emoji table, and a fixed row of four fits a 44 px menu. |
 | Persisting the reply target with the draft | Rejected 2026-09-05: a quote is a moment's intention; the text draft survives a channel switch, the target does not. |
 | A tooltip for who reacted | Rejected 2026-09-05: touch has no hover (DESIGN §Tooltips); a count opens a dialog of names. |
+| 44 px for the chevron and the reaction chip | Relaxed 2026-09-06 (P6C-19): the chevron is 32 × 36 px in the bubble's corner and the chip a 28 px pill (with a 44 px hit area); the rule stands for everything a thumb hits outside a bubble. Menu items are 36 px from `md` up, 44 on a phone. |
 | A side stripe on the quote block and the reply strip | Rejected 2026-09-05: the shared ban on side-stripe borders; a tinted block with the name in the accent says "quote" without it. |
 | A `…` menu per chat message holding one item | Replaced 2026-09-05 (P6C-09, second critique): a menu that opens to a single red Delete is indirection with no payoff. Delete became a direct icon button. The menu returned the same day (P6C-19) when Reply, React and Copy joined Delete: four actions earn one. |
 | Mute as a "Muted" checkbox item in the channel menu | Replaced 2026-09-05 (P6C-09): an unchecked adjective read as a status, not a switch, and said nothing when off. The item is a verb ("Mute this channel" / "Unmute this channel") with a toast; the title's `BellOff` mark carries the state. |
