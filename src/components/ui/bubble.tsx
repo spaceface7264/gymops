@@ -30,8 +30,15 @@ const bubbleVariants = cva(
           '*:data-[slot=bubble-content]:bg-secondary *:data-[slot=bubble-content]:text-secondary-foreground [&>[data-slot=bubble-content]:is(button,a):hover]:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_5%)]',
         muted:
           '*:data-[slot=bubble-content]:bg-muted [&>[data-slot=bubble-content]:is(button,a):hover]:bg-[color-mix(in_oklch,var(--muted),var(--foreground)_5%)]',
+        // The reader's own line: the `new` tone's tint, a surface with
+        // presence on the lilac ground (`--accent` is the hover tint and
+        // sat at 1.03:1 against it).
         tinted:
-          '*:data-[slot=bubble-content]:bg-accent *:data-[slot=bubble-content]:text-foreground [&>[data-slot=bubble-content]:is(button,a):hover]:bg-accent/70',
+          '*:data-[slot=bubble-content]:bg-tone-new-bg *:data-[slot=bubble-content]:text-foreground [&>[data-slot=bubble-content]:is(button,a):hover]:bg-tone-new-bg/70',
+        // A line that names the reader: white like any colleague's, with a
+        // violet hairline. The accent's one job in the stream.
+        highlight:
+          '*:data-[slot=bubble-content]:border-primary/40 *:data-[slot=bubble-content]:bg-card',
         outline:
           '*:data-[slot=bubble-content]:border-border *:data-[slot=bubble-content]:bg-card [&>[data-slot=bubble-content]:is(button,a):hover]:bg-muted [&>[data-slot=bubble-content]:is(button,a):hover]:text-foreground',
         ghost:

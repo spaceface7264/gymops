@@ -89,8 +89,8 @@ function MessageScrollerButton({
   className,
   children,
   render,
-  variant = 'secondary',
-  size = 'default',
+  variant = 'outline',
+  size = 'icon',
   ...props
 }: React.ComponentProps<typeof MessageScrollerPrimitive.Button> &
   Pick<React.ComponentProps<typeof Button>, 'variant' | 'size'>) {
@@ -102,7 +102,9 @@ function MessageScrollerButton({
       data-size={size}
       direction={direction}
       className={cn(
-        'absolute left-1/2 -translate-x-1/2 shadow-md transition-[translate,scale,opacity] duration-150 ease-out',
+        // Bottom right, out of the reading column, not over the line
+        // somebody stopped on.
+        'absolute right-3 shadow-md transition-[translate,scale,opacity] duration-150 ease-out',
         'data-[active=false]:pointer-events-none data-[active=false]:scale-95 data-[active=false]:opacity-0',
         'data-[active=true]:translate-y-0 data-[active=true]:scale-100 data-[active=true]:opacity-100',
         'data-[direction=end]:bottom-3 data-[direction=end]:data-[active=false]:translate-y-full',
