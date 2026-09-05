@@ -445,6 +445,46 @@ describe('mentions and files in the stream', () => {
   })
 })
 
+describe('a direct message', () => {
+  it('reads as bubbles, the other person on the left with a name and yours on the right', async () => {
+    channelRows.mockReturnValue([
+      channel({ id: 'channel-dm', kind: 'dm', gym_id: null, name: null }),
+    ])
+    memberRows.mockReturnValue([
+      {
+        channel_id: 'channel-dm',
+        user_id: 'user-mette',
+        profiles: { full_name: 'Mette Holm', email: 'mette@gymops.test' },
+      },
+    ])
+    messageRows.mockReturnValue([
+      message({
+        id: 'message-2',
+        body: 'Sunday works',
+        created_by: 'user-sam',
+        created_at: '2026-09-03T09:20:00Z',
+      }),
+      message({ body: 'Swap Saturday?', channel_id: 'channel-dm' }),
+    ])
+    renderChat('/chat/channel-dm', '/chat/:channelId')
+
+    const theirs = (await screen.findByText('Swap Saturday?')).closest(
+      '[data-slot=message]',
+    )
+    expect(theirs).toHaveAttribute('data-align', 'start')
+    expect(theirs).toHaveTextContent('Mette Holm')
+
+    const mine = screen.getByText('Sunday works').closest('[data-slot=message]')
+    expect(mine).toHaveAttribute('data-align', 'end')
+    // The side says who; no "You" label on a bubble.
+    expect(mine).not.toHaveTextContent('You')
+    expect(mine?.querySelector('[data-slot=bubble]')).toHaveAttribute(
+      'data-variant',
+      'tinted',
+    )
+  })
+})
+
 describe('deleting', () => {
   it('deletes by stamping deleted_at, which is what the trigger acts on', async () => {
     messageRows.mockReturnValue([message({ created_by: 'user-sam' })])

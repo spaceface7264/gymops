@@ -29,6 +29,23 @@ vi.stubGlobal('__APP_VERSION__', '0.0.0-test')
  * `ResizeObserver`, which jsdom does not have. Nothing in a test depends on
  * the measurement, so a no-op observer is enough.
  */
+/**
+ * The chat transcript (`@shadcn/react` message-scroller) watches which lines
+ * are on screen with an `IntersectionObserver`; jsdom has none. Nothing in a
+ * test reads the result, so an observer that never fires is enough.
+ */
+vi.stubGlobal(
+  'IntersectionObserver',
+  class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+    takeRecords() {
+      return []
+    }
+  },
+)
+
 vi.stubGlobal(
   'ResizeObserver',
   class {
