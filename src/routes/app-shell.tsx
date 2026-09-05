@@ -20,8 +20,14 @@ import {
 import { useChatUnread } from '@/features/chat'
 import { GymSwitcher } from '@/features/gyms'
 import { NotificationBell } from '@/features/notifications'
+import { usePhone } from '@/hooks/use-media-query'
 import { cn } from '@/lib/utils'
-import { isFullBleed, visibleNavEntries, type NavEntry } from '@/routes/nav'
+import {
+  isConversation,
+  isFullBleed,
+  visibleNavEntries,
+  type NavEntry,
+} from '@/routes/nav'
 import { UpdateBanner } from '@/routes/update-banner'
 
 /** The letters shown on the account avatar: initials from a name, or the
@@ -54,7 +60,13 @@ export function AppShell() {
   // A screen may ask for the whole frame instead of the centred column: chat
   // scrolls its own panes, and a page that scrolls as well would move the
   // composer off the bottom of a phone.
-  const fullBleed = isFullBleed(useLocation().pathname)
+  const { pathname } = useLocation()
+  const fullBleed = isFullBleed(pathname)
+  // A conversation carries its own header on a phone (with the bell); two
+  // stacked headers cost a fifth of the screen. Decided in JS, not CSS: the
+  // bell holds a Realtime subscription and may exist only once.
+  const phone = usePhone()
+  const headerless = phone && isConversation(pathname)
 
   // Managers administer their own gyms' staff, so the admin section is theirs
   // as well; only staff never see it.
@@ -103,55 +115,57 @@ export function AppShell() {
 
       <div className={cn('flex min-w-0 flex-1 flex-col', fullBleed && 'h-full min-h-0')}>
         <UpdateBanner />
-        <header className="bg-card flex items-center justify-between gap-3 border-b px-3 py-2 md:px-5">
-          <GymSwitcher />
-          <div className="flex items-center gap-1">
-            <NotificationBell />
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  type="button"
-                  aria-label={t('auth.account.menu')}
-                  className="focus-visible:ring-ring/40 flex size-11 items-center justify-center rounded-full outline-none focus-visible:ring-[3px]"
-                >
-                  <Avatar className="size-9">
-                    <AvatarFallback>
-                      {initials(profile?.full_name, user?.email)}
-                    </AvatarFallback>
-                  </Avatar>
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-60">
-                <DropdownMenuLabel className="truncate font-normal">
-                  <span className="block font-semibold">
-                    {profile?.full_name ?? user?.email}
-                  </span>
-                  {profile?.full_name && (
-                    <span className="text-muted-foreground block text-xs">
-                      {user?.email}
+        {!headerless && (
+          <header className="bg-card flex items-center justify-between gap-3 border-b px-3 py-2 md:px-5">
+            <GymSwitcher />
+            <div className="flex items-center gap-1">
+              <NotificationBell />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label={t('auth.account.menu')}
+                    className="focus-visible:ring-ring/40 flex size-11 items-center justify-center rounded-full outline-none focus-visible:ring-[3px]"
+                  >
+                    <Avatar className="size-9">
+                      <AvatarFallback>
+                        {initials(profile?.full_name, user?.email)}
+                      </AvatarFallback>
+                    </Avatar>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-60">
+                  <DropdownMenuLabel className="truncate font-normal">
+                    <span className="block font-semibold">
+                      {profile?.full_name ?? user?.email}
                     </span>
-                  )}
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link to="/account">{t('auth.account.title')}</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/notifications/preferences">
-                    {t('auth.account.preferences')}
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onSelect={() => signOut.mutate()}
-                  disabled={signOut.isPending}
-                >
-                  {signOut.isPending ? t('auth.signingOut') : t('auth.signOut')}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </header>
+                    {profile?.full_name && (
+                      <span className="text-muted-foreground block text-xs">
+                        {user?.email}
+                      </span>
+                    )}
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/account">{t('auth.account.title')}</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/notifications/preferences">
+                      {t('auth.account.preferences')}
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onSelect={() => signOut.mutate()}
+                    disabled={signOut.isPending}
+                  >
+                    {signOut.isPending ? t('auth.signingOut') : t('auth.signOut')}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </header>
+        )}
 
         {/* Bottom padding keeps the last content clear of the phone nav bar;
             a full-bleed screen takes care of its own. */}

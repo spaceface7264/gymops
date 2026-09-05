@@ -48,6 +48,8 @@ export type Message = Pick<
   message_attachments: ChatAttachment[]
   /** Not in the channel yet: the sender's own line while it goes up (P6C-10). */
   pending?: boolean
+  /** The channel refused it (or the network did); what to send again. */
+  failed?: { body: string; mentions: string[]; files: File[] }
 }
 
 export type ChatAttachment = {
@@ -609,11 +611,36 @@ export function useSendMessage(channelId: string) {
             index === 0 ? [pending, ...page] : page,
           ),
         })
-      return { previous }
+      return { previous, pendingId: pending.id }
     },
-    onError: (_error, _variables, context) => {
-      if (context?.previous)
-        queryClient.setQueryData(chatKeys.messages(channelId), context.previous)
+    // A line that could not be sent stays in the stream, marked, with what
+    // it takes to send it again: the sender watched it appear, and a line
+    // that vanishes is the worst thing a chat can do to them.
+    onError: (_error, variables, context) => {
+      const key = chatKeys.messages(channelId)
+      const pendingId = context?.pendingId
+      queryClient.setQueryData<InfiniteData<Message[]>>(
+        key,
+        (current) =>
+          current && {
+            ...current,
+            pages: current.pages.map((page) =>
+              page.map((message) =>
+                message.id === pendingId
+                  ? {
+                      ...message,
+                      pending: false,
+                      failed: {
+                        body: variables.body,
+                        mentions: variables.mentions ?? [],
+                        files: variables.files ?? [],
+                      },
+                    }
+                  : message,
+              ),
+            ),
+          },
+      )
     },
     mutationFn: async ({
       body,
@@ -663,6 +690,20 @@ export function useSendMessage(channelId: string) {
       void queryClient.invalidateQueries({ queryKey: chatKeys.overview })
     },
   })
+}
+
+/** Takes a line that failed out of the stream, before it is sent again. */
+export function useForgetFailed(channelId: string) {
+  const queryClient = useQueryClient()
+  return (id: string) =>
+    queryClient.setQueryData<InfiniteData<Message[]>>(
+      chatKeys.messages(channelId),
+      (current) =>
+        current && {
+          ...current,
+          pages: current.pages.map((page) => page.filter((message) => message.id !== id)),
+        },
+    )
 }
 
 /** Signed URLs last an hour; the query is refetched a few minutes before that. */

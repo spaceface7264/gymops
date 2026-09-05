@@ -49,6 +49,8 @@ function MessageScrollerViewport({
       data-slot="message-scroller-viewport"
       className={cn(
         'size-full min-h-0 min-w-0 overflow-y-auto overscroll-contain contain-content data-pending-scroll:invisible',
+        // While the jump button is up, the lines keep clear of it.
+        'group-has-data-[active=true]/message-scroller:pr-14',
         className,
       )}
       {...props}

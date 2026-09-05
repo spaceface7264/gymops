@@ -1,4 +1,4 @@
-import { Loader2, Paperclip, Send, X } from 'lucide-react'
+import { Paperclip, Send, X } from 'lucide-react'
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
@@ -172,7 +172,7 @@ export function Composer({
 
   const submit = () => {
     const text = body.trim()
-    if (!canSend || send.isPending) return
+    if (!canSend) return
 
     // Only the people picked and still named in what is actually being sent
     // are carried (P6-08 notifies them).
@@ -180,23 +180,15 @@ export function Composer({
       .filter((member) => text.includes(`@${memberName(member)}`))
       .map((member) => member.user_id)
 
+    // The box empties the moment the line is in the stream; what happens to
+    // it from here is told there (a clock, then the time, or "Not sent").
+    setBody('')
+    setFiles([])
+    setPicked([])
+    drafts.set(channelId, '')
     send.mutate(
       { body: text, mentions, files },
-      {
-        onSuccess: (messageId) => {
-          // Only what went is cleared: a line typed while this one was on
-          // its way stays in the box.
-          setBody((current) =>
-            current.trim().startsWith(text)
-              ? current.trim().slice(text.length).trimStart()
-              : current,
-          )
-          setFiles([])
-          setPicked([])
-          drafts.set(channelId, '')
-          onSent?.(messageId, text)
-        },
-      },
+      { onSuccess: (messageId) => onSent?.(messageId, text) },
     )
   }
 
@@ -352,32 +344,15 @@ export function Composer({
           // cannot be pressed is a promise the box is not keeping.
           variant={canSend ? 'default' : 'secondary'}
           aria-label={t('chat.send')}
-          disabled={send.isPending || !canSend}
+          disabled={!canSend}
         >
-          {send.isPending ? (
-            <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-          ) : (
-            <Send className="size-4" aria-hidden="true" />
-          )}
+          <Send className="size-4" aria-hidden="true" />
         </Button>
       </div>
 
-      {send.isPending && (
-        <p role="status" className="text-muted-foreground pt-1 text-sm">
-          {t('chat.sending')}
-        </p>
-      )}
       {tooBig && (
         <p role="alert" className="text-destructive pt-1 text-sm">
           {t('chat.fileTooBig', { name: tooBig })}
-        </p>
-      )}
-      {send.isError && !send.isPending && (
-        <p role="alert" className="text-destructive flex items-center gap-2 pt-1 text-sm">
-          {t('chat.sendFailed')}
-          <Button type="button" variant="link" size="sm" onClick={submit}>
-            {t('chat.retry')}
-          </Button>
         </p>
       )}
     </form>
