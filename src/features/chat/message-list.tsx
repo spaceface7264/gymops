@@ -446,7 +446,7 @@ function MessageRow({
                         own baseline, whether it shares the last line or drops
                         under a long one, instead of on the bottom of a line
                         box that carries leading below the letters. */}
-                    <div className="flex flex-wrap items-baseline-last justify-end gap-x-2">
+                    <div className="flex flex-wrap items-baseline-last justify-end gap-x-3">
                       <div className="min-w-0 flex-1">{body}</div>
                       {stamp}
                     </div>
