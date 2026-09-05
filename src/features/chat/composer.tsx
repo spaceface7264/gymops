@@ -1,4 +1,4 @@
-import { Paperclip, Send, X } from 'lucide-react'
+import { Paperclip, Reply, Send, X } from 'lucide-react'
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
@@ -6,7 +6,13 @@ import { Textarea } from '@/components/ui/textarea'
 import { assistantHandle } from '@/features/assistant'
 import { useAuth, useProfile } from '@/features/auth'
 import { cn } from '@/lib/utils'
-import { useChannelMembers, useSendMessage, type ChannelMember } from './queries'
+import {
+  useChannelMembers,
+  useSendMessage,
+  type ChannelMember,
+  type QuotedMessage,
+} from './queries'
+import { firstLine, speakerName } from './speaker'
 
 /** What a colleague is called in the member list and in an @mention. */
 const memberName = (member: ChannelMember) => member.full_name?.trim() || member.email
@@ -104,11 +110,16 @@ export function Composer({
   channelId,
   onTyping,
   onSent,
+  replyTo = null,
+  onCancelReply,
 }: {
   channelId: string
   onTyping: (name: string) => void
   /** The message is in the channel; what was sent, in case it asks for more. */
   onSent?: (messageId: string, body: string) => void
+  /** The line being answered, shown above the box until sent or dropped. */
+  replyTo?: QuotedMessage | null
+  onCancelReply?: () => void
 }) {
   const { t } = useTranslation()
   const { user } = useAuth()
@@ -128,6 +139,14 @@ export function Composer({
   const box = useRef<HTMLTextAreaElement>(null)
   const fileInput = useRef<HTMLInputElement>(null)
   const listId = useId()
+
+  // Choosing a line to answer is choosing to type. On the next tick: the
+  // menu the choice was made in hands focus back to its trigger as it closes.
+  useEffect(() => {
+    if (!replyTo) return
+    const timer = window.setTimeout(() => box.current?.focus(), 0)
+    return () => window.clearTimeout(timer)
+  }, [replyTo])
 
   const others = (members.data ?? []).filter((member) => member.user_id !== user?.id)
   const suggestions =
@@ -186,8 +205,9 @@ export function Composer({
     setFiles([])
     setPicked([])
     drafts.set(channelId, '')
+    onCancelReply?.()
     send.mutate(
-      { body: text, mentions, files },
+      { body: text, mentions, files, replyTo },
       { onSuccess: (messageId) => onSent?.(messageId, text) },
     )
   }
@@ -210,6 +230,11 @@ export function Composer({
         setQuery(null)
         return
       }
+    }
+
+    if (event.key === 'Escape' && replyTo) {
+      onCancelReply?.()
+      return
     }
 
     if (sendOnEnter && event.key === 'Enter' && !event.shiftKey) {
@@ -271,6 +296,28 @@ export function Composer({
             </li>
           ))}
         </ul>
+      )}
+
+      {replyTo && (
+        <div className="bg-muted mb-2 flex min-h-11 items-center gap-2 rounded-xl pl-3 text-sm">
+          <Reply className="size-4 shrink-0" aria-hidden="true" />
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-semibold">
+              {t('chat.replyingTo', { name: speakerName(replyTo, user?.id, t) })}
+            </p>
+            <p className="text-muted-foreground truncate">
+              {replyTo.deleted_at ? t('chat.deletedMessage') : firstLine(replyTo.body)}
+            </p>
+          </div>
+          <button
+            type="button"
+            aria-label={t('chat.cancelReply')}
+            className="hover:bg-accent flex size-11 shrink-0 items-center justify-center rounded-full transition-colors duration-150"
+            onClick={onCancelReply}
+          >
+            <X className="size-4" aria-hidden="true" />
+          </button>
+        </div>
       )}
 
       {files.length > 0 && (

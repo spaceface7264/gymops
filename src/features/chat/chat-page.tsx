@@ -44,6 +44,7 @@ import {
   useDeleteChannel,
   useLeaveChannel,
   useSetChannelMuted,
+  type QuotedMessage,
 } from './queries'
 
 /**
@@ -154,6 +155,9 @@ function ChannelView({ channelId }: { channelId: string }) {
   const navigate = useNavigate()
 
   const [members, setMembers] = useState(false)
+  // The line being answered, from the stream to the box. Not kept with the
+  // draft: a quote is a moment's intention.
+  const [replyTo, setReplyTo] = useState<QuotedMessage | null>(null)
   const [editing, setEditing] = useState(false)
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [confirmingLeave, setConfirmingLeave] = useState(false)
@@ -319,7 +323,9 @@ function ChannelView({ channelId }: { channelId: string }) {
         </>
       )}
 
-      {channel && <MessageList channel={channel} canModerate={canModerate} />}
+      {channel && (
+        <MessageList channel={channel} canModerate={canModerate} onReply={setReplyTo} />
+      )}
 
       {/* One reserved line between the list and the box, so what it says
           never moves the box under a thumb. */}
@@ -357,6 +363,8 @@ function ChannelView({ channelId }: { channelId: string }) {
         <Composer
           channelId={channel.id}
           onTyping={startTyping}
+          replyTo={replyTo}
+          onCancelReply={() => setReplyTo(null)}
           onSent={(messageId, body) => {
             if (mentionsAssistant(body))
               reply.mutate({ channelId: channel.id, messageId })

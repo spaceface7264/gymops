@@ -16,6 +16,8 @@ export const notificationTypes: NotificationType[] = [
   'invite',
   'chat_mention',
   'chat_dm',
+  'chat_reply',
+  'chat_reaction',
 ]
 
 export type NotificationChannel = 'in_app' | 'email' | 'push'

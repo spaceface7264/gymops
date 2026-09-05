@@ -61,6 +61,20 @@ export function useChannelLive(channelId: string) {
           void queryClient.invalidateQueries({ queryKey: chatKeys.overview })
         },
       )
+      // A reaction added or taken away, on the same topic: the row carries
+      // the channel, so the same filter fits. Nothing to do with unread.
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'message_reactions',
+          filter: `channel_id=eq.${channelId}`,
+        },
+        () => {
+          void queryClient.invalidateQueries({ queryKey: chatKeys.messages(channelId) })
+        },
+      )
       .on('presence', { event: 'sync' }, () => {
         const state = live.presenceState<TypingState>()
 

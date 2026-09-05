@@ -1185,6 +1185,52 @@ export type Database = {
           },
         ]
       }
+      message_reactions: {
+        Row: {
+          channel_id: string
+          created_at: string
+          emoji: string
+          message_id: string
+          user_id: string
+        }
+        Insert: {
+          channel_id: string
+          created_at?: string
+          emoji: string
+          message_id: string
+          user_id?: string
+        }
+        Update: {
+          channel_id?: string
+          created_at?: string
+          emoji?: string
+          message_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_reactions_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_reactions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_reactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           body: string
@@ -1197,6 +1243,7 @@ export type Database = {
           from_assistant: boolean
           id: string
           mentions: string[]
+          reply_to: string | null
         }
         Insert: {
           body: string
@@ -1209,6 +1256,7 @@ export type Database = {
           from_assistant?: boolean
           id?: string
           mentions?: string[]
+          reply_to?: string | null
         }
         Update: {
           body?: string
@@ -1221,6 +1269,7 @@ export type Database = {
           from_assistant?: boolean
           id?: string
           mentions?: string[]
+          reply_to?: string | null
         }
         Relationships: [
           {
@@ -1242,6 +1291,13 @@ export type Database = {
             columns: ["deleted_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_reply_to_fkey"
+            columns: ["reply_to"]
+            isOneToOne: false
+            referencedRelation: "messages"
             referencedColumns: ["id"]
           },
         ]
@@ -1659,6 +1715,8 @@ export type Database = {
         | "invite"
         | "chat_mention"
         | "chat_dm"
+        | "chat_reply"
+        | "chat_reaction"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1803,6 +1861,8 @@ export const Constants = {
         "invite",
         "chat_mention",
         "chat_dm",
+        "chat_reply",
+        "chat_reaction",
       ],
     },
   },

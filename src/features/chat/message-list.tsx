@@ -1,13 +1,18 @@
 import {
   ArrowDown,
+  ChevronDown,
   Clock,
+  Copy,
   MessageCircle,
+  Reply,
   RotateCcw,
+  SmilePlus,
   Sparkles,
   Trash2,
 } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 import {
   ConfirmDialog,
   EmptyState,
@@ -15,8 +20,23 @@ import {
   Markdown,
   UnreadCount,
 } from '@/components'
-import { Bubble, BubbleContent } from '@/components/ui/bubble'
+import { Bubble, BubbleContent, BubbleReactions } from '@/components/ui/bubble'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Marker, MarkerContent } from '@/components/ui/marker'
 import { Message as MessageRowFrame, MessageContent } from '@/components/ui/message'
 import {
@@ -32,15 +52,20 @@ import { useAuth } from '@/features/auth'
 import { cn } from '@/lib/utils'
 import { Attachments } from './attachments'
 import {
+  reactionEmojis,
   useChannelMembers,
   useDeleteMessage,
   useForgetFailed,
   useMarkChannelRead,
   useMessages,
   useSendMessage,
+  useToggleReaction,
   type Channel,
   type Message,
+  type QuotedMessage,
+  type ReactionEmoji,
 } from './queries'
+import { firstLine, personName, speakerName } from './speaker'
 
 /** Lines by the same person this close together share one name and time. */
 const groupMinutes = 5
@@ -70,9 +95,12 @@ const speaker = (message: Message) =>
 export function MessageList({
   channel,
   canModerate,
+  onReply,
 }: {
   channel: Channel
   canModerate: boolean
+  /** Somebody chose to answer this line; the composer takes it from here. */
+  onReply: (quoted: QuotedMessage) => void
 }) {
   return (
     <MessageScrollerProvider
@@ -80,7 +108,7 @@ export function MessageList({
       defaultScrollPosition="end"
       scrollEdgeThreshold={followPx}
     >
-      <Transcript channel={channel} canModerate={canModerate} />
+      <Transcript channel={channel} canModerate={canModerate} onReply={onReply} />
     </MessageScrollerProvider>
   )
 }
@@ -88,9 +116,11 @@ export function MessageList({
 function Transcript({
   channel,
   canModerate,
+  onReply,
 }: {
   channel: Channel
   canModerate: boolean
+  onReply: (quoted: QuotedMessage) => void
 }) {
   const { t, i18n } = useTranslation()
   const { user } = useAuth()
@@ -191,6 +221,30 @@ function Transcript({
     }
     if (newestMine) scrollToEnd()
   }, [newestId, newestMine, firstUnread, scrollToEnd, scrollToMessage])
+
+  // Going to a quoted line. The scroller says whether it found it; when it did
+  // not, the line is on a page not loaded yet, so older pages are fetched and
+  // the jump tried again once they have rendered, a few times at most.
+  const jump = useRef<{ id: string; tried: number } | null>(null)
+  const tryJump = useCallback(() => {
+    const target = jump.current
+    if (!target) return
+    if (scrollToMessage(target.id, { align: 'nearest', scrollMargin: 48 })) {
+      jump.current = null
+      return
+    }
+    if (messages.isFetchingNextPage) return
+    if (messages.hasNextPage && target.tried < 5) {
+      target.tried += 1
+      void messages.fetchNextPage()
+      return
+    }
+    jump.current = null
+    toast.info(t('chat.quotedNotLoaded'))
+  }, [messages, scrollToMessage, t])
+  useEffect(() => {
+    tryJump()
+  }, [rows.length, tryJump])
 
   // Having a channel open is reading it — including whatever arrives while it
   // is open, which is why this follows the newest message and not just the
@@ -293,6 +347,11 @@ function Transcript({
                       continued={continued}
                       unreadFrom={message.id === firstUnread}
                       canModerate={canModerate}
+                      onReply={onReply}
+                      onJump={(id) => {
+                        jump.current = { id, tried: 0 }
+                        tryJump()
+                      }}
                     />
                   )
                 })}
@@ -324,6 +383,8 @@ function MessageRow({
   continued,
   unreadFrom,
   canModerate,
+  onReply,
+  onJump,
 }: {
   channelId: string
   message: Message
@@ -334,33 +395,61 @@ function MessageRow({
   /** The first line said since this person last read. */
   unreadFrom: boolean
   canModerate: boolean
+  onReply: (quoted: QuotedMessage) => void
+  onJump: (id: string) => void
 }) {
   const { t, i18n } = useTranslation()
   const { user } = useAuth()
   const [confirmingDelete, setConfirmingDelete] = useState(false)
-  // On a phone the trash can is hidden until the bubble is tapped: a thumb
-  // has no hover, and a 44 px destructive target beside every own line was
-  // the loudest thing on the screen.
+  const [showingReactions, setShowingReactions] = useState(false)
+  const [picking, setPicking] = useState(false)
+  // On a phone the menu is hidden until the bubble is tapped: a thumb has no
+  // hover, and a 44 px control beside every line was the loudest thing on
+  // the screen.
   const [revealed, setRevealed] = useState(false)
+  // Reply hands the focus to the box; the menu must not take it back to its
+  // trigger as it closes.
+  const handedOff = useRef(false)
 
   const remove = useDeleteMessage(channelId)
   const resend = useSendMessage(channelId)
   const forgetFailed = useForgetFailed(channelId)
+  const react = useToggleReaction(channelId)
 
   const mine = message.created_by === user?.id
-  const author = message.from_assistant
-    ? t('chat.assistant')
-    : mine
-      ? t('chat.you')
-      : message.author?.full_name?.trim() || message.author?.email || t('chat.someone')
+  const author = speakerName(message, user?.id, t)
   const when = new Date(message.created_at).toLocaleTimeString(i18n.language, {
     hour: '2-digit',
     minute: '2-digit',
     hourCycle: 'h23',
   })
   const namesMe = Boolean(user && message.mentions.includes(user.id))
-  const canDelete =
-    !message.deleted_at && !message.pending && !message.failed && (mine || canModerate)
+  // Nothing to answer, copy or react to on a line that is gone or not yet
+  // there; the failed line has its own Try again.
+  const hasMenu = !message.deleted_at && !message.pending && !message.failed
+  const canDelete = hasMenu && (mine || canModerate)
+
+  const copy = () => {
+    if (!navigator.clipboard) {
+      toast.error(t('chat.copyFailed'))
+      return
+    }
+    navigator.clipboard.writeText(message.body).then(
+      () => toast.success(t('chat.copied')),
+      () => toast.error(t('chat.copyFailed')),
+    )
+  }
+
+  const reactedByMe = (emoji: string) =>
+    message.message_reactions.some((r) => r.user_id === user?.id && r.emoji === emoji)
+
+  // The four, in a fixed order, with who is behind each count.
+  const reactionGroups = reactionEmojis
+    .map((emoji) => ({
+      emoji,
+      reactors: message.message_reactions.filter((r) => r.emoji === emoji),
+    }))
+    .filter((group) => group.reactors.length > 0)
 
   const body = message.deleted_at ? (
     <p className="text-muted-foreground text-sm italic">{t('chat.deletedMessage')}</p>
@@ -384,22 +473,276 @@ function MessageRow({
     </>
   )
 
-  const deleteButton = canDelete && (
-    <Button
-      variant="ghost"
-      size="icon"
-      aria-label={t('chat.delete')}
-      onClick={() => setConfirmingDelete(true)}
-      className={cn(
-        'text-muted-foreground hover:text-destructive self-center',
-        // Hidden and untouchable until the line is tapped, hovered or
-        // focused; an invisible target is still a target.
-        'pointer-events-none opacity-0 group-focus-within:pointer-events-auto group-focus-within:opacity-100 md:group-hover:pointer-events-auto md:group-hover:opacity-100',
-        revealed && 'pointer-events-auto opacity-100',
-      )}
+  // One menu per line: what everybody may do (answer, react, copy), then
+  // what this person may take away. The trigger is a chevron in the bubble's
+  // top corner over a fade of the bubble's own colour, the way the phone apps
+  // do it. Hidden and untouchable until the line is tapped, hovered or
+  // focused; kept up while open, because Radix moves the focus into the
+  // portal.
+  const menu = hasMenu && (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          aria-label={t('chat.messageMenu')}
+          className={cn(
+            // Just the chevron, no fill behind it, in the bubble's top corner.
+            'text-muted-foreground hover:text-foreground focus-visible:ring-ring/40 absolute top-px right-px flex h-8 w-9 items-center justify-end rounded-tr-[15px] rounded-bl-full pr-1.5 transition-[opacity,color] duration-150 outline-none focus-visible:ring-[3px]',
+            'pointer-events-none opacity-0 group-focus-within:pointer-events-auto group-focus-within:opacity-100 md:group-hover:pointer-events-auto md:group-hover:opacity-100',
+            'data-[state=open]:pointer-events-auto data-[state=open]:opacity-100',
+            revealed && 'pointer-events-auto opacity-100',
+          )}
+        >
+          <ChevronDown className="size-5" aria-hidden="true" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align={mine ? 'end' : 'start'}
+        className="w-48"
+        onCloseAutoFocus={(event) => {
+          if (handedOff.current) {
+            event.preventDefault()
+            handedOff.current = false
+          }
+        }}
+      >
+        <DropdownMenuItem
+          className="md:min-h-9 md:py-1.5"
+          onSelect={() => {
+            handedOff.current = true
+            onReply(message)
+          }}
+        >
+          <Reply aria-hidden="true" />
+          {t('chat.reply')}
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          className="md:min-h-9 md:py-1.5"
+          onSelect={() => {
+            // After this menu has closed and handed focus back.
+            window.setTimeout(() => setPicking(true), 0)
+          }}
+        >
+          <SmilePlus aria-hidden="true" />
+          {t('chat.react')}
+        </DropdownMenuItem>
+        <DropdownMenuItem className="md:min-h-9 md:py-1.5" onSelect={copy}>
+          <Copy aria-hidden="true" />
+          {t('chat.copy')}
+        </DropdownMenuItem>
+        {canDelete && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              variant="destructive"
+              className="md:min-h-9 md:py-1.5"
+              onSelect={() => setConfirmingDelete(true)}
+            >
+              <Trash2 aria-hidden="true" />
+              {t('chat.delete')}
+            </DropdownMenuItem>
+          </>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+
+  // The reaction picker: a smiley beside the bubble, revealed like the
+  // chevron, that opens the four emoji in a row above it.
+  const picker = hasMenu && (
+    <DropdownMenu open={picking} onOpenChange={setPicking}>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="secondary"
+          size="icon"
+          aria-label={t('chat.react')}
+          className={cn(
+            'text-muted-foreground hover:text-foreground self-center',
+            'pointer-events-none opacity-0 group-focus-within:pointer-events-auto group-focus-within:opacity-100 md:group-hover:pointer-events-auto md:group-hover:opacity-100',
+            'data-[state=open]:pointer-events-auto data-[state=open]:opacity-100',
+            revealed && 'pointer-events-auto opacity-100',
+          )}
+        >
+          <SmilePlus className="size-5" aria-hidden="true" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        side="top"
+        align={mine ? 'end' : 'start'}
+        sideOffset={6}
+        aria-label={t('chat.react')}
+        className="flex min-w-0 gap-0.5 rounded-full p-1"
+      >
+        {reactionEmojis.map((emoji) => {
+          const on = reactedByMe(emoji)
+          return (
+            <DropdownMenuItem
+              key={emoji}
+              aria-label={t(on ? 'chat.unreact' : 'chat.reactWith', { emoji })}
+              aria-pressed={on}
+              className={cn(
+                'size-11 justify-center rounded-full p-0 text-2xl transition-transform duration-150 hover:scale-110',
+                on && 'bg-accent',
+              )}
+              onSelect={() =>
+                react.mutate(
+                  { messageId: message.id, emoji, on: !on },
+                  { onError: () => toast.error(t('chat.reactionFailed')) },
+                )
+              }
+            >
+              <span aria-hidden="true">{emoji}</span>
+            </DropdownMenuItem>
+          )
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+
+  // Who reacted, per emoji: a count on the bubble's edge, the names on tap.
+  const reactionTotal = message.message_reactions.length
+  const reactions = !message.deleted_at && reactionGroups.length > 0 && (
+    <>
+      {/* The faces, and one count once there is more than one: the way
+          the phone apps say it. Tapping opens who, per emoji. */}
+      <BubbleReactions
+        side="bottom"
+        align={mine ? 'end' : 'start'}
+        // The chip arrives with the first reaction; each new face pops in.
+        // White, no fill or stroke behind the faces; the ring alone keeps it
+        // off the bubble.
+        className="bg-card animate-in fade-in-0 zoom-in-75 duration-200 ease-out"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <button
+          type="button"
+          aria-label={`${t('chat.reactions')}: ${reactionGroups
+            .map(({ emoji, reactors }) => `${emoji} ${reactors.length}`)
+            .join(', ')}`}
+          // A 28 px pill to look at, a 44 px area to hit.
+          className="relative flex h-7 items-center gap-1 rounded-full px-2 tabular-nums transition-colors duration-150 after:absolute after:-inset-2 after:content-['']"
+          onClick={() => setShowingReactions(true)}
+        >
+          <span
+            aria-hidden="true"
+            className="flex items-center gap-0.5 text-base leading-none"
+          >
+            {reactionGroups.map(({ emoji }) => (
+              <span key={emoji} className="animate-reaction-pop inline-block">
+                {emoji}
+              </span>
+            ))}
+          </span>
+          {reactionTotal > 1 && (
+            <span
+              aria-hidden="true"
+              className="text-muted-foreground text-xs leading-none"
+            >
+              {reactionTotal}
+            </span>
+          )}
+        </button>
+      </BubbleReactions>
+      <Dialog open={showingReactions} onOpenChange={setShowingReactions}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('chat.reactions')}</DialogTitle>
+            <DialogDescription>{t('chat.reactionsHint')}</DialogDescription>
+          </DialogHeader>
+          <Tabs defaultValue="all">
+            <TabsList aria-label={t('chat.reactions')}>
+              <TabsTrigger value="all">
+                {t('chat.reactionsAll', { count: reactionTotal })}
+              </TabsTrigger>
+              {reactionGroups.map(({ emoji, reactors }) => (
+                <TabsTrigger key={emoji} value={emoji}>
+                  {emoji} {reactors.length}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+            {[
+              { emoji: 'all', reactors: message.message_reactions },
+              ...reactionGroups,
+            ].map(({ emoji, reactors }) => (
+              <TabsContent key={emoji} value={emoji}>
+                <ul className="divide-border divide-y">
+                  {reactors.map((r) => {
+                    const own = r.user_id === user?.id
+                    return (
+                      <li key={`${r.user_id}-${r.emoji}`}>
+                        {own ? (
+                          // Your own: tap to take it away, as on the phone apps.
+                          <button
+                            type="button"
+                            className="hover:bg-accent/60 flex min-h-11 w-full items-center gap-3 rounded-lg px-2 text-left text-sm transition-colors duration-150"
+                            onClick={() =>
+                              react.mutate(
+                                {
+                                  messageId: message.id,
+                                  emoji: r.emoji as ReactionEmoji,
+                                  on: false,
+                                },
+                                { onError: () => toast.error(t('chat.reactionFailed')) },
+                              )
+                            }
+                          >
+                            <span className="min-w-0 flex-1">
+                              <span className="block font-medium">{t('chat.you')}</span>
+                              <span className="text-muted-foreground block text-xs">
+                                {t('chat.removeReactionHint')}
+                              </span>
+                            </span>
+                            <span aria-hidden="true" className="text-xl">
+                              {r.emoji}
+                            </span>
+                          </button>
+                        ) : (
+                          <div className="flex min-h-11 items-center gap-3 px-2 text-sm">
+                            <span className="min-w-0 flex-1 truncate">
+                              {personName(r.reactor, t)}
+                            </span>
+                            <span aria-hidden="true" className="text-xl">
+                              {r.emoji}
+                            </span>
+                          </div>
+                        )}
+                      </li>
+                    )
+                  })}
+                </ul>
+              </TabsContent>
+            ))}
+          </Tabs>
+        </DialogContent>
+      </Dialog>
+    </>
+  )
+
+  // The line this one answers, above the words; tapping it goes there.
+  const quote = message.quoted && (
+    <button
+      type="button"
+      aria-label={t('chat.jumpToQuoted')}
+      className="bg-foreground/5 hover:bg-foreground/10 mb-1 flex min-h-11 w-full flex-col justify-center rounded-lg px-2.5 py-1 text-left transition-colors duration-150"
+      onClick={(event) => {
+        event.stopPropagation()
+        if (message.quoted) onJump(message.quoted.id)
+      }}
     >
-      <Trash2 className="size-4" aria-hidden="true" />
-    </Button>
+      <span className="text-accent-foreground text-xs font-semibold">
+        {speakerName(message.quoted, user?.id, t)}
+      </span>
+      <span
+        className={cn(
+          'truncate text-sm',
+          message.quoted.deleted_at && 'text-muted-foreground italic',
+        )}
+      >
+        {message.quoted.deleted_at
+          ? t('chat.deletedMessage')
+          : firstLine(message.quoted.body)}
+      </span>
+    </button>
   )
 
   const confirm = (
@@ -477,7 +820,12 @@ function MessageRow({
     <>
       {newRule}
       <li
-        className={cn('group', continued ? 'mt-0.5' : 'mt-2')}
+        className={cn(
+          'group',
+          continued ? 'mt-0.5' : 'mt-2',
+          // Room for the reactions chip, which hangs off the bubble's edge.
+          reactions && 'pb-5',
+        )}
         aria-busy={message.pending || undefined}
       >
         <MessageScrollerItem messageId={message.id}>
@@ -488,7 +836,7 @@ function MessageRow({
                   variant={mine ? 'tinted' : namesMe ? 'highlight' : 'outline'}
                   align={mine ? 'end' : 'start'}
                   className={cn(message.pending && 'opacity-70')}
-                  onClick={canDelete ? () => setRevealed((open) => !open) : undefined}
+                  onClick={hasMenu ? () => setRevealed((open) => !open) : undefined}
                 >
                   <BubbleContent
                     className={cn(
@@ -496,6 +844,7 @@ function MessageRow({
                       !continued && (mine ? 'rounded-tr-md' : 'rounded-tl-md'),
                     )}
                   >
+                    {quote}
                     {/* Somebody else's name opens the first bubble of their
                         run, in the text colour: the accent is kept for the
                         line that is for the reader. Own and continued lines
@@ -504,6 +853,8 @@ function MessageRow({
                       className={cn(
                         'mb-0.5 flex items-center gap-1 text-xs font-semibold',
                         (continued || mine) && 'sr-only',
+                        // Room for the chevron beside the name.
+                        hasMenu && !continued && !mine && 'pr-7',
                       )}
                     >
                       {message.from_assistant && (
@@ -515,13 +866,22 @@ function MessageRow({
                         own baseline, whether it shares the last line or drops
                         under a long one, instead of on the bottom of a line
                         box that carries leading below the letters. */}
-                    <div className="flex flex-wrap items-baseline-last justify-end gap-x-3">
+                    <div
+                      className={cn(
+                        'flex flex-wrap items-baseline-last justify-end gap-x-3',
+                        // No name row to hold the chevron: keep the first
+                        // line and the time clear of it.
+                        hasMenu && (continued || mine) && 'pr-7',
+                      )}
+                    >
                       <div className="min-w-0 flex-1">{body}</div>
                       {stamp}
                     </div>
                   </BubbleContent>
+                  {reactions}
+                  {menu}
                 </Bubble>
-                {deleteButton}
+                {picker}
                 {retryButton}
               </div>
             </MessageContent>
