@@ -23,7 +23,9 @@ function Message({
       data-slot="message"
       data-align={align}
       className={cn(
-        'group/message relative flex w-full min-w-0 gap-2 text-sm data-[align=end]:flex-row-reverse',
+        // No `text-sm` here (shadcn's default): a line reads at the app's
+        // body size, the size it was typed at.
+        'group/message relative flex w-full min-w-0 gap-2 data-[align=end]:flex-row-reverse',
         className,
       )}
       {...props}

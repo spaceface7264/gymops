@@ -1,7 +1,13 @@
 import { ArrowDown, Clock, MessageCircle, Sparkles, Trash2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ConfirmDialog, EmptyState, LoadingState, Markdown } from '@/components'
+import {
+  ConfirmDialog,
+  EmptyState,
+  LoadingState,
+  Markdown,
+  UnreadCount,
+} from '@/components'
 import { Bubble, BubbleContent } from '@/components/ui/bubble'
 import { Button } from '@/components/ui/button'
 import { Marker, MarkerContent } from '@/components/ui/marker'
@@ -14,6 +20,7 @@ import {
   MessageScrollerProvider,
   MessageScrollerViewport,
   useMessageScroller,
+  useMessageScrollerVisibility,
 } from '@/components/ui/message-scroller'
 import { useAuth } from '@/features/auth'
 import { cn } from '@/lib/utils'
@@ -81,6 +88,7 @@ function Transcript({
   const { user } = useAuth()
   const messages = useMessages(channel.id)
   const { scrollToEnd, scrollToMessage } = useMessageScroller()
+  const { visibleMessageIds } = useMessageScrollerVisibility()
   // The names an @ in a line can be set in the accent: the channel's people.
   const members = useChannelMembers([channel.id])
   const memberNames = new Map(
@@ -118,6 +126,19 @@ function Transcript({
       new Date(message.created_at).getTime() > readUpTo &&
       message.created_by !== user?.id,
   )?.id
+
+  // How many unread lines sit below what is on screen: the badge on the way
+  // down. Counted only when the first unread line is neither on screen nor
+  // above it.
+  const firstUnreadIndex = rows.findIndex((message) => message.id === firstUnread)
+  const lastVisibleIndex = rows.reduce(
+    (last, message, index) => (visibleMessageIds.includes(message.id) ? index : last),
+    -1,
+  )
+  const unreadBelow =
+    firstUnreadIndex > lastVisibleIndex && lastVisibleIndex >= 0
+      ? rows.length - firstUnreadIndex
+      : 0
 
   // Opening the channel lands on the "New" line when there is one (the
   // scroller's own default is the end). After that the scroller follows only
@@ -242,10 +263,16 @@ function Transcript({
         </MessageScrollerContent>
       </MessageScrollerViewport>
 
-      {/* Sits on the bottom edge while the reader is further up. */}
+      {/* Sits bottom right while the reader is further up, with what is
+          still unread below them. */}
       <MessageScrollerButton>
         <ArrowDown className="size-4" aria-hidden="true" />
-        {t('chat.jumpToLatest')}
+        <span className="sr-only">{t('chat.jumpToLatest')}</span>
+        <UnreadCount
+          count={unreadBelow}
+          className="absolute -top-1.5 -right-1.5"
+          aria-label={t('chat.unread', { count: unreadBelow })}
+        />
       </MessageScrollerButton>
     </MessageScroller>
   )
@@ -272,6 +299,10 @@ function MessageRow({
   const { t, i18n } = useTranslation()
   const { user } = useAuth()
   const [confirmingDelete, setConfirmingDelete] = useState(false)
+  // On a phone the trash can is hidden until the bubble is tapped: a thumb
+  // has no hover, and a 44 px destructive target beside every own line was
+  // the loudest thing on the screen.
+  const [revealed, setRevealed] = useState(false)
 
   const remove = useDeleteMessage(channelId)
 
@@ -319,9 +350,10 @@ function MessageRow({
       onClick={() => setConfirmingDelete(true)}
       className={cn(
         'text-muted-foreground hover:text-destructive self-center',
-        // A thumb has no hover, so the phone keeps it in view; a pointer
-        // finds it on the line it is over.
-        'md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100',
+        // Hidden and untouchable until the line is tapped, hovered or
+        // focused; an invisible target is still a target.
+        'pointer-events-none opacity-0 group-focus-within:pointer-events-auto group-focus-within:opacity-100 md:group-hover:pointer-events-auto md:group-hover:opacity-100',
+        revealed && 'pointer-events-auto opacity-100',
       )}
     >
       <Trash2 className="size-4" aria-hidden="true" />
@@ -365,7 +397,7 @@ function MessageRow({
     <span className="text-muted-foreground flex shrink-0 items-center gap-1 self-end text-[11px] leading-none tabular-nums">
       {namesMe && <span className="sr-only">{t('chat.mentionsYou')}. </span>}
       {message.pending ? (
-        <Clock className="size-3" aria-label={t('chat.sending')} />
+        <Clock className="size-3" aria-hidden="true" />
       ) : (
         <time dateTime={message.created_at}>{when}</time>
       )}
@@ -384,9 +416,10 @@ function MessageRow({
             <MessageContent>
               <div className={cn('flex items-end gap-1', mine && 'flex-row-reverse')}>
                 <Bubble
-                  variant={mine ? 'tinted' : 'outline'}
+                  variant={mine ? 'tinted' : namesMe ? 'highlight' : 'outline'}
                   align={mine ? 'end' : 'start'}
                   className={cn(message.pending && 'opacity-70')}
+                  onClick={canDelete ? () => setRevealed((open) => !open) : undefined}
                 >
                   <BubbleContent
                     className={cn(
@@ -394,14 +427,21 @@ function MessageRow({
                       !continued && (mine ? 'rounded-tr-md' : 'rounded-tl-md'),
                     )}
                   >
-                    {!continued && !mine && (
-                      <span className="text-accent-foreground mb-0.5 flex items-center gap-1 text-xs font-semibold">
-                        {message.from_assistant && (
-                          <Sparkles className="size-3" aria-hidden="true" />
-                        )}
-                        {author}
-                      </span>
-                    )}
+                    {/* Somebody else's name opens the first bubble of their
+                        run, in the text colour: the accent is kept for the
+                        line that is for the reader. Own and continued lines
+                        still say who for a screen reader. */}
+                    <span
+                      className={cn(
+                        'mb-0.5 flex items-center gap-1 text-xs font-semibold',
+                        (continued || mine) && 'sr-only',
+                      )}
+                    >
+                      {message.from_assistant && (
+                        <Sparkles className="size-3" aria-hidden="true" />
+                      )}
+                      {author}
+                    </span>
                     <div className="flex flex-wrap items-end justify-end gap-x-2">
                       <div className="min-w-0 flex-1">{body}</div>
                       {stamp}

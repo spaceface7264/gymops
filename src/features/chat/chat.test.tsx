@@ -339,10 +339,12 @@ describe('the message list', () => {
 
     expect(await screen.findByRole('heading', { name: 'Today' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: /August/ })).toBeInTheDocument()
-    // Two lines by Mette a minute apart carry her name once.
+    // Two lines by Mette a minute apart show her name once; the second
+    // keeps it for a screen reader only.
     const rows = screen.getAllByRole('listitem')
     expect(rows[1]).toHaveTextContent('Mette Holm')
-    expect(rows[2]).not.toHaveTextContent('Mette Holm')
+    expect(rows[1]?.querySelector('.sr-only')).toBeNull()
+    expect(rows[2]?.querySelector('.sr-only')).toHaveTextContent('Mette Holm')
     expect(rows[2]).toHaveTextContent('Third')
   })
 
@@ -476,12 +478,48 @@ describe('a direct message', () => {
 
     const mine = screen.getByText('Sunday works').closest('[data-slot=message]')
     expect(mine).toHaveAttribute('data-align', 'end')
-    // The side says who; no "You" label on a bubble.
-    expect(mine).not.toHaveTextContent('You')
+    // The side says who; "You" is there for a screen reader only.
+    expect(mine?.querySelector('.sr-only')).toHaveTextContent('You')
     expect(mine?.querySelector('[data-slot=bubble]')).toHaveAttribute(
       'data-variant',
       'tinted',
     )
+  })
+})
+
+describe('who said it', () => {
+  it("names the reader's own bubble and a continued one for a screen reader only", async () => {
+    messageRows.mockReturnValue([
+      message({
+        id: 'message-2',
+        body: 'Second',
+        created_by: 'user-sam',
+        created_at: '2026-09-03T09:01:00Z',
+      }),
+      message({
+        id: 'message-1',
+        body: 'First',
+        created_by: 'user-sam',
+        created_at: '2026-09-03T09:00:00Z',
+      }),
+    ])
+    openChannel()
+
+    const rows = await screen.findAllByRole('listitem')
+    // "You" is in the tree for both, invisible on screen.
+    expect(rows[0]).toHaveTextContent('You')
+    expect(rows[1]).toHaveTextContent('You')
+    expect(rows[0]?.querySelector('.sr-only')).toHaveTextContent('You')
+  })
+
+  it('reveals Delete on a tap of the bubble', async () => {
+    messageRows.mockReturnValue([message({ created_by: 'user-sam' })])
+    openChannel()
+
+    const remove = await screen.findByRole('button', { name: 'Delete' })
+    expect(remove).toHaveClass('opacity-0')
+    await userEvent.click(screen.getByText('Wall 4 is taped off'))
+    expect(remove).toHaveClass('opacity-100')
   })
 })
 
