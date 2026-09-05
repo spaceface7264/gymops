@@ -68,6 +68,14 @@ export function visibleNavEntries(canAdminister: boolean): NavEntry[] {
  */
 export const fullBleedRoutes = ['/chat', '/ask']
 
+/**
+ * A conversation on a phone is one screen with its own header (back, the
+ * channel, its menu); the shell's header would be a second one above it.
+ */
+export function isConversation(pathname: string): boolean {
+  return /^\/chat\/[^/]+/.test(pathname)
+}
+
 export function isFullBleed(pathname: string): boolean {
   return fullBleedRoutes.some(
     (route) => pathname === route || pathname.startsWith(`${route}/`),

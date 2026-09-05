@@ -319,9 +319,10 @@ describe('the message list', () => {
 
     expect((await screen.findByText('Wall 4')).tagName).toBe('STRONG')
     expect(screen.getByText('taped').tagName).toBe('CODE')
-    expect(
-      screen.getByRole('link', { name: 'https://gymops.test/guides' }),
-    ).toHaveAttribute('href', 'https://gymops.test/guides')
+    // Named by host and path; the address itself is the href and the title.
+    const link = screen.getByRole('link', { name: 'gymops.test/guides' })
+    expect(link).toHaveAttribute('href', 'https://gymops.test/guides')
+    expect(link).toHaveAttribute('title', 'https://gymops.test/guides')
   })
 
   it('cuts the day into headings, and names somebody once for lines said together', async () => {
@@ -602,7 +603,11 @@ describe('the composer', () => {
 
   it('starts a line on Enter on a touch screen, and sends from the button', async () => {
     // jsdom has no `matchMedia`; a phone answers "no fine pointer".
-    const matchMedia = vi.fn().mockReturnValue({ matches: false })
+    const matchMedia = vi.fn().mockReturnValue({
+      matches: false,
+      addEventListener() {},
+      removeEventListener() {},
+    })
     window.matchMedia = matchMedia
     try {
       openChannel()
@@ -627,7 +632,7 @@ describe('the composer', () => {
     }
   })
 
-  it('shows the line at once while it goes up, and keeps what is typed meanwhile', async () => {
+  it('shows the line at once while it goes up, and empties the box for the next one', async () => {
     let release = () => {}
     slow.insert = new Promise<void>((resolve) => {
       release = resolve
@@ -643,10 +648,11 @@ describe('the composer', () => {
     expect(row).toHaveAttribute('aria-busy', 'true')
     expect(screen.queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument()
 
+    expect(box).toHaveValue('')
     await userEvent.type(box, 'And the crate is back')
     release()
     await waitFor(() => expect(inserted).toHaveBeenCalled())
-    await waitFor(() => expect(box).toHaveValue('And the crate is back'))
+    expect(box).toHaveValue('And the crate is back')
   })
 
   it('keeps a half-written message when somebody looks at another channel', async () => {
@@ -683,22 +689,24 @@ describe('the composer', () => {
     expect(screen.queryByText('reset.mov')).not.toBeInTheDocument()
   })
 
-  it('keeps what was typed when sending fails, and offers to try again', async () => {
+  it('keeps a line that could not be sent in the stream, marked, with a way to try again', async () => {
     failing.insert = true
     openChannel()
 
     const box = await screen.findByRole('textbox', { name: 'Write a message' })
     await userEvent.type(box, 'Wall 4 is open{Enter}')
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(
-      'The message could not be sent.',
-    )
-    expect(box).toHaveValue('Wall 4 is open')
+    // The line stays where the sender saw it appear, and says what happened.
+    const row = await screen.findByRole('listitem')
+    expect(await within(row).findByRole('alert')).toHaveTextContent('Not sent')
+    expect(row).toHaveTextContent('Wall 4 is open')
+    expect(box).toHaveValue('')
+    expect(within(row).queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument()
 
     failing.insert = false
-    await userEvent.click(screen.getByRole('button', { name: 'Try again' }))
+    await userEvent.click(within(row).getByRole('button', { name: 'Try again' }))
     await waitFor(() => expect(inserted).toHaveBeenCalledTimes(2))
-    await waitFor(() => expect(box).toHaveValue(''))
+    await waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument())
   })
 
   it('says so when the socket is not there', async () => {

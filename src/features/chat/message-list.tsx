@@ -1,4 +1,11 @@
-import { ArrowDown, Clock, MessageCircle, Sparkles, Trash2 } from 'lucide-react'
+import {
+  ArrowDown,
+  Clock,
+  MessageCircle,
+  RotateCcw,
+  Sparkles,
+  Trash2,
+} from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -20,7 +27,6 @@ import {
   MessageScrollerProvider,
   MessageScrollerViewport,
   useMessageScroller,
-  useMessageScrollerVisibility,
 } from '@/components/ui/message-scroller'
 import { useAuth } from '@/features/auth'
 import { cn } from '@/lib/utils'
@@ -28,8 +34,10 @@ import { Attachments } from './attachments'
 import {
   useChannelMembers,
   useDeleteMessage,
+  useForgetFailed,
   useMarkChannelRead,
   useMessages,
+  useSendMessage,
   type Channel,
   type Message,
 } from './queries'
@@ -88,7 +96,11 @@ function Transcript({
   const { user } = useAuth()
   const messages = useMessages(channel.id)
   const { scrollToEnd, scrollToMessage } = useMessageScroller()
-  const { visibleMessageIds } = useMessageScrollerVisibility()
+  // The last line whose top is inside the box: what the reader has reached.
+  // Measured from the DOM on every scroll and whenever the rows change (the
+  // scroller's own visibility store only tracks anchored items).
+  const root = useRef<HTMLDivElement>(null)
+  const [lastVisibleId, setLastVisibleId] = useState<string | null>(null)
   // The names an @ in a line can be set in the accent: the channel's people.
   const members = useChannelMembers([channel.id])
   const memberNames = new Map(
@@ -127,18 +139,41 @@ function Transcript({
       message.created_by !== user?.id,
   )?.id
 
-  // How many unread lines sit below what is on screen: the badge on the way
-  // down. Counted only when the first unread line is neither on screen nor
-  // above it.
-  const firstUnreadIndex = rows.findIndex((message) => message.id === firstUnread)
-  const lastVisibleIndex = rows.reduce(
-    (last, message, index) => (visibleMessageIds.includes(message.id) ? index : last),
-    -1,
-  )
+  // How many lines somebody else said, that this person had not read when
+  // they opened the channel, sit below what is on screen: the badge on the
+  // way down.
+  const lastVisibleIndex = rows.findIndex((message) => message.id === lastVisibleId)
   const unreadBelow =
-    firstUnreadIndex > lastVisibleIndex && lastVisibleIndex >= 0
-      ? rows.length - firstUnreadIndex
-      : 0
+    lastVisibleIndex < 0
+      ? 0
+      : rows
+          .slice(lastVisibleIndex + 1)
+          .filter(
+            (message) =>
+              !message.deleted_at &&
+              message.created_by !== user?.id &&
+              new Date(message.created_at).getTime() > readUpTo,
+          ).length
+
+  useEffect(() => {
+    const box = root.current?.querySelector<HTMLElement>(
+      '[data-slot=message-scroller-viewport]',
+    )
+    if (!box) return
+    const measure = () => {
+      const bottom = box.getBoundingClientRect().bottom
+      let last: string | null = null
+      for (const item of box.querySelectorAll<HTMLElement>('[data-message-id]')) {
+        if (item.getBoundingClientRect().top < bottom)
+          last = item.dataset.messageId ?? last
+        else break
+      }
+      setLastVisibleId(last)
+    }
+    measure()
+    box.addEventListener('scroll', measure, { passive: true })
+    return () => box.removeEventListener('scroll', measure)
+  }, [newestId, rows.length])
 
   // Opening the channel lands on the "New" line when there is one (the
   // scroller's own default is the end). After that the scroller follows only
@@ -197,7 +232,11 @@ function Transcript({
   }
 
   return (
-    <MessageScroller className="min-h-0 flex-1">
+    <MessageScroller
+      ref={root}
+      className="min-h-0 flex-1"
+      data-last-visible={lastVisibleId ?? undefined}
+    >
       <MessageScrollerViewport preserveScrollOnPrepend className="px-4 pt-4 pb-3">
         <MessageScrollerContent>
           {messages.hasNextPage && (
@@ -265,7 +304,7 @@ function Transcript({
 
       {/* Sits bottom right while the reader is further up, with what is
           still unread below them. */}
-      <MessageScrollerButton>
+      <MessageScrollerButton data-unread-below={unreadBelow}>
         <ArrowDown className="size-4" aria-hidden="true" />
         <span className="sr-only">{t('chat.jumpToLatest')}</span>
         <UnreadCount
@@ -305,6 +344,8 @@ function MessageRow({
   const [revealed, setRevealed] = useState(false)
 
   const remove = useDeleteMessage(channelId)
+  const resend = useSendMessage(channelId)
+  const forgetFailed = useForgetFailed(channelId)
 
   const mine = message.created_by === user?.id
   const author = message.from_assistant
@@ -318,7 +359,8 @@ function MessageRow({
     hourCycle: 'h23',
   })
   const namesMe = Boolean(user && message.mentions.includes(user.id))
-  const canDelete = !message.deleted_at && !message.pending && (mine || canModerate)
+  const canDelete =
+    !message.deleted_at && !message.pending && !message.failed && (mine || canModerate)
 
   const body = message.deleted_at ? (
     <p className="text-muted-foreground text-sm italic">{t('chat.deletedMessage')}</p>
@@ -381,7 +423,7 @@ function MessageRow({
         variant="separator"
         className="before:bg-tone-new-dot after:bg-tone-new-dot"
       >
-        <MarkerContent className="bg-tone-new-bg text-tone-new-fg rounded-full px-3 py-1 text-xs font-semibold">
+        <MarkerContent className="bg-primary text-primary-foreground rounded-full px-3 py-1 text-xs font-semibold">
           {t('chat.newSince')}
         </MarkerContent>
       </Marker>
@@ -396,12 +438,39 @@ function MessageRow({
   const stamp = (
     <span className="text-muted-foreground inline-flex shrink-0 items-baseline gap-1 text-[11px] leading-none tabular-nums">
       {namesMe && <span className="sr-only">{t('chat.mentionsYou')}. </span>}
-      {message.pending ? (
+      {message.failed ? (
+        <span
+          role="alert"
+          className="text-tone-danger-fg flex items-center gap-1 font-semibold"
+        >
+          <span className="bg-tone-danger-dot size-1.5 rounded-full" aria-hidden="true" />
+          {t('chat.notSent')}
+        </span>
+      ) : message.pending ? (
         <Clock className="size-3" aria-hidden="true" />
       ) : (
         <time dateTime={message.created_at}>{when}</time>
       )}
     </span>
+  )
+
+  // A line that was refused goes again from the stream, where the sender
+  // saw it stop; the failed copy leaves as the new attempt goes in.
+  const retryButton = message.failed && (
+    <Button
+      variant="outline"
+      size="icon"
+      aria-label={t('chat.retry')}
+      className="self-center"
+      onClick={() => {
+        const again = message.failed
+        if (!again) return
+        forgetFailed(message.id)
+        resend.mutate(again)
+      }}
+    >
+      <RotateCcw className="size-4" aria-hidden="true" />
+    </Button>
   )
 
   return (
@@ -453,6 +522,7 @@ function MessageRow({
                   </BubbleContent>
                 </Bubble>
                 {deleteButton}
+                {retryButton}
               </div>
             </MessageContent>
           </MessageRowFrame>

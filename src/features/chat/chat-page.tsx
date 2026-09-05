@@ -26,6 +26,8 @@ import {
 import { mentionsAssistant, useAssistantReply } from '@/features/assistant'
 import { useAuth } from '@/features/auth'
 import { usePublishScope } from '@/features/content'
+import { NotificationBell } from '@/features/notifications'
+import { usePhone } from '@/hooks/use-media-query'
 import { cn } from '@/lib/utils'
 import { channelName } from './channel-name'
 import { ChannelList } from './channel-list'
@@ -142,6 +144,7 @@ function ChannelView({ channelId }: { channelId: string }) {
 
   // One subscription for the channel: the messages and who is typing.
   const { typing, startTyping, live } = useChannelLive(channelId)
+  const phone = usePhone()
   // A message that names the assistant is answered by its sender's own call
   // (P8-05); the reply comes back through the subscription above.
   const reply = useAssistantReply()
@@ -191,6 +194,9 @@ function ChannelView({ channelId }: { channelId: string }) {
             </p>
           )}
         </div>
+
+        {/* The shell's header is off on a phone conversation; its bell moves here. */}
+        {phone && <NotificationBell />}
 
         {/* One menu for everything about the channel: what it offers depends
             on its kind. A gym channel's roster is the gym's (P6-02) and is

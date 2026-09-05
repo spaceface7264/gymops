@@ -51,6 +51,9 @@
   --tone-new-bg: #ede4ff;
   --tone-new-fg: #5f1fd1;
   --tone-new-dot: #863bff;
+  /* The reader's own chat bubble: the same tint as the `new` tone, under
+     its own name, because `new` is reserved for what is literally unread. */
+  --bubble-own: #ede4ff;
 }
 
 @theme inline {
@@ -94,6 +97,7 @@
   --color-tone-danger-fg: var(--tone-danger-fg);
   --color-tone-danger-dot: var(--tone-danger-dot);
   --color-tone-new-bg: var(--tone-new-bg);
+  --color-bubble-own: var(--bubble-own);
   --color-tone-new-fg: var(--tone-new-fg);
   --color-tone-new-dot: var(--tone-new-dot);
 }

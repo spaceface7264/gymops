@@ -168,6 +168,7 @@ Legend: P1 = Phase 1 etc. Effort: S (< half day), M (1–2 days), L (3+ days).
 | P6C-13 | Bubbles in every channel, not only DMs; "Mentions you" mark in the header                                                             | P6C-12     | XS     |
 | P6C-14 | WhatsApp bubble layout: name and time inside the bubble, clock while sending, chip markers                                              | P6C-13     | XS     |
 | P6C-15 | Bubble critique: own surface on the `new` tint, 15 px body, icon jump button with unread badge, names in text colour + `highlight` bubble for mentions, sr-only author, tap-to-reveal Delete | P6C-14     | S      |
+| P6C-16 | Round four: one header on a phone conversation, jump gutter + honest badge, failed line in the stream with Try again, violet New chip + `--bubble-own`, link labels, 60ch bubble cap | P6C-15     | S      |
 | P6C-05 | Copy and a11y: "Join a channel", "Conversations", DA `Annuller`/`Haller`, `Intl.ListFormat` for the typing line, combobox ARIA on the box, socket status line | P6C-03     | S      |
 
 ## Later (not scheduled)

@@ -291,6 +291,7 @@
     "noMessages": "Nothing has been said here yet.",
     "noMessagesHint": "Say hi to whoever is on shift.",
     "notLive": "Not connected. New messages arrive when you reload.",
+    "notSent": "Not sent",
     "nothingToJoin": "There is nothing else to join.",
     "pickChannel": "Pick a channel to read it.",
     "remove": "Remove",

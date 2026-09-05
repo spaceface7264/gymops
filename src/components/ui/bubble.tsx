@@ -20,7 +20,8 @@ function BubbleGroup({ className, ...props }: React.ComponentProps<'div'>) {
 }
 
 const bubbleVariants = cva(
-  'group/bubble relative flex w-fit max-w-[80%] min-w-0 flex-col gap-1 group-data-[align=end]/message:self-end data-[align=end]:self-end data-[variant=ghost]:max-w-full',
+  // 80 % of the pane, and never past a prose measure on a wide one.
+  'group/bubble relative flex w-fit max-w-[min(80%,60ch)] min-w-0 flex-col gap-1 group-data-[align=end]/message:self-end data-[align=end]:self-end data-[variant=ghost]:max-w-full',
   {
     variants: {
       variant: {
@@ -30,11 +31,11 @@ const bubbleVariants = cva(
           '*:data-[slot=bubble-content]:bg-secondary *:data-[slot=bubble-content]:text-secondary-foreground [&>[data-slot=bubble-content]:is(button,a):hover]:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_5%)]',
         muted:
           '*:data-[slot=bubble-content]:bg-muted [&>[data-slot=bubble-content]:is(button,a):hover]:bg-[color-mix(in_oklch,var(--muted),var(--foreground)_5%)]',
-        // The reader's own line: the `new` tone's tint, a surface with
-        // presence on the lilac ground (`--accent` is the hover tint and
-        // sat at 1.03:1 against it).
+        // The reader's own line: `--bubble-own`, a surface with presence on
+        // the lilac ground (`--accent` is the hover tint and sat at 1.03:1
+        // against it).
         tinted:
-          '*:data-[slot=bubble-content]:bg-tone-new-bg *:data-[slot=bubble-content]:text-foreground [&>[data-slot=bubble-content]:is(button,a):hover]:bg-tone-new-bg/70',
+          '*:data-[slot=bubble-content]:bg-bubble-own *:data-[slot=bubble-content]:text-foreground [&>[data-slot=bubble-content]:is(button,a):hover]:bg-bubble-own/70',
         // A line that names the reader: white like any colleague's, with a
         // violet hairline. The accent's one job in the stream.
         highlight:

@@ -77,11 +77,29 @@ function Token({ token }: { token: string }) {
   return (
     <a
       href={token}
+      title={token}
       target={internal ? undefined : '_blank'}
       rel={internal ? undefined : 'noreferrer noopener'}
       className="underline underline-offset-2"
     >
-      {token}
+      {linkLabel(token, internal)}
     </a>
   )
+}
+
+/**
+ * What a link is called in the text: the path for one into this app, the
+ * host and a short path for one out of it. The address itself is the `href`
+ * and the `title`; nobody reads a query string.
+ */
+function linkLabel(url: string, internal: boolean): string {
+  try {
+    const { host, pathname } = new URL(url)
+    const path = pathname.length > 1 ? pathname.replace(/\/$/, '') : ''
+    if (internal) return path || '/'
+    const short = path.length > 32 ? `${path.slice(0, 30)}…` : path
+    return `${host.replace(/^www\./, '')}${short}`
+  } catch {
+    return url
+  }
 }
