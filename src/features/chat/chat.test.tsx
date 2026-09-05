@@ -596,7 +596,7 @@ describe('reacting', () => {
     await userEvent.click(await screen.findByRole('menuitem', { name: 'React with 👍' }))
 
     expect(
-      await screen.findByRole('button', { name: '1 reacted with 👍' }),
+      await screen.findByRole('button', { name: 'Reactions: 👍 1' }),
     ).toBeInTheDocument()
     await waitFor(() =>
       expect(inserted).toHaveBeenCalledWith('message_reactions', {
@@ -627,7 +627,7 @@ describe('reacting', () => {
     )
     await waitFor(() =>
       expect(
-        screen.queryByRole('button', { name: '1 reacted with 👍' }),
+        screen.queryByRole('button', { name: 'Reactions: 👍 1' }),
       ).not.toBeInTheDocument(),
     )
   })
@@ -645,7 +645,7 @@ describe('reacting', () => {
     )
     await waitFor(() =>
       expect(
-        screen.queryByRole('button', { name: '1 reacted with ✅' }),
+        screen.queryByRole('button', { name: 'Reactions: ✅ 1' }),
       ).not.toBeInTheDocument(),
     )
   })
@@ -674,12 +674,16 @@ describe('reacting', () => {
     ])
     openChannel()
 
+    // Two faces and one total on the bubble; the names per emoji behind it.
     await userEvent.click(
-      await screen.findByRole('button', { name: '2 reacted with 👍' }),
+      await screen.findByRole('button', { name: 'Reactions: 👍 2, 👀 1' }),
     )
     const dialog = await screen.findByRole('dialog', { name: 'Reactions' })
+    expect(within(dialog).getByRole('tab', { name: 'All 3' })).toBeInTheDocument()
     expect(within(dialog).getByText('You')).toBeInTheDocument()
     expect(within(dialog).getAllByText('Anders Admin')).toHaveLength(2)
+    await userEvent.click(within(dialog).getByRole('tab', { name: '👍 2' }))
+    expect(within(dialog).getAllByText('Anders Admin')).toHaveLength(1)
   })
 
   it('hides reactions on a deleted line', async () => {
@@ -693,7 +697,7 @@ describe('reacting', () => {
     openChannel()
 
     expect(await screen.findByText('This message was deleted.')).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /reacted with/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^Reactions:/ })).not.toBeInTheDocument()
   })
 
   it('listens for reactions on the channel’s topic', async () => {

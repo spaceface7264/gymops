@@ -36,6 +36,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Marker, MarkerContent } from '@/components/ui/marker'
 import { Message as MessageRowFrame, MessageContent } from '@/components/ui/message'
 import {
@@ -62,6 +63,7 @@ import {
   type Channel,
   type Message,
   type QuotedMessage,
+  type ReactionEmoji,
 } from './queries'
 import { firstLine, personName, speakerName } from './speaker'
 
@@ -597,29 +599,33 @@ function MessageRow({
   )
 
   // Who reacted, per emoji: a count on the bubble's edge, the names on tap.
+  const reactionTotal = message.message_reactions.length
   const reactions = !message.deleted_at && reactionGroups.length > 0 && (
     <>
+      {/* The faces, and one count once there is more than one: the way
+          the phone apps say it. Tapping opens who, per emoji. */}
       <BubbleReactions
         side="bottom"
         align={mine ? 'end' : 'start'}
         onClick={(event) => event.stopPropagation()}
       >
-        {reactionGroups.map(({ emoji, reactors }) => (
-          <button
-            type="button"
-            key={emoji}
-            aria-label={t('chat.reactedWith', { count: reactors.length, emoji })}
-            aria-pressed={reactedByMe(emoji)}
-            className={cn(
-              'flex h-11 min-w-11 items-center gap-1 rounded-full px-2 text-sm tabular-nums transition-colors duration-150',
-              reactedByMe(emoji) && 'bg-accent font-medium',
-            )}
-            onClick={() => setShowingReactions(true)}
-          >
-            <span aria-hidden="true">{emoji}</span>
-            {reactors.length}
-          </button>
-        ))}
+        <button
+          type="button"
+          aria-label={`${t('chat.reactions')}: ${reactionGroups
+            .map(({ emoji, reactors }) => `${emoji} ${reactors.length}`)
+            .join(', ')}`}
+          className="flex h-11 min-w-11 items-center gap-1 rounded-full px-2 text-sm tabular-nums transition-colors duration-150"
+          onClick={() => setShowingReactions(true)}
+        >
+          <span aria-hidden="true" className="tracking-tight">
+            {reactionGroups.map(({ emoji }) => emoji).join('')}
+          </span>
+          {reactionTotal > 1 && (
+            <span aria-hidden="true" className="text-muted-foreground">
+              {reactionTotal}
+            </span>
+          )}
+        </button>
       </BubbleReactions>
       <Dialog open={showingReactions} onOpenChange={setShowingReactions}>
         <DialogContent>
@@ -627,23 +633,70 @@ function MessageRow({
             <DialogTitle>{t('chat.reactions')}</DialogTitle>
             <DialogDescription>{t('chat.reactionsHint')}</DialogDescription>
           </DialogHeader>
-          {reactionGroups.map(({ emoji, reactors }) => (
-            <section
-              key={emoji}
-              aria-label={t('chat.reactedWith', { count: reactors.length, emoji })}
-            >
-              <h3 className="text-sm font-semibold">
-                <span aria-hidden="true">{emoji}</span> {reactors.length}
-              </h3>
-              <ul className="text-muted-foreground text-sm">
-                {reactors.map((r) => (
-                  <li key={r.user_id}>
-                    {r.user_id === user?.id ? t('chat.you') : personName(r.reactor, t)}
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ))}
+          <Tabs defaultValue="all">
+            <TabsList aria-label={t('chat.reactions')}>
+              <TabsTrigger value="all">
+                {t('chat.reactionsAll', { count: reactionTotal })}
+              </TabsTrigger>
+              {reactionGroups.map(({ emoji, reactors }) => (
+                <TabsTrigger key={emoji} value={emoji}>
+                  {emoji} {reactors.length}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+            {[
+              { emoji: 'all', reactors: message.message_reactions },
+              ...reactionGroups,
+            ].map(({ emoji, reactors }) => (
+              <TabsContent key={emoji} value={emoji}>
+                <ul className="divide-border divide-y">
+                  {reactors.map((r) => {
+                    const own = r.user_id === user?.id
+                    return (
+                      <li key={`${r.user_id}-${r.emoji}`}>
+                        {own ? (
+                          // Your own: tap to take it away, as on the phone apps.
+                          <button
+                            type="button"
+                            className="hover:bg-accent/60 flex min-h-11 w-full items-center gap-3 rounded-lg px-2 text-left text-sm transition-colors duration-150"
+                            onClick={() =>
+                              react.mutate(
+                                {
+                                  messageId: message.id,
+                                  emoji: r.emoji as ReactionEmoji,
+                                  on: false,
+                                },
+                                { onError: () => toast.error(t('chat.reactionFailed')) },
+                              )
+                            }
+                          >
+                            <span className="min-w-0 flex-1">
+                              <span className="block font-medium">{t('chat.you')}</span>
+                              <span className="text-muted-foreground block text-xs">
+                                {t('chat.removeReactionHint')}
+                              </span>
+                            </span>
+                            <span aria-hidden="true" className="text-xl">
+                              {r.emoji}
+                            </span>
+                          </button>
+                        ) : (
+                          <div className="flex min-h-11 items-center gap-3 px-2 text-sm">
+                            <span className="min-w-0 flex-1 truncate">
+                              {personName(r.reactor, t)}
+                            </span>
+                            <span aria-hidden="true" className="text-xl">
+                              {r.emoji}
+                            </span>
+                          </div>
+                        )}
+                      </li>
+                    )
+                  })}
+                </ul>
+              </TabsContent>
+            ))}
+          </Tabs>
         </DialogContent>
       </Dialog>
     </>
