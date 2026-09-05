@@ -164,6 +164,7 @@ Legend: P1 = Phase 1 etc. Effort: S (< half day), M (1–2 days), L (3+ days).
 
 - V2: tasks (`tasks`, recurrence, assignment, incident → task). Calendars shipped early as P4-11.
 - V3: dashboards, `brp-sync` Edge Function (needs BRP API key, service account, rate limits, webhook info).
+- shadcn message kit (decided 2026-09-05, "later"): `MessageScroller` + `Marker` from `@shadcn/react` 0.3.x to replace the hand-rolled follow/pill/New rule, and `Message`/`Bubble` for DM channels only (right-aligned own lines); gym and company channels keep rows. Worth it once threads or search need jump-to-message. Wrappers use `render` props and utilities we do not define (`scroll-fade-b`, `scrollbar-thin`, `inset-s-1/2`); button is `icon-sm`, so adapt, do not paste.
 - Chat follow-ups: threads, reactions, search, a last-message preview in the channel list (needs `chat_overview()` to carry the body), a time on hover for grouped lines.
 - Phone bottom bar: five primary tabs plus a More sheet, instead of nine entries scrolling sideways (noted in the facelift spec, P7C; needs `sheet` vendored, deferred from P7D).
 - Deferred from P7D (2026-09-04): `command`/cmdk for the chat @mention listbox and a global search palette; `progress` for checklist completion; `collapsible` for the guide category tree; `scroll-area` for the chat lists; `react-hook-form` (every form is `useState` + `MissingRequirements`, and that is fine).
