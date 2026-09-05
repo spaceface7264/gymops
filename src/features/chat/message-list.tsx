@@ -1,15 +1,11 @@
-import { ArrowDown, MessageCircle, Sparkles, Trash2 } from 'lucide-react'
+import { ArrowDown, Clock, MessageCircle, Sparkles, Trash2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ConfirmDialog, EmptyState, LoadingState, Markdown } from '@/components'
 import { Bubble, BubbleContent } from '@/components/ui/bubble'
 import { Button } from '@/components/ui/button'
 import { Marker, MarkerContent } from '@/components/ui/marker'
-import {
-  Message as MessageRowFrame,
-  MessageContent,
-  MessageHeader,
-} from '@/components/ui/message'
+import { Message as MessageRowFrame, MessageContent } from '@/components/ui/message'
 import {
   MessageScroller,
   MessageScrollerButton,
@@ -209,9 +205,11 @@ function Transcript({
 
           {days.map((day) => (
             <section key={day.key} aria-label={dayLabel(day.date)}>
-              <Marker asChild className="justify-center py-3 text-xs font-medium">
+              <Marker asChild className="justify-center py-3">
                 <h2>
-                  <MarkerContent>{dayLabel(day.date)}</MarkerContent>
+                  <MarkerContent className="bg-card rounded-full border px-3 py-1 text-xs font-medium">
+                    {dayLabel(day.date)}
+                  </MarkerContent>
                 </h2>
               </Marker>
               <ol>
@@ -349,57 +347,66 @@ function MessageRow({
     <li role="separator" aria-label={t('chat.newSince')} className="my-3">
       <Marker
         variant="separator"
-        className="text-tone-new-fg before:bg-tone-new-dot after:bg-tone-new-dot text-xs font-semibold"
+        className="before:bg-tone-new-dot after:bg-tone-new-dot"
       >
-        <MarkerContent>{t('chat.newSince')}</MarkerContent>
+        <MarkerContent className="bg-tone-new-bg text-tone-new-fg rounded-full px-3 py-1 text-xs font-semibold">
+          {t('chat.newSince')}
+        </MarkerContent>
       </Marker>
     </li>
   )
 
   // The reader's own lines on the right in the tint, everybody else's on the
-  // left in white with a name. A line that names the reader says so beside
-  // the time: that is the one place in the stream the accent is spent.
+  // left in white. As on the phone apps staff already use: the name sits
+  // inside the bubble at the top (only on the first of a run, only for
+  // somebody else), the time bottom-right inside it, a clock while it goes
+  // up, and the first bubble of a run has a squarer corner on its side.
+  const stamp = (
+    <span className="text-muted-foreground flex shrink-0 items-center gap-1 self-end text-[11px] leading-none tabular-nums">
+      {namesMe && <span className="sr-only">{t('chat.mentionsYou')}. </span>}
+      {message.pending ? (
+        <Clock className="size-3" aria-label={t('chat.sending')} />
+      ) : (
+        <time dateTime={message.created_at}>{when}</time>
+      )}
+    </span>
+  )
+
   return (
     <>
       {newRule}
       <li
-        className={cn('group', continued ? 'mt-1' : 'mt-3')}
+        className={cn('group', continued ? 'mt-0.5' : 'mt-2')}
         aria-busy={message.pending || undefined}
       >
         <MessageScrollerItem messageId={message.id}>
           <MessageRowFrame align={mine ? 'end' : 'start'}>
-            <MessageContent className="gap-1">
-              {!continued && (
-                <MessageHeader className="gap-2">
-                  {!mine && (
-                    <span className="text-foreground flex items-center gap-1 font-semibold">
-                      {message.from_assistant && (
-                        <Sparkles className="size-3.5" aria-hidden="true" />
-                      )}
-                      {author}
-                    </span>
-                  )}
-                  <time dateTime={message.created_at}>{when}</time>
-                  {namesMe && (
-                    <span className="text-accent-foreground">
-                      {t('chat.mentionsYou')}
-                    </span>
-                  )}
-                </MessageHeader>
-              )}
-              {continued && (
-                <span className="sr-only">
-                  <time dateTime={message.created_at}>{when}</time>
-                  {namesMe && ` ${t('chat.mentionsYou')}`}
-                </span>
-              )}
+            <MessageContent>
               <div className={cn('flex items-end gap-1', mine && 'flex-row-reverse')}>
                 <Bubble
                   variant={mine ? 'tinted' : 'outline'}
                   align={mine ? 'end' : 'start'}
-                  className={cn(message.pending && 'opacity-60')}
+                  className={cn(message.pending && 'opacity-70')}
                 >
-                  <BubbleContent>{body}</BubbleContent>
+                  <BubbleContent
+                    className={cn(
+                      'py-1.5',
+                      !continued && (mine ? 'rounded-tr-md' : 'rounded-tl-md'),
+                    )}
+                  >
+                    {!continued && !mine && (
+                      <span className="text-accent-foreground mb-0.5 flex items-center gap-1 text-xs font-semibold">
+                        {message.from_assistant && (
+                          <Sparkles className="size-3" aria-hidden="true" />
+                        )}
+                        {author}
+                      </span>
+                    )}
+                    <div className="flex flex-wrap items-end justify-end gap-x-2">
+                      <div className="min-w-0 flex-1">{body}</div>
+                      {stamp}
+                    </div>
+                  </BubbleContent>
                 </Bubble>
                 {deleteButton}
               </div>
