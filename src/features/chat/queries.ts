@@ -31,6 +31,33 @@ export type ChannelActivity = {
   muted: boolean
 }
 
+/** The four reactions a line can take (P6C-18); the database checks the same set. */
+export const reactionEmojis = ['👍', '✅', '👀', '❤️'] as const
+export type ReactionEmoji = (typeof reactionEmojis)[number]
+
+/** One person's one reaction on a line, with the name to list. */
+export type Reaction = {
+  emoji: string
+  user_id: string
+  reactor: { full_name: string | null; email: string } | null
+}
+
+/** The line a reply quotes (P6C-17): enough to show the quote and jump to it. */
+export type QuotedMessage = Pick<
+  MessageRow,
+  'id' | 'body' | 'deleted_at' | 'created_by' | 'from_assistant'
+> & {
+  author: { full_name: string | null; email: string } | null
+}
+
+/** What a send carries; a failed line keeps it to go again. */
+export type Outgoing = {
+  body: string
+  mentions?: string[]
+  files?: File[]
+  replyTo?: QuotedMessage | null
+}
+
 /** A message with the name to put above it. */
 export type Message = Pick<
   MessageRow,
@@ -43,13 +70,16 @@ export type Message = Pick<
   | 'deleted_at'
   | 'created_by'
   | 'from_assistant'
+  | 'reply_to'
 > & {
   author: { full_name: string | null; email: string } | null
+  quoted: QuotedMessage | null
   message_attachments: ChatAttachment[]
+  message_reactions: Reaction[]
   /** Not in the channel yet: the sender's own line while it goes up (P6C-10). */
   pending?: boolean
   /** The channel refused it (or the network did); what to send again. */
-  failed?: { body: string; mentions: string[]; files: File[] }
+  failed?: Outgoing
 }
 
 export type ChatAttachment = {
@@ -91,7 +121,7 @@ export const messagePageSize = 30
 // One literal, however long: supabase-js infers the row type from the string
 // itself, and a concatenated one infers nothing.
 const messageColumns =
-  'id, channel_id, body, mentions, created_at, edited_at, deleted_at, created_by, from_assistant, author:created_by(full_name, email), message_attachments(id, path, file_name, mime_type, size_bytes)'
+  'id, channel_id, body, mentions, created_at, edited_at, deleted_at, created_by, from_assistant, reply_to, author:created_by(full_name, email), quoted:reply_to(id, body, deleted_at, created_by, from_assistant, author:created_by(full_name, email)), message_attachments(id, path, file_name, mime_type, size_bytes), message_reactions(emoji, user_id, reactor:user_id(full_name, email))'
 
 /**
  * The channels this person is *in*, not every channel they may read: a gym
@@ -580,7 +610,7 @@ export function useSendMessage(channelId: string) {
     // The line goes into the list at once, marked pending, so the sender sees
     // it where it will be rather than a spinner beside an empty box. The
     // refetch on success replaces it with the row as the database has it.
-    onMutate: ({ body, mentions = [], files = [] }) => {
+    onMutate: ({ body, mentions = [], files = [], replyTo = null }) => {
       const key = chatKeys.messages(channelId)
       const previous = queryClient.getQueryData<InfiniteData<Message[]>>(key)
       const pending: Message = {
@@ -593,7 +623,10 @@ export function useSendMessage(channelId: string) {
         deleted_at: null,
         created_by: user?.id ?? null,
         from_assistant: false,
+        reply_to: replyTo?.id ?? null,
+        quoted: replyTo,
         author: { full_name: profile?.full_name ?? null, email: user?.email ?? '' },
+        message_reactions: [],
         message_attachments: files.map((file, index) => ({
           id: `pending-${index}`,
           path: '',
@@ -634,6 +667,7 @@ export function useSendMessage(channelId: string) {
                         body: variables.body,
                         mentions: variables.mentions ?? [],
                         files: variables.files ?? [],
+                        replyTo: variables.replyTo ?? null,
                       },
                     }
                   : message,
@@ -646,11 +680,8 @@ export function useSendMessage(channelId: string) {
       body,
       mentions = [],
       files = [],
-    }: {
-      body: string
-      mentions?: string[]
-      files?: File[]
-    }): Promise<string> => {
+      replyTo = null,
+    }: Outgoing): Promise<string> => {
       const uploaded: { path: string; file: File }[] = []
       for (const file of files) {
         const path = chatAttachmentPath(channelId, file.name)
@@ -663,7 +694,7 @@ export function useSendMessage(channelId: string) {
 
       const { data, error } = await supabase
         .from('messages')
-        .insert({ channel_id: channelId, body, mentions })
+        .insert({ channel_id: channelId, body, mentions, reply_to: replyTo?.id ?? null })
         .select('id')
         .single()
 
@@ -689,6 +720,80 @@ export function useSendMessage(channelId: string) {
       void queryClient.invalidateQueries({ queryKey: chatKeys.messages(channelId) })
       void queryClient.invalidateQueries({ queryKey: chatKeys.overview })
     },
+  })
+}
+
+/**
+ * A reaction, added or taken away, shown at once and put back if the channel
+ * refuses it. The row is the person's own, so it is a plain insert or delete;
+ * nothing is ever edited.
+ */
+export function useToggleReaction(channelId: string) {
+  const queryClient = useQueryClient()
+  const { user } = useAuth()
+  const { data: profile } = useProfile()
+  const key = chatKeys.messages(channelId)
+
+  return useMutation({
+    onMutate: ({
+      messageId,
+      emoji,
+      on,
+    }: {
+      messageId: string
+      emoji: ReactionEmoji
+      on: boolean
+    }) => {
+      const previous = queryClient.getQueryData<InfiniteData<Message[]>>(key)
+      const mine: Reaction = {
+        emoji,
+        user_id: user?.id ?? '',
+        reactor: { full_name: profile?.full_name ?? null, email: user?.email ?? '' },
+      }
+      const without = (reactions: Reaction[]) =>
+        reactions.filter((r) => !(r.user_id === mine.user_id && r.emoji === emoji))
+      queryClient.setQueryData<InfiniteData<Message[]>>(
+        key,
+        (current) =>
+          current && {
+            ...current,
+            pages: current.pages.map((page) =>
+              page.map((message) =>
+                message.id === messageId
+                  ? {
+                      ...message,
+                      message_reactions: on
+                        ? [...without(message.message_reactions), mine]
+                        : without(message.message_reactions),
+                    }
+                  : message,
+              ),
+            ),
+          },
+      )
+      return { previous }
+    },
+    mutationFn: async ({ messageId, emoji, on }) => {
+      if (!user) throw new Error('not signed in')
+      if (on) {
+        const { error } = await supabase
+          .from('message_reactions')
+          .insert({ message_id: messageId, channel_id: channelId, emoji })
+        if (error) throw error
+      } else {
+        const { error } = await supabase
+          .from('message_reactions')
+          .delete()
+          .eq('message_id', messageId)
+          .eq('user_id', user.id)
+          .eq('emoji', emoji)
+        if (error) throw error
+      }
+    },
+    onError: (_error, _variables, context) => {
+      if (context?.previous) queryClient.setQueryData(key, context.previous)
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: key }),
   })
 }
 

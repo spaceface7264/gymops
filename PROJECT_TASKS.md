@@ -169,6 +169,9 @@ Legend: P1 = Phase 1 etc. Effort: S (< half day), M (1–2 days), L (3+ days).
 | P6C-14 | WhatsApp bubble layout: name and time inside the bubble, clock while sending, chip markers                                              | P6C-13     | XS     |
 | P6C-15 | Bubble critique: own surface on the `new` tint, 15 px body, icon jump button with unread badge, names in text colour + `highlight` bubble for mentions, sr-only author, tap-to-reveal Delete | P6C-14     | S      |
 | P6C-16 | Round four: one header on a phone conversation, jump gutter + honest badge, failed line in the stream with Try again, violet New chip + `--bubble-own`, link labels, 60ch bubble cap | P6C-15     | S      |
+| P6C-17 | Reply as a quote: `messages.reply_to` (same channel, pinned), quote block in the bubble, "Replying to" strip, jump with older-page fetch, `chat_reply` notification | P6C-16     | M      |
+| P6C-18 | Reactions: `message_reactions` (four emoji, own rows only, channel pinned, live), count chip on the bubble, names dialog, `chat_reaction` notification deduped 5 min | P6C-16     | M      |
+| P6C-19 | Copy to clipboard, and one `…` menu on every line (Reply, four reactions, Copy, Delete when allowed)                                     | P6C-17     | S      |
 | P6C-05 | Copy and a11y: "Join a channel", "Conversations", DA `Annuller`/`Haller`, `Intl.ListFormat` for the typing line, combobox ARIA on the box, socket status line | P6C-03     | S      |
 
 ## Later (not scheduled)

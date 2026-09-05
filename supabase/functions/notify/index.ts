@@ -36,6 +36,8 @@ const HEADINGS: Record<Locale, Record<NotificationType, string>> = {
     invite: 'Invitation accepted',
     chat_mention: 'You were mentioned',
     chat_dm: 'New message',
+    chat_reply: 'Reply to your message',
+    chat_reaction: 'Reaction to your message',
   },
   da: {
     incident_reported: 'Ny hændelse',
@@ -44,6 +46,8 @@ const HEADINGS: Record<Locale, Record<NotificationType, string>> = {
     invite: 'Invitation accepteret',
     chat_mention: 'Du blev nævnt',
     chat_dm: 'Ny besked',
+    chat_reply: 'Svar på din besked',
+    chat_reaction: 'Reaktion på din besked',
   },
 }
 

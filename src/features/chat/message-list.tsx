@@ -1,13 +1,17 @@
 import {
   ArrowDown,
   Clock,
+  Copy,
   MessageCircle,
+  MoreHorizontal,
+  Reply,
   RotateCcw,
   Sparkles,
   Trash2,
 } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 import {
   ConfirmDialog,
   EmptyState,
@@ -15,8 +19,23 @@ import {
   Markdown,
   UnreadCount,
 } from '@/components'
-import { Bubble, BubbleContent } from '@/components/ui/bubble'
+import { Bubble, BubbleContent, BubbleReactions } from '@/components/ui/bubble'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Marker, MarkerContent } from '@/components/ui/marker'
 import { Message as MessageRowFrame, MessageContent } from '@/components/ui/message'
 import {
@@ -32,15 +51,19 @@ import { useAuth } from '@/features/auth'
 import { cn } from '@/lib/utils'
 import { Attachments } from './attachments'
 import {
+  reactionEmojis,
   useChannelMembers,
   useDeleteMessage,
   useForgetFailed,
   useMarkChannelRead,
   useMessages,
   useSendMessage,
+  useToggleReaction,
   type Channel,
   type Message,
+  type QuotedMessage,
 } from './queries'
+import { firstLine, personName, speakerName } from './speaker'
 
 /** Lines by the same person this close together share one name and time. */
 const groupMinutes = 5
@@ -70,9 +93,12 @@ const speaker = (message: Message) =>
 export function MessageList({
   channel,
   canModerate,
+  onReply,
 }: {
   channel: Channel
   canModerate: boolean
+  /** Somebody chose to answer this line; the composer takes it from here. */
+  onReply: (quoted: QuotedMessage) => void
 }) {
   return (
     <MessageScrollerProvider
@@ -80,7 +106,7 @@ export function MessageList({
       defaultScrollPosition="end"
       scrollEdgeThreshold={followPx}
     >
-      <Transcript channel={channel} canModerate={canModerate} />
+      <Transcript channel={channel} canModerate={canModerate} onReply={onReply} />
     </MessageScrollerProvider>
   )
 }
@@ -88,9 +114,11 @@ export function MessageList({
 function Transcript({
   channel,
   canModerate,
+  onReply,
 }: {
   channel: Channel
   canModerate: boolean
+  onReply: (quoted: QuotedMessage) => void
 }) {
   const { t, i18n } = useTranslation()
   const { user } = useAuth()
@@ -191,6 +219,30 @@ function Transcript({
     }
     if (newestMine) scrollToEnd()
   }, [newestId, newestMine, firstUnread, scrollToEnd, scrollToMessage])
+
+  // Going to a quoted line. The scroller says whether it found it; when it did
+  // not, the line is on a page not loaded yet, so older pages are fetched and
+  // the jump tried again once they have rendered, a few times at most.
+  const jump = useRef<{ id: string; tried: number } | null>(null)
+  const tryJump = useCallback(() => {
+    const target = jump.current
+    if (!target) return
+    if (scrollToMessage(target.id, { align: 'nearest', scrollMargin: 48 })) {
+      jump.current = null
+      return
+    }
+    if (messages.isFetchingNextPage) return
+    if (messages.hasNextPage && target.tried < 5) {
+      target.tried += 1
+      void messages.fetchNextPage()
+      return
+    }
+    jump.current = null
+    toast.info(t('chat.quotedNotLoaded'))
+  }, [messages, scrollToMessage, t])
+  useEffect(() => {
+    tryJump()
+  }, [rows.length, tryJump])
 
   // Having a channel open is reading it — including whatever arrives while it
   // is open, which is why this follows the newest message and not just the
@@ -293,6 +345,11 @@ function Transcript({
                       continued={continued}
                       unreadFrom={message.id === firstUnread}
                       canModerate={canModerate}
+                      onReply={onReply}
+                      onJump={(id) => {
+                        jump.current = { id, tried: 0 }
+                        tryJump()
+                      }}
                     />
                   )
                 })}
@@ -324,6 +381,8 @@ function MessageRow({
   continued,
   unreadFrom,
   canModerate,
+  onReply,
+  onJump,
 }: {
   channelId: string
   message: Message
@@ -334,33 +393,60 @@ function MessageRow({
   /** The first line said since this person last read. */
   unreadFrom: boolean
   canModerate: boolean
+  onReply: (quoted: QuotedMessage) => void
+  onJump: (id: string) => void
 }) {
   const { t, i18n } = useTranslation()
   const { user } = useAuth()
   const [confirmingDelete, setConfirmingDelete] = useState(false)
-  // On a phone the trash can is hidden until the bubble is tapped: a thumb
-  // has no hover, and a 44 px destructive target beside every own line was
-  // the loudest thing on the screen.
+  const [showingReactions, setShowingReactions] = useState(false)
+  // On a phone the menu is hidden until the bubble is tapped: a thumb has no
+  // hover, and a 44 px control beside every line was the loudest thing on
+  // the screen.
   const [revealed, setRevealed] = useState(false)
+  // Reply hands the focus to the box; the menu must not take it back to its
+  // trigger as it closes.
+  const handedOff = useRef(false)
 
   const remove = useDeleteMessage(channelId)
   const resend = useSendMessage(channelId)
   const forgetFailed = useForgetFailed(channelId)
+  const react = useToggleReaction(channelId)
 
   const mine = message.created_by === user?.id
-  const author = message.from_assistant
-    ? t('chat.assistant')
-    : mine
-      ? t('chat.you')
-      : message.author?.full_name?.trim() || message.author?.email || t('chat.someone')
+  const author = speakerName(message, user?.id, t)
   const when = new Date(message.created_at).toLocaleTimeString(i18n.language, {
     hour: '2-digit',
     minute: '2-digit',
     hourCycle: 'h23',
   })
   const namesMe = Boolean(user && message.mentions.includes(user.id))
-  const canDelete =
-    !message.deleted_at && !message.pending && !message.failed && (mine || canModerate)
+  // Nothing to answer, copy or react to on a line that is gone or not yet
+  // there; the failed line has its own Try again.
+  const hasMenu = !message.deleted_at && !message.pending && !message.failed
+  const canDelete = hasMenu && (mine || canModerate)
+
+  const copy = () => {
+    if (!navigator.clipboard) {
+      toast.error(t('chat.copyFailed'))
+      return
+    }
+    navigator.clipboard.writeText(message.body).then(
+      () => toast.success(t('chat.copied')),
+      () => toast.error(t('chat.copyFailed')),
+    )
+  }
+
+  const reactedByMe = (emoji: string) =>
+    message.message_reactions.some((r) => r.user_id === user?.id && r.emoji === emoji)
+
+  // The four, in a fixed order, with who is behind each count.
+  const reactionGroups = reactionEmojis
+    .map((emoji) => ({
+      emoji,
+      reactors: message.message_reactions.filter((r) => r.emoji === emoji),
+    }))
+    .filter((group) => group.reactors.length > 0)
 
   const body = message.deleted_at ? (
     <p className="text-muted-foreground text-sm italic">{t('chat.deletedMessage')}</p>
@@ -384,22 +470,168 @@ function MessageRow({
     </>
   )
 
-  const deleteButton = canDelete && (
-    <Button
-      variant="ghost"
-      size="icon"
-      aria-label={t('chat.delete')}
-      onClick={() => setConfirmingDelete(true)}
-      className={cn(
-        'text-muted-foreground hover:text-destructive self-center',
-        // Hidden and untouchable until the line is tapped, hovered or
-        // focused; an invisible target is still a target.
-        'pointer-events-none opacity-0 group-focus-within:pointer-events-auto group-focus-within:opacity-100 md:group-hover:pointer-events-auto md:group-hover:opacity-100',
-        revealed && 'pointer-events-auto opacity-100',
-      )}
+  // One menu per line: what everybody may do (answer, react, copy), then
+  // what this person may take away. Hidden and untouchable until the line is
+  // tapped, hovered or focused; kept up while open, because Radix moves the
+  // focus into the portal.
+  const menu = hasMenu && (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={t('chat.messageMenu')}
+          className={cn(
+            'text-muted-foreground self-center',
+            'pointer-events-none opacity-0 group-focus-within:pointer-events-auto group-focus-within:opacity-100 md:group-hover:pointer-events-auto md:group-hover:opacity-100',
+            'data-[state=open]:pointer-events-auto data-[state=open]:opacity-100',
+            revealed && 'pointer-events-auto opacity-100',
+          )}
+        >
+          <MoreHorizontal className="size-4" aria-hidden="true" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align={mine ? 'end' : 'start'}
+        className="w-60"
+        onCloseAutoFocus={(event) => {
+          if (handedOff.current) {
+            event.preventDefault()
+            handedOff.current = false
+          }
+        }}
+      >
+        <DropdownMenuItem
+          onSelect={() => {
+            handedOff.current = true
+            onReply(message)
+          }}
+        >
+          <Reply aria-hidden="true" />
+          {t('chat.reply')}
+        </DropdownMenuItem>
+        <DropdownMenuGroup
+          aria-label={t('chat.react')}
+          className="flex justify-between px-1"
+        >
+          {reactionEmojis.map((emoji) => {
+            const on = reactedByMe(emoji)
+            return (
+              <DropdownMenuItem
+                key={emoji}
+                aria-label={t(on ? 'chat.unreact' : 'chat.reactWith', { emoji })}
+                aria-pressed={on}
+                className={cn('size-11 justify-center p-0 text-lg', on && 'bg-accent')}
+                onSelect={() =>
+                  react.mutate(
+                    { messageId: message.id, emoji, on: !on },
+                    { onError: () => toast.error(t('chat.reactionFailed')) },
+                  )
+                }
+              >
+                <span aria-hidden="true">{emoji}</span>
+              </DropdownMenuItem>
+            )
+          })}
+        </DropdownMenuGroup>
+        <DropdownMenuItem onSelect={copy}>
+          <Copy aria-hidden="true" />
+          {t('chat.copy')}
+        </DropdownMenuItem>
+        {canDelete && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              variant="destructive"
+              onSelect={() => setConfirmingDelete(true)}
+            >
+              <Trash2 aria-hidden="true" />
+              {t('chat.delete')}
+            </DropdownMenuItem>
+          </>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+
+  // Who reacted, per emoji: a count on the bubble's edge, the names on tap.
+  const reactions = !message.deleted_at && reactionGroups.length > 0 && (
+    <>
+      <BubbleReactions
+        side="bottom"
+        align={mine ? 'end' : 'start'}
+        onClick={(event) => event.stopPropagation()}
+      >
+        {reactionGroups.map(({ emoji, reactors }) => (
+          <button
+            type="button"
+            key={emoji}
+            aria-label={t('chat.reactedWith', { count: reactors.length, emoji })}
+            aria-pressed={reactedByMe(emoji)}
+            className={cn(
+              'flex h-11 min-w-11 items-center gap-1 rounded-full px-2 text-sm tabular-nums transition-colors duration-150',
+              reactedByMe(emoji) && 'bg-accent font-medium',
+            )}
+            onClick={() => setShowingReactions(true)}
+          >
+            <span aria-hidden="true">{emoji}</span>
+            {reactors.length}
+          </button>
+        ))}
+      </BubbleReactions>
+      <Dialog open={showingReactions} onOpenChange={setShowingReactions}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('chat.reactions')}</DialogTitle>
+            <DialogDescription>{t('chat.reactionsHint')}</DialogDescription>
+          </DialogHeader>
+          {reactionGroups.map(({ emoji, reactors }) => (
+            <section
+              key={emoji}
+              aria-label={t('chat.reactedWith', { count: reactors.length, emoji })}
+            >
+              <h3 className="text-sm font-semibold">
+                <span aria-hidden="true">{emoji}</span> {reactors.length}
+              </h3>
+              <ul className="text-muted-foreground text-sm">
+                {reactors.map((r) => (
+                  <li key={r.user_id}>
+                    {r.user_id === user?.id ? t('chat.you') : personName(r.reactor, t)}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
+        </DialogContent>
+      </Dialog>
+    </>
+  )
+
+  // The line this one answers, above the words; tapping it goes there.
+  const quote = message.quoted && (
+    <button
+      type="button"
+      aria-label={t('chat.jumpToQuoted')}
+      className="bg-foreground/5 hover:bg-foreground/10 mb-1 flex min-h-11 w-full flex-col justify-center rounded-lg px-2.5 py-1 text-left transition-colors duration-150"
+      onClick={(event) => {
+        event.stopPropagation()
+        if (message.quoted) onJump(message.quoted.id)
+      }}
     >
-      <Trash2 className="size-4" aria-hidden="true" />
-    </Button>
+      <span className="text-accent-foreground text-xs font-semibold">
+        {speakerName(message.quoted, user?.id, t)}
+      </span>
+      <span
+        className={cn(
+          'truncate text-sm',
+          message.quoted.deleted_at && 'text-muted-foreground italic',
+        )}
+      >
+        {message.quoted.deleted_at
+          ? t('chat.deletedMessage')
+          : firstLine(message.quoted.body)}
+      </span>
+    </button>
   )
 
   const confirm = (
@@ -477,7 +709,12 @@ function MessageRow({
     <>
       {newRule}
       <li
-        className={cn('group', continued ? 'mt-0.5' : 'mt-2')}
+        className={cn(
+          'group',
+          continued ? 'mt-0.5' : 'mt-2',
+          // Room for the reactions chip, which hangs off the bubble's edge.
+          reactions && 'pb-5',
+        )}
         aria-busy={message.pending || undefined}
       >
         <MessageScrollerItem messageId={message.id}>
@@ -488,7 +725,7 @@ function MessageRow({
                   variant={mine ? 'tinted' : namesMe ? 'highlight' : 'outline'}
                   align={mine ? 'end' : 'start'}
                   className={cn(message.pending && 'opacity-70')}
-                  onClick={canDelete ? () => setRevealed((open) => !open) : undefined}
+                  onClick={hasMenu ? () => setRevealed((open) => !open) : undefined}
                 >
                   <BubbleContent
                     className={cn(
@@ -496,6 +733,7 @@ function MessageRow({
                       !continued && (mine ? 'rounded-tr-md' : 'rounded-tl-md'),
                     )}
                   >
+                    {quote}
                     {/* Somebody else's name opens the first bubble of their
                         run, in the text colour: the accent is kept for the
                         line that is for the reader. Own and continued lines
@@ -520,8 +758,9 @@ function MessageRow({
                       {stamp}
                     </div>
                   </BubbleContent>
+                  {reactions}
                 </Bubble>
-                {deleteButton}
+                {menu}
                 {retryButton}
               </div>
             </MessageContent>

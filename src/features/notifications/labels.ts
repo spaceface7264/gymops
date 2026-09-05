@@ -3,6 +3,8 @@ import {
   BellRing,
   CheckCheck,
   MessageCircle,
+  Reply,
+  SmilePlus,
   TriangleAlert,
   UserPlus,
   type LucideIcon,
@@ -22,4 +24,6 @@ export const notificationIcons: Record<NotificationType, LucideIcon> = {
   invite: UserPlus,
   chat_mention: AtSign,
   chat_dm: MessageCircle,
+  chat_reply: Reply,
+  chat_reaction: SmilePlus,
 }
