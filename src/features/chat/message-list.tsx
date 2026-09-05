@@ -853,6 +853,8 @@ function MessageRow({
                       className={cn(
                         'mb-0.5 flex items-center gap-1 text-xs font-semibold',
                         (continued || mine) && 'sr-only',
+                        // Room for the chevron beside the name.
+                        hasMenu && !continued && !mine && 'pr-7',
                       )}
                     >
                       {message.from_assistant && (
@@ -864,7 +866,14 @@ function MessageRow({
                         own baseline, whether it shares the last line or drops
                         under a long one, instead of on the bottom of a line
                         box that carries leading below the letters. */}
-                    <div className="flex flex-wrap items-baseline-last justify-end gap-x-3">
+                    <div
+                      className={cn(
+                        'flex flex-wrap items-baseline-last justify-end gap-x-3',
+                        // No name row to hold the chevron: keep the first
+                        // line and the time clear of it.
+                        hasMenu && (continued || mine) && 'pr-7',
+                      )}
+                    >
                       <div className="min-w-0 flex-1">{body}</div>
                       {stamp}
                     </div>
