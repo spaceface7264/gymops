@@ -14,24 +14,39 @@ import { Fragment, type ReactNode } from 'react'
 const pattern =
   /(\*\*[^*\n]+\*\*)|(\*[^*\n]+\*)|(`[^`\n]+`)|(https?:\/\/[^\s<]+[^\s<.,:;"')\]])/g
 
-export function Markdown({ body }: { body: string }) {
+const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+/**
+ * @param mentions the names this text addresses, as `@Name` appears in it;
+ *   each is set in the accent so the person named can find their line. Only
+ *   names the caller resolved count: an @ typed at random stays plain text.
+ */
+export function Markdown({ body, mentions = [] }: { body: string; mentions?: string[] }) {
+  const tokens =
+    mentions.length === 0
+      ? pattern
+      : new RegExp(
+          `${pattern.source}|(@(?:${mentions.map(escape).join('|')}))(?![\\p{L}\\p{N}])`,
+          'gu',
+        )
+
   return (
     <p className="break-words whitespace-pre-wrap">
       {body.split('\n').map((line, index) => (
         <Fragment key={index}>
           {index > 0 && '\n'}
-          {renderLine(line)}
+          {renderLine(line, tokens)}
         </Fragment>
       ))}
     </p>
   )
 }
 
-function renderLine(line: string): ReactNode[] {
+function renderLine(line: string, tokens: RegExp): ReactNode[] {
   const nodes: ReactNode[] = []
   let last = 0
 
-  for (const match of line.matchAll(pattern)) {
+  for (const match of line.matchAll(tokens)) {
     const [token] = match
     const at = match.index
 
@@ -45,6 +60,8 @@ function renderLine(line: string): ReactNode[] {
 }
 
 function Token({ token }: { token: string }) {
+  if (token.startsWith('@'))
+    return <span className="text-accent-foreground font-medium">{token}</span>
   if (token.startsWith('**')) return <strong>{token.slice(2, -2)}</strong>
   if (token.startsWith('*')) return <em>{token.slice(1, -1)}</em>
   if (token.startsWith('`'))

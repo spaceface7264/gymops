@@ -3,8 +3,9 @@ import {
   useMutation,
   useQuery,
   useQueryClient,
+  type InfiniteData,
 } from '@tanstack/react-query'
-import { useAuth } from '@/features/auth'
+import { useAuth, useProfile } from '@/features/auth'
 import type { Database } from '@/lib/database.types'
 import { supabase } from '@/lib/supabase'
 
@@ -45,11 +46,14 @@ export type Message = Pick<
 > & {
   author: { full_name: string | null; email: string } | null
   message_attachments: ChatAttachment[]
+  /** Not in the channel yet: the sender's own line while it goes up (P6C-10). */
+  pending?: boolean
 }
 
 export type ChatAttachment = {
   id: string
   path: string
+  file_name: string | null
   mime_type: string | null
   size_bytes: number | null
 }
@@ -85,7 +89,7 @@ export const messagePageSize = 30
 // One literal, however long: supabase-js infers the row type from the string
 // itself, and a concatenated one infers nothing.
 const messageColumns =
-  'id, channel_id, body, mentions, created_at, edited_at, deleted_at, created_by, from_assistant, author:created_by(full_name, email), message_attachments(id, path, mime_type, size_bytes)'
+  'id, channel_id, body, mentions, created_at, edited_at, deleted_at, created_by, from_assistant, author:created_by(full_name, email), message_attachments(id, path, file_name, mime_type, size_bytes)'
 
 /**
  * The channels this person is *in*, not every channel they may read: a gym
@@ -567,8 +571,50 @@ export function chatAttachmentPath(channelId: string, fileName: string): string 
  */
 export function useSendMessage(channelId: string) {
   const queryClient = useQueryClient()
+  const { user } = useAuth()
+  const { data: profile } = useProfile()
 
   return useMutation({
+    // The line goes into the list at once, marked pending, so the sender sees
+    // it where it will be rather than a spinner beside an empty box. The
+    // refetch on success replaces it with the row as the database has it.
+    onMutate: ({ body, mentions = [], files = [] }) => {
+      const key = chatKeys.messages(channelId)
+      const previous = queryClient.getQueryData<InfiniteData<Message[]>>(key)
+      const pending: Message = {
+        id: `pending-${crypto.randomUUID()}`,
+        channel_id: channelId,
+        body,
+        mentions,
+        created_at: new Date().toISOString(),
+        edited_at: null,
+        deleted_at: null,
+        created_by: user?.id ?? null,
+        from_assistant: false,
+        author: { full_name: profile?.full_name ?? null, email: user?.email ?? '' },
+        message_attachments: files.map((file, index) => ({
+          id: `pending-${index}`,
+          path: '',
+          file_name: file.name,
+          mime_type: file.type,
+          size_bytes: file.size,
+        })),
+        pending: true,
+      }
+      if (previous)
+        queryClient.setQueryData<InfiniteData<Message[]>>(key, {
+          ...previous,
+          // Pages are newest-first, and the newest line is the first of the first.
+          pages: previous.pages.map((page, index) =>
+            index === 0 ? [pending, ...page] : page,
+          ),
+        })
+      return { previous }
+    },
+    onError: (_error, _variables, context) => {
+      if (context?.previous)
+        queryClient.setQueryData(chatKeys.messages(channelId), context.previous)
+    },
     mutationFn: async ({
       body,
       mentions = [],
@@ -601,6 +647,7 @@ export function useSendMessage(channelId: string) {
           uploaded.map(({ path, file }) => ({
             message_id: data.id,
             path,
+            file_name: file.name,
             mime_type: file.type,
             size_bytes: file.size,
           })),

@@ -1,5 +1,5 @@
 import { Loader2, Paperclip, Send, X } from 'lucide-react'
-import { useId, useRef, useState, type KeyboardEvent } from 'react'
+import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -53,6 +53,30 @@ const assistant: ChannelMember = {
 }
 const isAssistant = (member: ChannelMember) => member === assistant
 
+/**
+ * The picture itself for an image about to go, so a photo of the wrong wall
+ * is caught before the whole gym sees it; a paperclip for anything else.
+ */
+function Thumbnail({ file }: { file: File }) {
+  // Keyed by the file in the list above, so one URL per chip for its life.
+  const [url] = useState(() =>
+    file.type.startsWith('image/') ? URL.createObjectURL(file) : null,
+  )
+
+  useEffect(() => {
+    if (!url) return
+    return () => URL.revokeObjectURL(url)
+  }, [url])
+
+  if (!url)
+    return (
+      <span className="flex size-8 items-center justify-center">
+        <Paperclip className="size-4" aria-hidden="true" />
+      </span>
+    )
+  return <img src={url} alt="" className="size-8 rounded-full object-cover" />
+}
+
 /** The partial @name immediately before the caret, if there is one. */
 function mentionQuery(text: string, caret: number): string | null {
   const match = /@([\p{L}\p{N}_.-]*)$/u.exec(text.slice(0, caret))
@@ -93,6 +117,9 @@ export function Composer({
   const members = useChannelMembers([channelId])
 
   const [body, setBody] = useState(() => drafts.get(channelId))
+  // The people picked from the list. A name typed by hand is a string; only
+  // a pick is a person, and only a pick still named in the text is sent.
+  const [picked, setPicked] = useState<ChannelMember[]>([])
   const [files, setFiles] = useState<File[]>([])
   const [tooBig, setTooBig] = useState<string | null>(null)
   const [query, setQuery] = useState<string | null>(null)
@@ -132,6 +159,12 @@ export function Composer({
     setBody(next)
     drafts.set(channelId, next)
     setQuery(null)
+    if (!isAssistant(member))
+      setPicked((already) =>
+        already.some((one) => one.user_id === member.user_id)
+          ? already
+          : [...already, member],
+      )
     box.current?.focus()
   }
 
@@ -141,10 +174,9 @@ export function Composer({
     const text = body.trim()
     if (!canSend || send.isPending) return
 
-    // A name in the text is a string; a mention is a person. Only the people
-    // still named in what is actually being sent are carried (P6-08 notifies
-    // them), and only the ones who are in this channel.
-    const mentions = others
+    // Only the people picked and still named in what is actually being sent
+    // are carried (P6-08 notifies them).
+    const mentions = picked
       .filter((member) => text.includes(`@${memberName(member)}`))
       .map((member) => member.user_id)
 
@@ -152,8 +184,15 @@ export function Composer({
       { body: text, mentions, files },
       {
         onSuccess: (messageId) => {
-          setBody('')
+          // Only what went is cleared: a line typed while this one was on
+          // its way stays in the box.
+          setBody((current) =>
+            current.trim().startsWith(text)
+              ? current.trim().slice(text.length).trimStart()
+              : current,
+          )
           setFiles([])
+          setPicked([])
           drafts.set(channelId, '')
           onSent?.(messageId, text)
         },
@@ -246,9 +285,10 @@ export function Composer({
         <ul className="flex flex-wrap gap-2 pb-2">
           {files.map((file) => (
             <li
-              key={file.name}
-              className="bg-muted flex min-h-11 items-center gap-1 rounded-full pl-3 text-sm"
+              key={`${file.name}-${file.size}-${file.lastModified}`}
+              className="bg-muted flex min-h-11 items-center gap-2 rounded-full pl-1.5 text-sm has-[img]:pl-1"
             >
+              <Thumbnail file={file} />
               <span className="max-w-48 truncate">{file.name}</span>
               <button
                 type="button"

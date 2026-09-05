@@ -158,13 +158,19 @@ Legend: P1 = Phase 1 etc. Effort: S (< half day), M (1–2 days), L (3+ days).
 | P6C-02 | Composer: Enter starts a line on touch, draft kept per channel, 10 MB cap, sending state and retry, files uploaded before the row       | P6-05      | S      |
 | P6C-03 | Stream: day headings, same-author grouping, 24-hour times, "You", the New rule, the mention tint, Edit removed, one menu per message     | P6-04      | M      |
 | P6C-04 | Header: one channel menu (members for any non-DM channel, muted, settings, leave, delete), muted mark beside the title, `BellOff` everywhere | P6-07      | S      |
+| P6C-06 | Phone bar: Chat in the first five entries (Home, Chat, Checklists, Daily log, Incidents), the rest after                                | P6C-01     | XS     |
+| P6C-07 | Mentions: only a pick from the list is a person (kept in state, not re-derived from text); `@Name` set in the accent; solid tint + "Mentions you" for the addressed line | P6C-03     | S      |
+| P6C-08 | Attachments: `file_name` column and the real name in the stream; image thumbnail in the composer chip                                  | P6-05      | S      |
+| P6C-09 | Controls: outline "Find a channel" / "New channel"; mute as a verb item with a toast; Delete as a direct icon, no one-item menu; `NativeSelect` for the scope | P6C-04     | S      |
+| P6C-10 | Sending: optimistic pending line in the stream; only the sent text is cleared from the box                                             | P6C-02     | S      |
+| P6C-11 | Follow state recomputed on box resize (keyboard, window), not only on scroll                                                            | P6C-01     | XS     |
+| P6C-12 | shadcn message kit: `MessageScroller` (`@shadcn/react`) as the transcript, `Marker` for day and "New" lines, `Message` + `Bubble` for DM channels only | P6C-11     | M      |
 | P6C-05 | Copy and a11y: "Join a channel", "Conversations", DA `Annuller`/`Haller`, `Intl.ListFormat` for the typing line, combobox ARIA on the box, socket status line | P6C-03     | S      |
 
 ## Later (not scheduled)
 
 - V2: tasks (`tasks`, recurrence, assignment, incident → task). Calendars shipped early as P4-11.
 - V3: dashboards, `brp-sync` Edge Function (needs BRP API key, service account, rate limits, webhook info).
-- shadcn message kit (decided 2026-09-05, "later"): `MessageScroller` + `Marker` from `@shadcn/react` 0.3.x to replace the hand-rolled follow/pill/New rule, and `Message`/`Bubble` for DM channels only (right-aligned own lines); gym and company channels keep rows. Worth it once threads or search need jump-to-message. Wrappers use `render` props and utilities we do not define (`scroll-fade-b`, `scrollbar-thin`, `inset-s-1/2`); button is `icon-sm`, so adapt, do not paste.
 - Chat follow-ups: threads, reactions, search, a last-message preview in the channel list (needs `chat_overview()` to carry the body), a time on hover for grouped lines.
 - Phone bottom bar: five primary tabs plus a More sheet, instead of nine entries scrolling sideways (noted in the facelift spec, P7C; needs `sheet` vendored, deferred from P7D).
 - Deferred from P7D (2026-09-04): `command`/cmdk for the chat @mention listbox and a global search palette; `progress` for checklist completion; `collapsible` for the guide category tree; `scroll-area` for the chat lists; `react-hook-form` (every form is `useState` + `MissingRequirements`, and that is fine).

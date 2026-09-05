@@ -37,19 +37,20 @@ export type NavEntry = {
 }
 
 /**
- * The V1 modules (PROJECT_SPEC.md §2.2) in the order staff move through a
- * shift. Sections whose phase has not landed render a placeholder, so the
- * shell is navigable now and each phase swaps in its own page.
+ * The V1 modules (PROJECT_SPEC.md §2.2). The phone bar shows the first five
+ * without scrolling, so those are the ones a shift lives in: home, the people
+ * on shift, the checklist, the log, an incident. The rest follow in the order
+ * staff reach for them.
  */
 export const navEntries: NavEntry[] = [
   { to: '/', labelKey: 'nav.home', icon: House },
-  { to: '/news', labelKey: 'nav.news', icon: Newspaper },
-  { to: '/events', labelKey: 'nav.events', icon: CalendarDays },
-  { to: '/guides', labelKey: 'nav.guides', icon: BookOpen },
+  { to: '/chat', labelKey: 'nav.chat', icon: MessagesSquare },
   { to: '/checklists', labelKey: 'nav.checklists', icon: ListChecks },
   { to: '/daily-log', labelKey: 'nav.dailyLog', icon: NotebookPen },
   { to: '/incidents', labelKey: 'nav.incidents', icon: TriangleAlert },
-  { to: '/chat', labelKey: 'nav.chat', icon: MessagesSquare },
+  { to: '/news', labelKey: 'nav.news', icon: Newspaper },
+  { to: '/events', labelKey: 'nav.events', icon: CalendarDays },
+  { to: '/guides', labelKey: 'nav.guides', icon: BookOpen },
   { to: '/ask', labelKey: 'nav.ask', icon: Sparkles },
   { to: '/admin', labelKey: 'nav.admin', icon: Settings, adminOnly: true },
 ]

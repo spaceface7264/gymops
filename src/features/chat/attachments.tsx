@@ -23,7 +23,9 @@ export function Attachments({ attachments }: { attachments: ChatAttachment[] }) 
 function Attachment({ attachment }: { attachment: ChatAttachment }) {
   const { t } = useTranslation()
   const url = useSignedAttachmentUrl(attachment.path)
-  const name = attachment.path.split('/').pop() ?? attachment.path
+  // What the sender called it; older rows predate the column and fall back
+  // to the path's tail.
+  const name = attachment.file_name ?? attachment.path.split('/').pop() ?? attachment.path
   const isImage = attachment.mime_type?.startsWith('image/') ?? false
 
   if (!url.data) {
@@ -39,7 +41,7 @@ function Attachment({ attachment }: { attachment: ChatAttachment }) {
       <a href={url.data} target="_blank" rel="noreferrer noopener">
         <img
           src={url.data}
-          alt={t('chat.attachmentAlt')}
+          alt={attachment.file_name ?? t('chat.attachmentAlt')}
           className="max-h-40 rounded-xl object-cover"
         />
       </a>
