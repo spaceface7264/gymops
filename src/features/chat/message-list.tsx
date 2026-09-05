@@ -500,7 +500,7 @@ function MessageRow({
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align={mine ? 'end' : 'start'}
-        className="w-60"
+        className="w-48"
         onCloseAutoFocus={(event) => {
           if (handedOff.current) {
             event.preventDefault()
@@ -509,6 +509,7 @@ function MessageRow({
         }}
       >
         <DropdownMenuItem
+          className="md:min-h-9 md:py-1.5"
           onSelect={() => {
             handedOff.current = true
             onReply(message)
@@ -518,6 +519,7 @@ function MessageRow({
           {t('chat.reply')}
         </DropdownMenuItem>
         <DropdownMenuItem
+          className="md:min-h-9 md:py-1.5"
           onSelect={() => {
             // After this menu has closed and handed focus back.
             window.setTimeout(() => setPicking(true), 0)
@@ -526,7 +528,7 @@ function MessageRow({
           <SmilePlus aria-hidden="true" />
           {t('chat.react')}
         </DropdownMenuItem>
-        <DropdownMenuItem onSelect={copy}>
+        <DropdownMenuItem className="md:min-h-9 md:py-1.5" onSelect={copy}>
           <Copy aria-hidden="true" />
           {t('chat.copy')}
         </DropdownMenuItem>
@@ -535,6 +537,7 @@ function MessageRow({
             <DropdownMenuSeparator />
             <DropdownMenuItem
               variant="destructive"
+              className="md:min-h-9 md:py-1.5"
               onSelect={() => setConfirmingDelete(true)}
             >
               <Trash2 aria-hidden="true" />
@@ -614,14 +617,23 @@ function MessageRow({
           aria-label={`${t('chat.reactions')}: ${reactionGroups
             .map(({ emoji, reactors }) => `${emoji} ${reactors.length}`)
             .join(', ')}`}
-          className="flex h-11 min-w-11 items-center gap-1 rounded-full px-2 text-sm tabular-nums transition-colors duration-150"
+          // A 28 px pill to look at, a 44 px area to hit.
+          className="relative flex h-7 items-center gap-1 rounded-full px-2 tabular-nums transition-colors duration-150 after:absolute after:-inset-2 after:content-['']"
           onClick={() => setShowingReactions(true)}
         >
-          <span aria-hidden="true" className="tracking-tight">
-            {reactionGroups.map(({ emoji }) => emoji).join('')}
+          <span
+            aria-hidden="true"
+            className="flex items-center gap-0.5 text-base leading-none"
+          >
+            {reactionGroups.map(({ emoji }) => (
+              <span key={emoji}>{emoji}</span>
+            ))}
           </span>
           {reactionTotal > 1 && (
-            <span aria-hidden="true" className="text-muted-foreground">
+            <span
+              aria-hidden="true"
+              className="text-muted-foreground text-xs leading-none"
+            >
               {reactionTotal}
             </span>
           )}

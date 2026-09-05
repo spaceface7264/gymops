@@ -345,7 +345,9 @@ describe('the message list', () => {
   })
 
   it('cuts the day into headings, and names somebody once for lines said together', async () => {
+    // Noon, so a run just after midnight still lands the lines in today.
     const today = new Date()
+    today.setHours(12, 0, 0, 0)
     const at = (minutes: number) =>
       new Date(today.getTime() - minutes * 60_000).toISOString()
     messageRows.mockReturnValue([
