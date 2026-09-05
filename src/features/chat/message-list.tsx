@@ -394,7 +394,7 @@ function MessageRow({
   // somebody else), the time bottom-right inside it, a clock while it goes
   // up, and the first bubble of a run has a squarer corner on its side.
   const stamp = (
-    <span className="text-muted-foreground flex shrink-0 items-center gap-1 self-end text-[11px] leading-none tabular-nums">
+    <span className="text-muted-foreground inline-flex shrink-0 items-baseline gap-1 text-[11px] leading-none tabular-nums">
       {namesMe && <span className="sr-only">{t('chat.mentionsYou')}. </span>}
       {message.pending ? (
         <Clock className="size-3" aria-hidden="true" />
@@ -442,7 +442,11 @@ function MessageRow({
                       )}
                       {author}
                     </span>
-                    <div className="flex flex-wrap items-end justify-end gap-x-2">
+                    {/* Last-baseline alignment: the time sits on the text's
+                        own baseline, whether it shares the last line or drops
+                        under a long one, instead of on the bottom of a line
+                        box that carries leading below the letters. */}
+                    <div className="flex flex-wrap items-baseline-last justify-end gap-x-2">
                       <div className="min-w-0 flex-1">{body}</div>
                       {stamp}
                     </div>
