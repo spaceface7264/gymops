@@ -486,10 +486,12 @@ function MessageRow({
           type="button"
           aria-label={t('chat.messageMenu')}
           className={cn(
-            'text-muted-foreground hover:text-foreground focus-visible:ring-ring/40 absolute top-0 right-0 flex h-9 w-14 items-center justify-end rounded-tr-2xl rounded-bl-full pr-1.5 transition-[opacity,color] duration-150 outline-none focus-visible:ring-[3px]',
+            // Inside the bubble's 1 px edge, so the stroke stays; the fade is
+            // short, so the name under it stays readable.
+            'text-muted-foreground hover:text-foreground focus-visible:ring-ring/40 absolute top-px right-px flex h-8 w-11 items-center justify-end rounded-tr-[15px] rounded-bl-full pr-1.5 transition-[opacity,color] duration-150 outline-none focus-visible:ring-[3px]',
             mine
-              ? 'bg-[linear-gradient(to_right,transparent,var(--bubble-own)_45%)]'
-              : 'bg-[linear-gradient(to_right,transparent,var(--card)_45%)]',
+              ? 'bg-[linear-gradient(to_right,transparent,var(--bubble-own)_55%)]'
+              : 'bg-[linear-gradient(to_right,transparent,var(--card)_55%)]',
             'pointer-events-none opacity-0 group-focus-within:pointer-events-auto group-focus-within:opacity-100 md:group-hover:pointer-events-auto md:group-hover:opacity-100',
             'data-[state=open]:pointer-events-auto data-[state=open]:opacity-100',
             revealed && 'pointer-events-auto opacity-100',
