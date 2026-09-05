@@ -52,8 +52,9 @@ const speaker = (message: Message) =>
  *
  * The transcript follows the newest line only while the reader is at the
  * bottom; scrolled up to read, they are left where they are with a way down.
- * A gym or company channel reads as rows; a DM reads as bubbles, one side
- * each, the way the two people already talk on their phones.
+ * Every channel reads as bubbles, one side each, the way staff already talk
+ * on their phones: the side says who, so only somebody else's line carries a
+ * name.
  */
 export function MessageList({
   channel,
@@ -178,8 +179,6 @@ function Transcript({
     })
   }
 
-  const bubbles = channel.kind === 'dm'
-
   return (
     <MessageScroller className="min-h-0 flex-1">
       <MessageScrollerViewport preserveScrollOnPrepend className="px-4 pt-4 pb-3">
@@ -235,7 +234,6 @@ function Transcript({
                         .filter((name): name is string => Boolean(name))}
                       continued={continued}
                       unreadFrom={message.id === firstUnread}
-                      bubble={bubbles}
                       canModerate={canModerate}
                     />
                   )
@@ -261,7 +259,6 @@ function MessageRow({
   mentionNames,
   continued,
   unreadFrom,
-  bubble,
   canModerate,
 }: {
   channelId: string
@@ -272,8 +269,6 @@ function MessageRow({
   continued: boolean
   /** The first line said since this person last read. */
   unreadFrom: boolean
-  /** A DM: one side each, framed. */
-  bubble: boolean
   canModerate: boolean
 }) {
   const { t, i18n } = useTranslation()
@@ -325,8 +320,7 @@ function MessageRow({
       aria-label={t('chat.delete')}
       onClick={() => setConfirmingDelete(true)}
       className={cn(
-        'text-muted-foreground hover:text-destructive',
-        bubble ? 'self-center' : 'absolute top-0 right-0 -mt-2',
+        'text-muted-foreground hover:text-destructive self-center',
         // A thumb has no hover, so the phone keeps it in view; a pointer
         // finds it on the line it is over.
         'md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100',
@@ -362,93 +356,56 @@ function MessageRow({
     </li>
   )
 
-  if (bubble) {
-    // A DM: the reader's own lines on the right in the tint, the other
-    // person's on the left in white. The name is the side, so the header only
-    // carries the time (and the name when more than two are talking).
-    return (
-      <>
-        {newRule}
-        <li
-          className={cn('group', continued ? 'mt-1' : 'mt-3')}
-          aria-busy={message.pending || undefined}
-        >
-          <MessageScrollerItem messageId={message.id}>
-            <MessageRowFrame align={mine ? 'end' : 'start'}>
-              <MessageContent className="gap-1">
-                {!continued && (
-                  <MessageHeader className="gap-2">
-                    {!mine && (
-                      <span className="text-foreground font-semibold">{author}</span>
-                    )}
-                    <time dateTime={message.created_at}>{when}</time>
-                  </MessageHeader>
-                )}
-                {continued && (
-                  <time dateTime={message.created_at} className="sr-only">
-                    {when}
-                  </time>
-                )}
-                <div className={cn('flex items-end gap-1', mine && 'flex-row-reverse')}>
-                  <Bubble
-                    variant={mine ? 'tinted' : 'outline'}
-                    align={mine ? 'end' : 'start'}
-                    className={cn(message.pending && 'opacity-60')}
-                  >
-                    <BubbleContent>{body}</BubbleContent>
-                  </Bubble>
-                  {deleteButton}
-                </div>
-              </MessageContent>
-            </MessageRowFrame>
-          </MessageScrollerItem>
-          {confirm}
-        </li>
-      </>
-    )
-  }
-
+  // The reader's own lines on the right in the tint, everybody else's on the
+  // left in white with a name. A line that names the reader says so beside
+  // the time: that is the one place in the stream the accent is spent.
   return (
     <>
       {newRule}
       <li
-        className={cn(
-          'group relative',
-          continued ? 'mt-1' : 'mt-3',
-          canDelete && 'pr-12',
-          // The one line addressed to this person is the one line that may
-          // spend the accent.
-          namesMe && 'bg-accent -mx-2 rounded-xl px-2 py-1',
-          message.pending && 'text-muted-foreground',
-        )}
+        className={cn('group', continued ? 'mt-1' : 'mt-3')}
         aria-busy={message.pending || undefined}
       >
         <MessageScrollerItem messageId={message.id}>
-          {namesMe && <span className="sr-only">{t('chat.mentionsYou')}. </span>}
-          {continued ? (
-            <time dateTime={message.created_at} className="sr-only">
-              {when}
-            </time>
-          ) : (
-            <div className="flex items-baseline gap-2">
-              <span className="flex items-center gap-1 text-sm font-semibold">
-                {message.from_assistant && (
-                  <Sparkles className="size-3.5" aria-hidden="true" />
-                )}
-                {author}
-              </span>
-              <time
-                dateTime={message.created_at}
-                className="text-muted-foreground text-xs"
-              >
-                {when}
-              </time>
-            </div>
-          )}
-          {body}
+          <MessageRowFrame align={mine ? 'end' : 'start'}>
+            <MessageContent className="gap-1">
+              {!continued && (
+                <MessageHeader className="gap-2">
+                  {!mine && (
+                    <span className="text-foreground flex items-center gap-1 font-semibold">
+                      {message.from_assistant && (
+                        <Sparkles className="size-3.5" aria-hidden="true" />
+                      )}
+                      {author}
+                    </span>
+                  )}
+                  <time dateTime={message.created_at}>{when}</time>
+                  {namesMe && (
+                    <span className="text-accent-foreground">
+                      {t('chat.mentionsYou')}
+                    </span>
+                  )}
+                </MessageHeader>
+              )}
+              {continued && (
+                <span className="sr-only">
+                  <time dateTime={message.created_at}>{when}</time>
+                  {namesMe && ` ${t('chat.mentionsYou')}`}
+                </span>
+              )}
+              <div className={cn('flex items-end gap-1', mine && 'flex-row-reverse')}>
+                <Bubble
+                  variant={mine ? 'tinted' : 'outline'}
+                  align={mine ? 'end' : 'start'}
+                  className={cn(message.pending && 'opacity-60')}
+                >
+                  <BubbleContent>{body}</BubbleContent>
+                </Bubble>
+                {deleteButton}
+              </div>
+            </MessageContent>
+          </MessageRowFrame>
         </MessageScrollerItem>
-
-        {deleteButton}
         {confirm}
       </li>
     </>
