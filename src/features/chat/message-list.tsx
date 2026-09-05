@@ -1,9 +1,9 @@
 import {
   ArrowDown,
+  ChevronDown,
   Clock,
   Copy,
   MessageCircle,
-  MoreHorizontal,
   Reply,
   RotateCcw,
   Sparkles,
@@ -471,25 +471,29 @@ function MessageRow({
   )
 
   // One menu per line: what everybody may do (answer, react, copy), then
-  // what this person may take away. Hidden and untouchable until the line is
-  // tapped, hovered or focused; kept up while open, because Radix moves the
-  // focus into the portal.
+  // what this person may take away. The trigger is a chevron in the bubble's
+  // top corner over a fade of the bubble's own colour, the way the phone apps
+  // do it. Hidden and untouchable until the line is tapped, hovered or
+  // focused; kept up while open, because Radix moves the focus into the
+  // portal.
   const menu = hasMenu && (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
+        <button
+          type="button"
           aria-label={t('chat.messageMenu')}
           className={cn(
-            'text-muted-foreground self-center',
+            'text-muted-foreground hover:text-foreground focus-visible:ring-ring/40 absolute top-0 right-0 flex h-9 w-14 items-center justify-end rounded-tr-2xl rounded-bl-full pr-1.5 transition-[opacity,color] duration-150 outline-none focus-visible:ring-[3px]',
+            mine
+              ? 'bg-[linear-gradient(to_right,transparent,var(--bubble-own)_45%)]'
+              : 'bg-[linear-gradient(to_right,transparent,var(--card)_45%)]',
             'pointer-events-none opacity-0 group-focus-within:pointer-events-auto group-focus-within:opacity-100 md:group-hover:pointer-events-auto md:group-hover:opacity-100',
             'data-[state=open]:pointer-events-auto data-[state=open]:opacity-100',
             revealed && 'pointer-events-auto opacity-100',
           )}
         >
-          <MoreHorizontal className="size-4" aria-hidden="true" />
-        </Button>
+          <ChevronDown className="size-5" aria-hidden="true" />
+        </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align={mine ? 'end' : 'start'}
@@ -759,8 +763,8 @@ function MessageRow({
                     </div>
                   </BubbleContent>
                   {reactions}
+                  {menu}
                 </Bubble>
-                {menu}
                 {retryButton}
               </div>
             </MessageContent>
