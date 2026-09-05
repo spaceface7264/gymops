@@ -6,6 +6,7 @@ import {
   MessageCircle,
   Reply,
   RotateCcw,
+  SmilePlus,
   Sparkles,
   Trash2,
 } from 'lucide-react'
@@ -31,7 +32,6 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -400,6 +400,7 @@ function MessageRow({
   const { user } = useAuth()
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [showingReactions, setShowingReactions] = useState(false)
+  const [picking, setPicking] = useState(false)
   // On a phone the menu is hidden until the bubble is tapped: a thumb has no
   // hover, and a 44 px control beside every line was the loudest thing on
   // the screen.
@@ -514,30 +515,15 @@ function MessageRow({
           <Reply aria-hidden="true" />
           {t('chat.reply')}
         </DropdownMenuItem>
-        <DropdownMenuGroup
-          aria-label={t('chat.react')}
-          className="flex justify-between px-1"
+        <DropdownMenuItem
+          onSelect={() => {
+            // After this menu has closed and handed focus back.
+            window.setTimeout(() => setPicking(true), 0)
+          }}
         >
-          {reactionEmojis.map((emoji) => {
-            const on = reactedByMe(emoji)
-            return (
-              <DropdownMenuItem
-                key={emoji}
-                aria-label={t(on ? 'chat.unreact' : 'chat.reactWith', { emoji })}
-                aria-pressed={on}
-                className={cn('size-11 justify-center p-0 text-lg', on && 'bg-accent')}
-                onSelect={() =>
-                  react.mutate(
-                    { messageId: message.id, emoji, on: !on },
-                    { onError: () => toast.error(t('chat.reactionFailed')) },
-                  )
-                }
-              >
-                <span aria-hidden="true">{emoji}</span>
-              </DropdownMenuItem>
-            )
-          })}
-        </DropdownMenuGroup>
+          <SmilePlus aria-hidden="true" />
+          {t('chat.react')}
+        </DropdownMenuItem>
         <DropdownMenuItem onSelect={copy}>
           <Copy aria-hidden="true" />
           {t('chat.copy')}
@@ -554,6 +540,58 @@ function MessageRow({
             </DropdownMenuItem>
           </>
         )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+
+  // The reaction picker: a smiley beside the bubble, revealed like the
+  // chevron, that opens the four emoji in a row above it.
+  const picker = hasMenu && (
+    <DropdownMenu open={picking} onOpenChange={setPicking}>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="secondary"
+          size="icon"
+          aria-label={t('chat.react')}
+          className={cn(
+            'text-muted-foreground hover:text-foreground self-center',
+            'pointer-events-none opacity-0 group-focus-within:pointer-events-auto group-focus-within:opacity-100 md:group-hover:pointer-events-auto md:group-hover:opacity-100',
+            'data-[state=open]:pointer-events-auto data-[state=open]:opacity-100',
+            revealed && 'pointer-events-auto opacity-100',
+          )}
+        >
+          <SmilePlus className="size-5" aria-hidden="true" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        side="top"
+        align={mine ? 'end' : 'start'}
+        sideOffset={6}
+        aria-label={t('chat.react')}
+        className="flex min-w-0 gap-0.5 rounded-full p-1"
+      >
+        {reactionEmojis.map((emoji) => {
+          const on = reactedByMe(emoji)
+          return (
+            <DropdownMenuItem
+              key={emoji}
+              aria-label={t(on ? 'chat.unreact' : 'chat.reactWith', { emoji })}
+              aria-pressed={on}
+              className={cn(
+                'size-11 justify-center rounded-full p-0 text-2xl transition-transform duration-150 hover:scale-110',
+                on && 'bg-accent',
+              )}
+              onSelect={() =>
+                react.mutate(
+                  { messageId: message.id, emoji, on: !on },
+                  { onError: () => toast.error(t('chat.reactionFailed')) },
+                )
+              }
+            >
+              <span aria-hidden="true">{emoji}</span>
+            </DropdownMenuItem>
+          )
+        })}
       </DropdownMenuContent>
     </DropdownMenu>
   )
@@ -765,6 +803,7 @@ function MessageRow({
                   {reactions}
                   {menu}
                 </Bubble>
+                {picker}
                 {retryButton}
               </div>
             </MessageContent>

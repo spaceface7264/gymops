@@ -592,7 +592,7 @@ describe('reacting', () => {
     )
     openChannel()
 
-    await userEvent.click(await screen.findByRole('button', { name: 'Message options' }))
+    await userEvent.click(await screen.findByRole('button', { name: 'React' }))
     await userEvent.click(await screen.findByRole('menuitem', { name: 'React with 👍' }))
 
     expect(
@@ -615,7 +615,7 @@ describe('reacting', () => {
     )
     openChannel()
 
-    await userEvent.click(await screen.findByRole('button', { name: 'Message options' }))
+    await userEvent.click(await screen.findByRole('button', { name: 'React' }))
     await userEvent.click(await screen.findByRole('menuitem', { name: 'Remove your 👍' }))
 
     await waitFor(() =>
@@ -637,7 +637,7 @@ describe('reacting', () => {
     messageRows.mockReturnValue([message()])
     openChannel()
 
-    await userEvent.click(await screen.findByRole('button', { name: 'Message options' }))
+    await userEvent.click(await screen.findByRole('button', { name: 'React' }))
     await userEvent.click(await screen.findByRole('menuitem', { name: 'React with ✅' }))
 
     await waitFor(() =>
@@ -864,7 +864,7 @@ describe('deleting', () => {
     // Mette's line: answer, react, copy; not delete.
     await userEvent.click(triggers[0]!)
     expect(await screen.findByRole('menuitem', { name: 'Reply' })).toBeInTheDocument()
-    expect(screen.getByRole('menuitem', { name: 'React with 👍' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: 'React' })).toBeInTheDocument()
     expect(screen.getByRole('menuitem', { name: 'Copy' })).toBeInTheDocument()
     expect(screen.queryByRole('menuitem', { name: 'Delete' })).not.toBeInTheDocument()
     expect(screen.queryByRole('menuitem', { name: 'Edit' })).not.toBeInTheDocument()
