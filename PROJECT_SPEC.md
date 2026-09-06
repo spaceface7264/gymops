@@ -79,7 +79,7 @@ Permission matrix (also the RLS test spec):
 - **Backend:** one Supabase project. Postgres row-level security is the only permission layer. Storage buckets `content` (news/guides), `incidents`, `chat` with storage RLS mirroring table RLS. Realtime (`postgres_changes`, private channels) for checklists, incidents, chat and notifications. Presence for typing indicators.
 - **Server-side jobs:** Edge Functions `invite`, `notify` (web push + email), later `assistant` and `brp-sync`. pg_cron for daily checklist generation. Database webhooks trigger `notify` on `notifications` insert.
 - **Desktop:** Tauri 2 wrapping the built web assets (not a remote URL) with plugins `updater` (+ `process` for the relaunch), `deep-link` (`gymops://`), `notification`, `single-instance`. GitHub Releases on the public `gymops-releases` repository as the update feed (the source repository is private).
-- **PWA:** `vite-plugin-pwa`, `display: standalone`, service worker handling `push` and `notificationclick`. In-app install guide (iOS needs Add to Home Screen; permission prompt only from a user gesture).
+- **PWA:** `vite-plugin-pwa`, `display: standalone`, service worker handling `push` and `notificationclick`. In-app install guide (iOS needs Add to Home Screen; permission prompt only from a user gesture), offered from the phone's More sheet while the app is a browser tab (`isInstalledWeb()` in the platform shim, P9-10). `index.html` carries `apple-touch-icon` and `theme-color` itself: iOS reads neither from the manifest and the plugin injects neither.
 - **Auth:** Supabase Auth email/password with PKCE. Invite/reset links open the desktop app via deep link with a web fallback page.
 - **AI assistant:** Edge Function using `@anthropic-ai/sdk`, model `claude-opus-5`, adaptive thinking, streaming via SSE. Tool runner with two tools, `search_content` (Postgres full-text search) and `read_content`, both executed with the caller's JWT so RLS applies. Stable system prompt + tool definitions cached with `cache_control`.
 - **Observability:** Sentry for web and desktop; token usage logged per assistant call.
@@ -110,7 +110,7 @@ gymops/
     hooks/                  app-wide hooks (a media query, for DOM that differs by width)
                             (auth also owns the shared password fields and their rule)
     lib/                    supabase client, generated database.types.ts, query client,
-                            i18n, platform shims (web vs tauri)
+                            i18n, platform shims (web vs tauri; installed to the Home Screen?)
     locales/{en,da}/        one JSON namespace per feature
     routes/                 route table, layouts, page components
     test/                   Vitest setup and render helpers
