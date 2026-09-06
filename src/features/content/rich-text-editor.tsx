@@ -209,7 +209,7 @@ function ToolbarButton({
   return (
     <Button
       type="button"
-      size="sm"
+      size="icon"
       variant={active ? 'secondary' : 'ghost'}
       aria-label={label}
       aria-pressed={active}

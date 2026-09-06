@@ -36,7 +36,7 @@ export function CategoryTree({
               aria-current={selectedId === node.id}
               onClick={() => onSelect(node.id)}
               className={cn(
-                'hover:bg-accent min-h-9 flex-1 rounded-lg px-2 py-1 text-left text-sm',
+                'hover:bg-accent min-h-11 flex-1 rounded-lg px-2 py-1 text-left text-sm md:min-h-9',
                 selectedId === node.id && 'bg-accent font-medium',
               )}
               style={{ paddingLeft: `${depth * 12 + 8}px` }}
@@ -48,7 +48,7 @@ export function CategoryTree({
               <>
                 <Button
                   variant="ghost"
-                  size="sm"
+                  size="icon"
                   aria-label={t('guides.renameCategory', { name: node.name })}
                   onClick={() => onRename(node)}
                 >
@@ -56,7 +56,7 @@ export function CategoryTree({
                 </Button>
                 <Button
                   variant="ghost"
-                  size="sm"
+                  size="icon"
                   aria-label={t('guides.deleteCategory', { name: node.name })}
                   onClick={() => onDelete(node)}
                 >

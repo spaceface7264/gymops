@@ -104,8 +104,10 @@ export function UsersPanel() {
       )}
 
       {users.data && (
+        // One table, two shapes: rows below `md`, where four columns do not
+        // fit 390 px and a clipped column has no scroll affordance.
         <Table>
-          <TableHeader>
+          <TableHeader className="hidden md:table-header-group">
             <TableRow>
               <TableHead>{t('admin.users.name')}</TableHead>
               <TableHead>{t('admin.users.roles')}</TableHead>
@@ -115,22 +117,22 @@ export function UsersPanel() {
           </TableHeader>
           <TableBody>
             {users.data.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell>
+              <TableRow key={user.id} className="block py-3 md:table-row md:py-0">
+                <TableCell className="block px-0 py-1 md:table-cell md:px-2 md:py-3">
                   <span className="font-medium">{user.full_name ?? user.email}</span>
                   <span className="text-muted-foreground block text-xs">
                     {user.email}
                   </span>
                 </TableCell>
-                <TableCell>
+                <TableCell className="block px-0 py-1 md:table-cell md:px-2 md:py-3">
                   <RoleBadges user={user} />
                 </TableCell>
-                <TableCell>
+                <TableCell className="block px-0 py-1 md:table-cell md:px-2 md:py-3">
                   <StatusBadge tone={user.active ? 'success' : 'neutral'}>
                     {user.active ? t('admin.users.active') : t('admin.users.inactive')}
                   </StatusBadge>
                 </TableCell>
-                <TableCell className="space-x-2 text-right whitespace-nowrap">
+                <TableCell className="block space-x-2 px-0 py-1 whitespace-nowrap md:table-cell md:px-2 md:py-3 md:text-right">
                   <Button
                     variant="outline"
                     size="sm"
