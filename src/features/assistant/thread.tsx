@@ -2,7 +2,7 @@ import { ArrowLeft, Send, Sparkles, Square, Trash2 } from 'lucide-react'
 import { useState, type KeyboardEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router'
-import { EmptyState, LoadingState, Markdown } from '@/components'
+import { EmptyState, LoadingState, Markdown, LoadError } from '@/components'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
@@ -92,9 +92,10 @@ export function Thread({ conversationId }: { conversationId?: string }) {
       <div className="min-h-0 flex-1 overflow-y-auto p-4">
         {conversationId && messages.isPending && <LoadingState rows={4} />}
         {messages.isError && (
-          <p role="alert" className="text-destructive text-sm">
-            {t('assistant.loadFailed')}
-          </p>
+          <LoadError
+            message={t('assistant.loadFailed')}
+            onRetry={() => void messages.refetch()}
+          />
         )}
         {empty && (
           <EmptyState
@@ -220,7 +221,7 @@ function AskComposer({
 
   return (
     <form
-      className="flex items-end gap-2 border-t p-3 pb-20 md:pb-3"
+      className="flex items-end gap-2 border-t p-3 pb-(--nav-bar-clearance) md:pb-3"
       onSubmit={(event) => {
         event.preventDefault()
         submit()

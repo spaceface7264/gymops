@@ -1,4 +1,5 @@
 import { useId, useState } from 'react'
+import { useFormTouched } from '@/hooks/use-form-touched'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -28,9 +29,11 @@ export function EntryComposer({ gymId }: { gymId: string }) {
 
   const missing = body.trim() === '' ? [t('dailyLog.needsBody')] : []
 
+  const { touched, formProps } = useFormTouched()
   return (
     <Card className="p-4">
       <form
+        {...formProps}
         className="space-y-3"
         onSubmit={(event) => {
           event.preventDefault()
@@ -89,7 +92,7 @@ export function EntryComposer({ gymId }: { gymId: string }) {
           />
         </div>
 
-        <MissingRequirements reasons={missing} />
+        <MissingRequirements reasons={touched ? missing : []} />
 
         {create.isError && (
           <p role="alert" className="text-destructive text-sm">
@@ -97,7 +100,12 @@ export function EntryComposer({ gymId }: { gymId: string }) {
           </p>
         )}
 
-        <Button type="submit" size="lg" disabled={missing.length > 0 || create.isPending}>
+        <Button
+          type="submit"
+          size="lg"
+          className="w-full md:w-auto"
+          disabled={missing.length > 0 || create.isPending}
+        >
           {t('dailyLog.add')}
         </Button>
       </form>

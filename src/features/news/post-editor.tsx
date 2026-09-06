@@ -1,9 +1,10 @@
 import type { JSONContent } from '@tiptap/react'
+import { useFormTouched } from '@/hooks/use-form-touched'
 import { useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { useNavigate, useParams } from 'react-router'
-import { LoadingState, PageHeader } from '@/components'
+import { LoadingState, PageHeader, LoadError } from '@/components'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
@@ -44,9 +45,7 @@ export function PostEditorPage() {
   }
   if (postId && !existing.data) {
     return (
-      <p role="alert" className="text-destructive text-sm">
-        {t('news.loadFailed')}
-      </p>
+      <LoadError message={t('news.loadFailed')} onRetry={() => void existing.refetch()} />
     )
   }
 
@@ -124,8 +123,10 @@ function PostEditor({ post }: { post?: NewsPost }) {
     }
   }
 
+  const { touched, formProps } = useFormTouched()
   return (
     <form
+      {...formProps}
       className="space-y-4"
       onSubmit={(event) => {
         event.preventDefault()
@@ -195,7 +196,7 @@ function PostEditor({ post }: { post?: NewsPost }) {
         <Label htmlFor={`${fieldId}-ack`}>{t('news.requireAcknowledgement')}</Label>
       </div>
 
-      <MissingRequirements reasons={missing} />
+      <MissingRequirements reasons={touched ? missing : []} />
 
       {save.isError && (
         <p role="alert" className="text-destructive text-sm">
@@ -204,12 +205,18 @@ function PostEditor({ post }: { post?: NewsPost }) {
       )}
 
       <div className="flex flex-wrap gap-2">
-        <Button type="submit" variant="outline" disabled={!canSave || save.isPending}>
+        <Button
+          type="submit"
+          variant="outline"
+          className="w-full md:w-auto"
+          disabled={!canSave || save.isPending}
+        >
           {post?.status === 'published' ? t('news.save') : t('news.saveDraft')}
         </Button>
         {post?.status !== 'published' && (
           <Button
             type="button"
+            className="w-full md:w-auto"
             disabled={!canSave || save.isPending}
             onClick={() => submit('published')}
           >

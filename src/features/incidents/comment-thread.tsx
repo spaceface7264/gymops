@@ -25,7 +25,7 @@ export function CommentThread({
 
       {comments.isPending && <LoadingState rows={2} />}
       {comments.data?.length === 0 && (
-        <EmptyState bordered={false} title={t('incidents.noComments')} as="p" />
+        <EmptyState title={t('incidents.noComments')} as="p" />
       )}
 
       <ul className="space-y-2">

@@ -235,6 +235,10 @@ describe('the form', () => {
     renderWithProviders(<EventsPage />, { path: '/events' })
 
     await userEvent.click(await screen.findByRole('button', { name: 'New event' }))
+    // An untouched form says nothing (P7M-07); the first keystroke turns the hints on.
+    const touched = await screen.findByLabelText('Link')
+    await userEvent.type(touched, 'x')
+    await userEvent.clear(touched)
     expect(await screen.findByText('Give the event a title.')).toBeInTheDocument()
     expect(screen.getByText('Give the event a start date.')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled()

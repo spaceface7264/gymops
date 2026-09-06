@@ -144,7 +144,11 @@ describe('the daily log', () => {
   it('says what is missing instead of a dead button', async () => {
     renderWithProviders(<DailyLogPage />)
 
-    await screen.findByLabelText('What happened')
+    const body = await screen.findByLabelText('What happened')
+    expect(screen.queryByText(/Write what happened/)).not.toBeInTheDocument()
+    // An untouched form says nothing (P7M-07); the first keystroke turns the hints on.
+    await userEvent.type(body, 'x')
+    await userEvent.clear(body)
     expect(screen.getByText(/Write what happened/)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Add to the log' })).toBeDisabled()
   })

@@ -163,7 +163,7 @@ describe('RichTextEditor', () => {
     )
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      'The image could not be uploaded',
+      "Couldn't upload the image",
     )
   })
 

@@ -13,3 +13,4 @@ export {
   HomeSection,
   HomeSectionLink,
 } from './home-section'
+export { LoadError } from './load-error'

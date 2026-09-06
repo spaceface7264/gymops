@@ -79,7 +79,7 @@ export function BrowseChannelsDialog({
 
         {channels.isPending && <LoadingState rows={3} />}
         {!channels.isPending && rows.length === 0 && (
-          <EmptyState bordered={false} title={t('chat.nothingToJoin')} as="p" />
+          <EmptyState title={t('chat.nothingToJoin')} as="p" />
         )}
 
         {join.isError && (

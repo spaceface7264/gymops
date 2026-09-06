@@ -1,7 +1,7 @@
 import { NotebookPen } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { EmptyState, LoadingState, PageHeader } from '@/components'
+import { EmptyState, LoadingState, PageHeader, LoadError } from '@/components'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { NativeSelect } from '@/components/ui/native-select'
 import { useCompletionScope, localDate } from '@/features/checklists'
@@ -85,9 +85,10 @@ export function DailyLogPage() {
 
       {entries.isPending && <LoadingState rows={5} />}
       {entries.isError && (
-        <p role="alert" className="text-destructive text-sm">
-          {t('dailyLog.loadFailed')}
-        </p>
+        <LoadError
+          message={t('dailyLog.loadFailed')}
+          onRetry={() => void entries.refetch()}
+        />
       )}
       {entries.data && shown.length === 0 && (
         <EmptyState icon={NotebookPen} title={t('dailyLog.empty')} />

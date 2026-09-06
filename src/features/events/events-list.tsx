@@ -1,6 +1,6 @@
 import { CalendarDays } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { EmptyState, LoadingState } from '@/components'
+import { EmptyState, LoadingState, LoadError } from '@/components'
 import { EventCard } from './event-card'
 import { useEvents, type EventType, type GymEvent } from './queries'
 
@@ -35,9 +35,12 @@ export function EventsList({
 
   if (events.isError) {
     return (
-      <p role="alert" className="text-destructive text-sm">
-        {t('events.loadFailed')}
-      </p>
+      <div className="py-2">
+        <LoadError
+          message={t('events.loadFailed')}
+          onRetry={() => void events.refetch()}
+        />
+      </div>
     )
   }
 

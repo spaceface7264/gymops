@@ -2,7 +2,7 @@ import { Newspaper, Pin, PinOff, Plus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { Link } from 'react-router'
-import { EmptyState, LoadingState, PageHeader } from '@/components'
+import { EmptyState, LoadingState, PageHeader, LoadError } from '@/components'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { ContentSearch, excerpt, toDoc, usePublishScope } from '@/features/content'
@@ -39,9 +39,7 @@ export function NewsFeed() {
 
       {feed.isPending && <LoadingState rows={5} />}
       {feed.isError && (
-        <p role="alert" className="text-destructive text-sm">
-          {t('news.loadFailed')}
-        </p>
+        <LoadError message={t('news.loadFailed')} onRetry={() => void feed.refetch()} />
       )}
       {feed.data?.length === 0 && (
         <EmptyState icon={Newspaper} title={t('news.empty')} action={newPostAction} />

@@ -1,7 +1,7 @@
 import { Sparkles } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { EmptyState, LoadingState } from '@/components'
+import { EmptyState, LoadingState, LoadError } from '@/components'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -62,9 +62,10 @@ export function AssistantUsagePanel() {
         <CardContent>
           {settings.isPending && <LoadingState rows={1} />}
           {settings.isError && (
-            <p role="alert" className="text-destructive text-sm">
-              {t('admin.loadFailed')}
-            </p>
+            <LoadError
+              message={t('admin.loadFailed')}
+              onRetry={() => void settings.refetch()}
+            />
           )}
           {settings.data && <CapForm dailyCap={settings.data.dailyCap} />}
         </CardContent>
@@ -75,9 +76,10 @@ export function AssistantUsagePanel() {
 
         {usage.isPending && <LoadingState rows={4} />}
         {usage.isError && (
-          <p role="alert" className="text-destructive text-sm">
-            {t('admin.loadFailed')}
-          </p>
+          <LoadError
+            message={t('admin.loadFailed')}
+            onRetry={() => void usage.refetch()}
+          />
         )}
         {usage.data && lines.length === 0 && (
           <EmptyState icon={Sparkles} title={t('admin.usage.empty')} />

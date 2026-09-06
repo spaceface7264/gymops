@@ -3,7 +3,6 @@ import {
   ChevronDown,
   Clock,
   Copy,
-  MessageCircle,
   Reply,
   RotateCcw,
   SmilePlus,
@@ -15,10 +14,10 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import {
   ConfirmDialog,
-  EmptyState,
   LoadingState,
   Markdown,
   UnreadCount,
+  LoadError,
 } from '@/components'
 import { Bubble, BubbleContent, BubbleReactions } from '@/components/ui/bubble'
 import { Button } from '@/components/ui/button'
@@ -255,9 +254,12 @@ function Transcript({
 
   if (messages.isError) {
     return (
-      <p role="alert" className="text-destructive p-4 text-sm">
-        {t('chat.loadMessagesFail')}
-      </p>
+      <div className="py-2">
+        <LoadError
+          message={t('chat.loadMessagesFail')}
+          onRetry={() => void messages.refetch()}
+        />
+      </div>
     )
   }
 
@@ -308,14 +310,6 @@ function Transcript({
           )}
 
           {messages.isPending && <LoadingState rows={5} />}
-
-          {!messages.isPending && rows.length === 0 && (
-            <EmptyState
-              icon={MessageCircle}
-              title={t('chat.noMessages')}
-              body={t('chat.noMessagesHint')}
-            />
-          )}
 
           {days.map((day) => (
             <section key={day.key} aria-label={dayLabel(day.date)}>

@@ -234,8 +234,12 @@ describe('reporting one', () => {
     )
   })
 
-  it('says what is missing instead of a dead button', () => {
+  it('says what is missing instead of a dead button', async () => {
     renderWithProviders(<IncidentFormPage />)
+    // An untouched form says nothing (P7M-07); the first keystroke turns the hints on.
+    const touched = await screen.findByLabelText('Title')
+    await userEvent.type(touched, 'x')
+    await userEvent.clear(touched)
 
     expect(screen.getByText(/short title/)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Report it' })).toBeDisabled()

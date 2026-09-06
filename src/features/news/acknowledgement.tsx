@@ -1,6 +1,6 @@
 import { Check } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { LoadingState } from '@/components'
+import { LoadingState, LoadError } from '@/components'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/features/auth'
 import { useAcknowledgePost, useAckReport, useMyPostRead, type NewsPost } from './queries'
@@ -69,9 +69,10 @@ export function AckReport({
 
       {report.isPending && <LoadingState rows={3} />}
       {report.isError && (
-        <p role="alert" className="text-destructive text-sm">
-          {t('news.ack.reportFailed')}
-        </p>
+        <LoadError
+          message={t('news.ack.reportFailed')}
+          onRetry={() => void report.refetch()}
+        />
       )}
       {report.data && (
         <p className="text-muted-foreground text-sm">

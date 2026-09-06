@@ -1,7 +1,7 @@
 import { BellOff, Hash, Lock, MessageCircle, MessagesSquare, Users } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { NavLink } from 'react-router'
-import { EmptyState, LoadingState, UnreadCount } from '@/components'
+import { EmptyState, LoadingState, UnreadCount, LoadError } from '@/components'
 import { useAuth } from '@/features/auth'
 import { cn } from '@/lib/utils'
 import { channelName } from './channel-name'
@@ -40,9 +40,9 @@ export function ChannelList({ activeId }: { activeId?: string }) {
 
   if (channels.isError) {
     return (
-      <p role="alert" className="text-destructive p-3 text-sm">
-        {t('chat.loadFail')}
-      </p>
+      <div className="p-3">
+        <LoadError message={t('chat.loadFail')} onRetry={() => void channels.refetch()} />
+      </div>
     )
   }
 
@@ -92,7 +92,7 @@ export function ChannelList({ activeId }: { activeId?: string }) {
       })}
 
       {!channels.isPending && named.length === 0 && (
-        <EmptyState bordered={false} icon={MessagesSquare} title={t('chat.empty')} />
+        <EmptyState icon={MessagesSquare} title={t('chat.empty')} />
       )}
     </div>
   )

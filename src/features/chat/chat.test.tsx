@@ -573,7 +573,7 @@ describe('copying', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Message options' }))
     await userEvent.click(await screen.findByRole('menuitem', { name: 'Copy' }))
 
-    await waitFor(() => expect(toast.error).toHaveBeenCalledWith('Could not copy.'))
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith("Couldn't copy."))
   })
 })
 
@@ -643,7 +643,7 @@ describe('reacting', () => {
     await userEvent.click(await screen.findByRole('menuitem', { name: 'React with ✅' }))
 
     await waitFor(() =>
-      expect(toast.error).toHaveBeenCalledWith('The reaction could not be saved.'),
+      expect(toast.error).toHaveBeenCalledWith("Couldn't save the reaction."),
     )
     await waitFor(() =>
       expect(

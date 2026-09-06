@@ -1,6 +1,6 @@
 import { History } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { EmptyState, LoadingState, StatusBadge } from '@/components'
+import { EmptyState, LoadingState, StatusBadge, LoadError } from '@/components'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { usePublishScope } from '@/features/content'
 import { useGymScope } from '@/features/gyms'
@@ -40,17 +40,14 @@ export function ChecklistHistoryCard() {
       <CardContent className="space-y-3">
         {runs.isPending && <LoadingState rows={3} />}
         {runs.isError && (
-          <p role="alert" className="text-destructive text-sm">
-            {t('checklists.runsLoadFailed')}
-          </p>
+          <LoadError
+            message={t('checklists.runsLoadFailed')}
+            onRetry={() => void runs.refetch()}
+          />
         )}
 
         {runs.data && all.length === 0 && (
-          <EmptyState
-            bordered={false}
-            icon={History}
-            title={t('home.checklists.noRuns')}
-          />
+          <EmptyState icon={History} title={t('home.checklists.noRuns')} />
         )}
 
         {all.length > 0 && (

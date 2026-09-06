@@ -240,6 +240,10 @@ describe('GuideEditorPage', () => {
 
   it('says what a new guide is still missing rather than only greying out Save', async () => {
     renderWithProviders(<GuideEditorPage />, { path: '/guides/new' })
+    // An untouched form says nothing (P7M-07); the first keystroke turns the hints on.
+    const touched = await screen.findByLabelText('Title')
+    await userEvent.type(touched, 'x')
+    await userEvent.clear(touched)
 
     expect(screen.getByText('Give the guide a title.')).toBeInTheDocument()
     expect(screen.getByText('Write something in the body.')).toBeInTheDocument()

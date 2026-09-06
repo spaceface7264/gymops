@@ -7,6 +7,7 @@ import {
   HomeSectionLink,
   LoadingState,
   StatusBadge,
+  LoadError,
 } from '@/components'
 import { useGymScope } from '@/features/gyms'
 import { isRunComplete, runProgress, useTodaysRuns } from './queries'
@@ -41,9 +42,10 @@ export function TodaysChecklistsSection() {
     >
       {runs.isPending && <LoadingState rows={2} />}
       {runs.isError && (
-        <p role="alert" className="text-destructive text-sm">
-          {t('checklists.runsLoadFailed')}
-        </p>
+        <LoadError
+          message={t('checklists.runsLoadFailed')}
+          onRetry={() => void runs.refetch()}
+        />
       )}
       {runs.data && all.length === 0 && (
         <HomeEmpty>{t('checklists.nothingToday')}</HomeEmpty>

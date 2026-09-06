@@ -1,4 +1,5 @@
 import { ArrowLeft, Camera, ImagePlus, X } from 'lucide-react'
+import { useFormTouched } from '@/hooks/use-form-touched'
 import { useId, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useSearchParams } from 'react-router'
@@ -72,6 +73,7 @@ export function IncidentFormPage() {
     void navigate(`/incidents/${incidentId}`)
   }
 
+  const { touched, formProps } = useFormTouched()
   return (
     <div className="space-y-4">
       <Button asChild variant="ghost" size="sm" className="-ml-2">
@@ -85,6 +87,7 @@ export function IncidentFormPage() {
 
       <Card className="p-4">
         <form
+          {...formProps}
           className="space-y-4"
           onSubmit={(event) => {
             event.preventDefault()
@@ -229,7 +232,7 @@ export function IncidentFormPage() {
             )}
           </div>
 
-          <MissingRequirements reasons={missing} />
+          <MissingRequirements reasons={touched ? missing : []} />
 
           {(create.isError || upload.isError) && (
             <p role="alert" className="text-destructive text-sm">
@@ -239,6 +242,7 @@ export function IncidentFormPage() {
 
           <Button
             type="submit"
+            className="w-full md:w-auto"
             disabled={missing.length > 0 || create.isPending || upload.isPending}
           >
             {t('incidents.submit')}

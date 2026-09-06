@@ -1,7 +1,13 @@
 import { ListChecks } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
-import { EmptyState, LoadingState, PageHeader, StatusBadge } from '@/components'
+import {
+  EmptyState,
+  LoadingState,
+  PageHeader,
+  StatusBadge,
+  LoadError,
+} from '@/components'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { usePublishScope } from '@/features/content'
@@ -40,9 +46,10 @@ export function ChecklistRunsPage() {
 
       {runs.isPending && <LoadingState rows={5} />}
       {runs.isError && (
-        <p role="alert" className="text-destructive text-sm">
-          {t('checklists.runsLoadFailed')}
-        </p>
+        <LoadError
+          message={t('checklists.runsLoadFailed')}
+          onRetry={() => void runs.refetch()}
+        />
       )}
       {runs.data?.length === 0 && (
         <EmptyState icon={ListChecks} title={t('checklists.nothingToday')} />
