@@ -2,12 +2,17 @@ import { act, renderHook } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { usePullToRefresh } from './use-pull-to-refresh'
 
-function touch(type: 'touchstart' | 'touchmove' | 'touchend', y: number, fingers = 1) {
+function touch(
+  type: 'touchstart' | 'touchmove' | 'touchend',
+  y: number,
+  fingers = 1,
+  target: EventTarget = document,
+) {
   const list = Array.from({ length: fingers }, () => ({ clientY: y }))
   const event = new Event(type, { bubbles: true, cancelable: true })
   Object.defineProperty(event, 'touches', { value: type === 'touchend' ? [] : list })
   Object.defineProperty(event, 'changedTouches', { value: list })
-  document.dispatchEvent(event)
+  target.dispatchEvent(event)
 }
 
 function setScrollTop(value: number) {
@@ -31,7 +36,9 @@ describe('usePullToRefresh', () => {
     act(() => touch('touchstart', 100))
     act(() => touch('touchmove', 250))
     expect(result.current.state).toBe('armed')
-    expect(result.current.pull).toBe(75)
+    // Rubber: 150 px of finger is about 66 px of disc, and never the 96 cap.
+    expect(result.current.pull).toBeGreaterThanOrEqual(64)
+    expect(result.current.pull).toBeLessThan(70)
 
     act(() => touch('touchend', 250))
     expect(result.current.state).toBe('refreshing')
@@ -40,6 +47,50 @@ describe('usePullToRefresh', () => {
     await act(() => vi.advanceTimersByTimeAsync(400))
     expect(result.current.state).toBe('idle')
     expect(result.current.pull).toBe(0)
+    expect(result.current.done).toBe(true)
+    await act(() => vi.advanceTimersByTimeAsync(1500))
+    expect(result.current.done).toBe(false)
+  })
+
+  it('never reaches the cap however far the finger goes', () => {
+    const onRefresh = vi.fn(() => Promise.resolve())
+    const { result } = renderHook(() => usePullToRefresh({ enabled: true, onRefresh }))
+
+    act(() => touch('touchstart', 0))
+    act(() => touch('touchmove', 2000))
+    expect(result.current.pull).toBeLessThan(96)
+    expect(result.current.pull).toBeGreaterThan(90)
+  })
+
+  it('ignores a drag that starts inside a sheet or dialog', () => {
+    const dialog = document.createElement('div')
+    dialog.setAttribute('role', 'dialog')
+    const row = document.createElement('button')
+    dialog.append(row)
+    document.body.append(dialog)
+    const onRefresh = vi.fn(() => Promise.resolve())
+    const { result } = renderHook(() => usePullToRefresh({ enabled: true, onRefresh }))
+
+    act(() => touch('touchstart', 100, 1, row))
+    act(() => touch('touchmove', 300, 1, row))
+    act(() => touch('touchend', 300, 1, row))
+    expect(result.current.state).toBe('idle')
+    expect(onRefresh).not.toHaveBeenCalled()
+    dialog.remove()
+  })
+
+  it('refreshes from a button through the same path', async () => {
+    const onRefresh = vi.fn(() => Promise.resolve())
+    const { result } = renderHook(() => usePullToRefresh({ enabled: true, onRefresh }))
+
+    act(() => result.current.refresh())
+    expect(result.current.state).toBe('refreshing')
+    act(() => result.current.refresh())
+    expect(onRefresh).toHaveBeenCalledTimes(1)
+
+    await act(() => vi.advanceTimersByTimeAsync(400))
+    expect(result.current.state).toBe('idle')
+    expect(result.current.done).toBe(true)
   })
 
   it('does nothing on a short pull', () => {

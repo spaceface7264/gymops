@@ -1,19 +1,23 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 export type PullState = 'idle' | 'pulling' | 'armed' | 'refreshing'
 
-/** Finger travel is halved, so this is 128 px of thumb. */
-const ARM_AT = 64
+/** Where the disc docks and the release commits; 64 px of disc is ~140 px of thumb. */
+export const ARM_AT = 64
 const MAX_PULL = 96
-const DAMPING = 0.5
+/** Finger distance over which the pull loses most of its give. */
+const GIVE = 128
 /** Shown at least this long, so a fast refetch does not blink. */
 const MIN_SHOWN_MS = 400
+/** How long "Refreshed" stays announced after the disc has gone. */
+const DONE_MS = 1500
 
 /**
  * The phone's pull-down-to-reload gesture on a page the document scrolls.
- * Armed only when the page is at the top at `touchstart`; passive listeners,
- * so the page is never kept from scrolling. Renders nothing: `pull` and
- * `state` drive `PullIndicator`.
+ * Armed only when the page is at the top at `touchstart` and the finger is not
+ * inside a dialog or sheet; passive listeners, so the page is never kept from
+ * scrolling. Renders nothing: `pull`, `state` and `done` drive `PullIndicator`,
+ * and `refresh()` runs the same reload from a button.
  */
 export function usePullToRefresh({
   enabled,
@@ -21,9 +25,10 @@ export function usePullToRefresh({
 }: {
   enabled: boolean
   onRefresh: () => Promise<unknown>
-}): { pull: number; state: PullState } {
+}): { pull: number; state: PullState; done: boolean; refresh: () => void } {
   const [pull, setPull] = useState(0)
   const [state, setState] = useState<PullState>('idle')
+  const [done, setDone] = useState(false)
   const startY = useRef<number | null>(null)
   const refreshing = useRef(false)
   const refresh = useRef(onRefresh)
@@ -34,11 +39,31 @@ export function usePullToRefresh({
     refresh.current = onRefresh
   }, [onRefresh])
 
+  const commit = useCallback(() => {
+    if (refreshing.current) return
+    refreshing.current = true
+    setDone(false)
+    setState('refreshing')
+    setPull(ARM_AT)
+    const shown = new Promise((resolve) => setTimeout(resolve, MIN_SHOWN_MS))
+    void Promise.allSettled([refresh.current(), shown]).then(() => {
+      refreshing.current = false
+      pullRef.current = 0
+      setPull(0)
+      setState('idle')
+      setDone(true)
+      setTimeout(() => setDone(false), DONE_MS)
+    })
+  }, [])
+
   useEffect(() => {
     if (!enabled) return
 
     const atTop = () =>
       (document.scrollingElement ?? document.documentElement).scrollTop <= 0
+    // A sheet or dialog locks the page at the top; a drag inside it is its own.
+    const inDialog = (target: EventTarget | null) =>
+      target instanceof Element && target.closest('[role="dialog"]') !== null
 
     const reset = () => {
       startY.current = null
@@ -49,7 +74,8 @@ export function usePullToRefresh({
 
     const onStart = (event: TouchEvent) => {
       const finger = event.touches[0]
-      if (refreshing.current || event.touches.length !== 1 || !finger || !atTop()) return
+      if (refreshing.current || event.touches.length !== 1 || !finger) return
+      if (!atTop() || inDialog(event.target)) return
       startY.current = finger.clientY
     }
 
@@ -59,7 +85,8 @@ export function usePullToRefresh({
       if (event.touches.length !== 1 || !finger || !atTop()) return reset()
       const delta = finger.clientY - startY.current
       if (delta <= 0) return reset()
-      const next = Math.min(delta * DAMPING, MAX_PULL)
+      // Rubber: the disc approaches the cap and never hits it.
+      const next = MAX_PULL * (1 - Math.exp(-delta / GIVE))
       pullRef.current = next
       setPull(next)
       setState(next >= ARM_AT ? 'armed' : 'pulling')
@@ -69,16 +96,8 @@ export function usePullToRefresh({
       if (startY.current === null) return
       const armed = pullRef.current >= ARM_AT
       startY.current = null
-      if (!armed) return reset()
-
-      refreshing.current = true
-      setState('refreshing')
-      setPull(ARM_AT)
-      const shown = new Promise((done) => setTimeout(done, MIN_SHOWN_MS))
-      void Promise.allSettled([refresh.current(), shown]).then(() => {
-        refreshing.current = false
-        reset()
-      })
+      if (armed) commit()
+      else reset()
     }
 
     document.addEventListener('touchstart', onStart, { passive: true })
@@ -91,7 +110,7 @@ export function usePullToRefresh({
       document.removeEventListener('touchend', onEnd)
       document.removeEventListener('touchcancel', onEnd)
     }
-  }, [enabled])
+  }, [enabled, commit])
 
-  return { pull, state }
+  return { pull, state, done, refresh: commit }
 }

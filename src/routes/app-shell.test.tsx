@@ -344,11 +344,19 @@ describe('AppShell pull-to-refresh', () => {
       addEventListener: () => {},
       removeEventListener: () => {},
     }))
+    const user = userEvent.setup()
     renderShell()
-    await screen.findByRole('navigation', { name: 'Sections' })
-    expect(screen.getByRole('status', { hidden: true })).toHaveAttribute(
-      'aria-hidden',
-      'true',
+    const nav = await screen.findByRole('navigation', { name: 'Sections' })
+    // The status line is always in the tree, silent until a refresh runs.
+    expect(screen.getByRole('status')).toHaveTextContent('')
+
+    // The same reload without the gesture, for a screen reader or a doubter.
+    await user.click(within(nav).getByRole('button', { name: 'More' }))
+    const sheet = await screen.findByRole('dialog', { name: 'More' })
+    await user.click(within(sheet).getByRole('button', { name: 'Refresh' }))
+    expect(screen.getByRole('status')).toHaveTextContent('Refreshing…')
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog', { name: 'More' })).not.toBeInTheDocument(),
     )
   })
 })

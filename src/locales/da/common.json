@@ -105,6 +105,7 @@
     },
     "loading": "Indlæser…",
     "name": "GymOps",
+    "refreshed": "Opdateret",
     "refreshing": "Opdaterer…",
     "skipToContent": "Spring til indhold",
     "tryAgain": "Prøv igen",
@@ -731,7 +732,8 @@
     "incidents": "Hændelser",
     "label": "Sektioner",
     "more": "Mere",
-    "news": "Nyheder"
+    "news": "Nyheder",
+    "refresh": "Opdater"
   },
   "news": {
     "ack": {

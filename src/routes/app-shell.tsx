@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { Ellipsis } from 'lucide-react'
+import { Ellipsis, RefreshCw } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, NavLink, Outlet, useLocation } from 'react-router'
@@ -26,6 +26,7 @@ import { GymSwitcher } from '@/features/gyms'
 import { NotificationBell } from '@/features/notifications'
 import { usePhone } from '@/hooks/use-media-query'
 import { usePullToRefresh } from '@/hooks/use-pull-to-refresh'
+import { useRefetchOnResume } from '@/hooks/use-refetch-on-resume'
 import { cn } from '@/lib/utils'
 import { isConversation, isFullBleed, phoneNav, type NavEntry } from '@/routes/nav'
 import { UpdateBanner } from '@/routes/update-banner'
@@ -67,10 +68,13 @@ export function AppShell() {
   // bell holds a Realtime subscription and may exist only once.
   const phone = usePhone()
   const headerless = phone && isConversation(pathname)
-  // A standalone PWA has no reload button: pulling the page down from the top
-  // refetches every query on screen. Chat scrolls inside itself and is live.
+  // A standalone PWA has no reload button: coming back to it refetches what
+  // has gone stale, and pulling the page down from the top refetches every
+  // query on screen (the Refresh row in More does the same without the
+  // gesture). Chat scrolls inside itself and is live.
+  useRefetchOnResume()
   const queryClient = useQueryClient()
-  const pullToRefresh = usePullToRefresh({
+  const { refresh, ...pullToRefresh } = usePullToRefresh({
     enabled: phone && !fullBleed,
     onRefresh: () => queryClient.refetchQueries({ type: 'active' }),
   })
@@ -119,7 +123,11 @@ export function AppShell() {
             unread={entry.to === '/chat' ? chatUnread : 0}
           />
         ))}
-        <MoreTab entries={more} pathname={pathname} />
+        <MoreTab
+          entries={more}
+          pathname={pathname}
+          onRefresh={phone && !fullBleed ? refresh : undefined}
+        />
         {more.map((entry) => (
           <NavItem key={entry.to} entry={entry} unread={0} className="hidden md:flex" />
         ))}
@@ -246,7 +254,16 @@ function NavItem({
  * in one of them, so "where am I" never points at nothing. Hidden from `md`
  * up, where the sidebar lists everything.
  */
-function MoreTab({ entries, pathname }: { entries: NavEntry[]; pathname: string }) {
+function MoreTab({
+  entries,
+  pathname,
+  onRefresh,
+}: {
+  entries: NavEntry[]
+  pathname: string
+  /** Set on a page that can be pulled to refresh: the same reload as a row. */
+  onRefresh?: () => void
+}) {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const active = entries.some(
@@ -288,6 +305,19 @@ function MoreTab({ entries, pathname }: { entries: NavEntry[]; pathname: string 
             </NavLink>
           )
         })}
+        {onRefresh && (
+          <button
+            type="button"
+            onClick={() => {
+              setOpen(false)
+              onRefresh()
+            }}
+            className="hover:bg-accent/60 flex min-h-11 items-center gap-3 rounded-xl px-3 font-medium transition-colors duration-150"
+          >
+            <RefreshCw className="text-muted-foreground size-5" aria-hidden="true" />
+            {t('nav.refresh')}
+          </button>
+        )}
       </SheetContent>
     </Sheet>
   )
