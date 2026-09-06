@@ -139,6 +139,13 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
   }
+  /* Pull-to-refresh is ours on a phone (`usePullToRefresh`); Chrome's own
+     whole-page reload on overscroll would fire beside it. */
+  @media (max-width: 767px) {
+    html {
+      overscroll-behavior-y: none;
+    }
+  }
   h1,
   h2,
   h3 {

@@ -326,3 +326,37 @@ describe('initials', () => {
     expect(initials(null, 'staff@gymops.test')).toBe('S')
   })
 })
+
+describe('AppShell pull-to-refresh', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('has no indicator on a desktop, where the browser reloads', async () => {
+    renderShell()
+    await screen.findByRole('navigation', { name: 'Sections' })
+    expect(screen.queryByRole('status', { hidden: true })).not.toBeInTheDocument()
+  })
+
+  it('mounts the indicator on a phone', async () => {
+    vi.stubGlobal('matchMedia', (query: string) => ({
+      matches: query === '(max-width: 767px)',
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    }))
+    const user = userEvent.setup()
+    renderShell()
+    const nav = await screen.findByRole('navigation', { name: 'Sections' })
+    // The status line is always in the tree, silent until a refresh runs.
+    expect(screen.getByRole('status')).toHaveTextContent('')
+
+    // The same reload without the gesture, for a screen reader or a doubter.
+    await user.click(within(nav).getByRole('button', { name: 'More' }))
+    const sheet = await screen.findByRole('dialog', { name: 'More' })
+    await user.click(within(sheet).getByRole('button', { name: 'Refresh' }))
+    expect(screen.getByRole('status')).toHaveTextContent('Refreshing…')
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog', { name: 'More' })).not.toBeInTheDocument(),
+    )
+  })
+})

@@ -53,6 +53,7 @@ Five tones, each a tinted background, dark text of the same hue and a dot, expos
 ## Layout
 
 - Phone: a bottom tab bar (spec §4 rejects a drawer) of five equal tabs: Home, Chat, Checklists, Daily log and More, which opens a bottom `Sheet` with the rest (`phoneNav()` in `routes/nav.ts`). Sidebar from `md` up lists everything. `/chat` and `/ask` are the full-bleed routes: the frame is `h-dvh overflow-hidden` at every width and the screen scrolls its own panes, so a composer stays above the bar.
+- On a phone, every non-full-bleed screen can be pulled down from the top to refetch what is on it (`usePullToRefresh` + `PullIndicator`): a 32 px white disc comes out of the header with the finger, its arrow turning over, docks on the header's bottom edge and grows when the release will reload, then spins. It never covers the page title and the page never moves. The More sheet's Refresh row is the same reload without the gesture. Coming back to the app refetches what has gone stale on its own.
 - Signed-in screens render inside `AppShell` in a `max-w-3xl` column. Signed-out screens use `AuthLayout`: the logo above a `max-w-sm` card.
 - The header carries the gym switcher, the bell and an initials avatar whose menu holds Account, Notification preferences and Sign out. There is no standing Sign out button.
 

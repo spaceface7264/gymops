@@ -105,6 +105,8 @@
     },
     "loading": "Loading…",
     "name": "GymOps",
+    "refreshed": "Refreshed",
+    "refreshing": "Refreshing…",
     "skipToContent": "Skip to content",
     "tryAgain": "Try again",
     "update": {
@@ -730,7 +732,8 @@
     "incidents": "Incidents",
     "label": "Sections",
     "more": "More",
-    "news": "News"
+    "news": "News",
+    "refresh": "Refresh"
   },
   "news": {
     "ack": {
