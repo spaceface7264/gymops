@@ -64,22 +64,20 @@ export function Thread({ conversationId }: { conversationId?: string }) {
   return (
     <>
       <header className="flex items-center gap-2 border-b p-3">
-        <Link
-          to="/ask"
-          aria-label={t('assistant.back')}
-          className="hover:bg-accent/60 rounded-md p-1 md:hidden"
-        >
-          <ArrowLeft className="size-5" aria-hidden="true" />
-        </Link>
-        <h1 className="min-w-0 flex-1 truncate text-lg font-semibold">
+        <Button asChild variant="ghost" size="icon" className="md:hidden">
+          <Link to="/ask" aria-label={t('assistant.back')}>
+            <ArrowLeft className="size-5" aria-hidden="true" />
+          </Link>
+        </Button>
+        <h2 className="min-w-0 flex-1 truncate text-lg font-semibold">
           {conversationId
             ? conversation?.title || t('assistant.untitled')
             : t('assistant.newConversation')}
-        </h1>
+        </h2>
         {conversationId && (
           <Button
             variant="ghost"
-            size="sm"
+            size="icon"
             aria-label={t('assistant.deleteConversation')}
             disabled={remove.isPending}
             onClick={() =>
@@ -232,7 +230,7 @@ function AskComposer({
         aria-label={t('assistant.write')}
         placeholder={t('assistant.write')}
         rows={1}
-        className="max-h-32 min-h-11 flex-1 py-2"
+        className="max-h-32 min-h-11 flex-1 resize-none py-2"
         value={text}
         onChange={(event) => setText(event.target.value)}
         onKeyDown={key}

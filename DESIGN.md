@@ -78,6 +78,8 @@ Everything in `src/components/` (exported from `@/components`); the vendored sha
 | `Tabs`          | (in `ui/`) switching between panels of one screen                                                                                                                          | a segmented pill; when the panels are routes, `TabsTrigger asChild` around a `NavLink` so the URL is the state                                                                     |
 | `ToggleGroup`   | (in `ui/`) a filter or a value: `type="single"` for one-of, `"multiple"` for a set                                                                                         | looks like `Tabs`, means something else (a radio group or pressed buttons); always `aria-label`; `variant="outline"` for chips a form collects                                     |
 
+A `Table` that has to work on a phone stacks its rows there (`block md:table-row`, header `hidden md:table-header-group`), as `users-panel.tsx` does; a clipped column with no scroll affordance is not an option.
+
 Error lines stay as they are: `<p role="alert" className="text-destructive text-sm">`.
 
 ## Feedback

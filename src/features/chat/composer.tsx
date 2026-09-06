@@ -371,7 +371,7 @@ export function Composer({
           aria-label={t('chat.write')}
           placeholder={t('chat.write')}
           rows={1}
-          className="max-h-32 min-h-11 flex-1 py-2.5"
+          className="max-h-32 min-h-11 flex-1 resize-none py-2.5"
           value={body}
           aria-autocomplete="list"
           aria-haspopup="listbox"
