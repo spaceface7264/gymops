@@ -1,9 +1,9 @@
 import { useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { useAuth } from '@/features/auth'
 import { useSetRunItemNote, useToggleRunItem, type ChecklistRunItem } from './queries'
 
@@ -30,13 +30,19 @@ export function RunItemRow({
     setSavedNote(item.note)
     setNote_(item.note ?? '')
   }
+  // A note is the exception, so the field costs a tap (P7M-05): it shows once
+  // there is a note, or once somebody asks for one, and stays for the row's
+  // lifetime after that.
+  const [wantsNote, setWantsNote] = useState(false)
+  const showNote = wantsNote || Boolean(item.note) || note !== ''
 
   const doneBy =
     item.done_by === user?.id ? t('checklists.byYou') : (item.profiles?.full_name ?? null)
 
   return (
     <div className="space-y-1.5">
-      <div className="flex min-h-11 items-start gap-3 py-1">
+      {/* The whole row is the target (DESIGN.md's Checkbox rule), not the 20 px box. */}
+      <label htmlFor={`${fieldId}-done`} className="flex min-h-11 items-start gap-3 py-1">
         <Checkbox
           id={`${fieldId}-done`}
           className="mt-0.5"
@@ -50,9 +56,7 @@ export function RunItemRow({
           }
         />
         <div className="space-y-0.5">
-          <Label htmlFor={`${fieldId}-done`} className="min-h-6 font-normal">
-            {item.label}
-          </Label>
+          <span className="block min-h-6 leading-6">{item.label}</span>
           {!item.required && (
             <p className="text-muted-foreground text-xs">{t('checklists.optional')}</p>
           )}
@@ -77,25 +81,43 @@ export function RunItemRow({
             </p>
           )}
         </div>
-      </div>
+      </label>
 
-      <div className="pl-8">
-        <Input
-          className="max-w-md"
-          aria-label={t('checklists.noteOn', { label: item.label })}
-          placeholder={t('checklists.notePlaceholder')}
-          disabled={!canComplete}
-          value={note}
-          onChange={(event) => setNote_(event.target.value)}
-          onBlur={() => {
-            if ((item.note ?? '') !== note)
-              setNote.mutate(
-                { id: item.id, note },
-                { onError: () => toast.error(t('checklists.tickFailed')) },
-              )
-          }}
-        />
-      </div>
+      {showNote ? (
+        <div className="pl-8">
+          <Input
+            className="max-w-md"
+            aria-label={t('checklists.noteOn', { label: item.label })}
+            placeholder={t('checklists.notePlaceholder')}
+            disabled={!canComplete}
+            autoFocus={wantsNote && !item.note}
+            value={note}
+            onChange={(event) => setNote_(event.target.value)}
+            onBlur={() => {
+              if ((item.note ?? '') !== note)
+                setNote.mutate(
+                  { id: item.id, note },
+                  { onError: () => toast.error(t('checklists.tickFailed')) },
+                )
+            }}
+          />
+        </div>
+      ) : (
+        canComplete && (
+          <div className="pl-8">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground -ml-4"
+              aria-label={t('checklists.addNoteOn', { label: item.label })}
+              onClick={() => setWantsNote(true)}
+            >
+              {t('checklists.addNote')}
+            </Button>
+          </div>
+        )
+      )}
     </div>
   )
 }

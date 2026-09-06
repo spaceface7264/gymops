@@ -47,7 +47,7 @@ Five tones, each a tinted background, dark text of the same hue and a dot, expos
 - **Scale:** page title 24 px semibold (`PageHeader`), section title 18 px semibold (`CardTitle`), body 15 px, meta 13 px.
 - **Radius:** `--radius: 1rem`. Cards and dialogs `rounded-2xl` (16 px), inputs and selects `rounded-xl` (12 px), menu items `rounded-lg` (12 px), buttons and badges pill. Inputs are less round than the card they sit in.
 - **Surfaces:** cards are white with a 1 px border and no shadow. Dialogs are the one lifted surface (they keep a shadow).
-- **Touch:** `--spacing` is 4 px, not the rem default, so `h-11` is 44 px at the 15 px root. Every control a thumb hits is at least 44 px tall: `Button` default `h-11`, `size="icon"` `size-11`, inputs and selects `h-11`, phone nav items `min-h-11`, `Switch` has a padded hit area. `size="sm"` is `h-9` from `md` up for dense desktop rows and 44 px below it, so a small button on a phone is still a thumb's target (P7M-04); `Toggle` and `TabsTrigger` do the same.
+- **Touch:** `--spacing` is 4 px, not the rem default, so `h-11` is 44 px at the 15 px root. Every control a thumb hits is at least 44 px tall: `Button` default `h-11`, `size="icon"` `size-11`, inputs and selects `h-11`, phone nav items `min-h-11`, `Switch` has a 44 px hit area through its `before:` inset. `size="sm"` is `h-9` from `md` up for dense desktop rows and 44 px below it, so a small button on a phone is still a thumb's target (P7M-04); `Toggle` and `TabsTrigger` do the same.
 - **Motion:** 150 ms ease-out on hover, press and every dialog, menu and tooltip enter (100 ms for tooltips); skeleton pulse while loading. Everything respects `prefers-reduced-motion`. No layout animation; no route transitions.
 
 ## Layout

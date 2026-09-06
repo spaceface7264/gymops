@@ -181,6 +181,7 @@ Legend: P1 = Phase 1 etc. Effort: S (< half day), M (1–2 days), L (3+ days).
 | P7M-01 | Touch and zoom at the token: `--spacing: 4px` so `h-11` is 44 px at the 15 px root; `Input`, `Textarea`, `NativeSelect` 16 px so iOS does not zoom | —          | XS     |
 | P7M-02 | Phone bar: five primary tabs (Home, Chat, Checklists, Daily log, More) and a More sheet for the rest; `sheet` vendored                          | P7M-01     | S      |
 | P7M-03 | Home: one "Right now" block with rows (unread news, today's checklist, open incidents), one primary action, a real `h1`; empty sections one line | P7M-01     | S      |
+| P7M-05 | Re-critique fixes: `Switch` hit area 44 px, checklist row is the target with the note behind "Add a note", "Report one" beside Open incidents on Home, the Home button wraps | P7M-04     | S      |
 | P7M-04 | Polish sweep: no `size="sm"` below `md`, inbox clock `hourCycle: 'h23'`, reactions do not notify (or coalesce per message)                     | P7M-01     | S      |
 
 ## Later (not scheduled)

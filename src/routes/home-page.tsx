@@ -49,7 +49,9 @@ function NextAction() {
 
   const unfinished = runs.data.find((run) => !isRunComplete(run))
   return (
-    <Button asChild className="w-full md:w-auto">
+    // A template name is in the label, and Danish ones run long: the pill
+    // grows instead of clipping (P7M-05).
+    <Button asChild className="h-auto min-h-11 w-full py-2 whitespace-normal md:w-auto">
       {unfinished ? (
         <Link to="/checklists">
           {t('home.next.continue', {

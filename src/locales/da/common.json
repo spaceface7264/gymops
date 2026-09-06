@@ -339,6 +339,8 @@
     "activate": "Aktivér",
     "active": "Genererer opgaver",
     "addItem": "Tilføj punkt",
+    "addNote": "Tilføj en note",
+    "addNoteOn": "Tilføj en note til {{label}}",
     "byYou": "dig",
     "cancel": "Annuller",
     "companyWide": "Hele kæden",
@@ -593,6 +595,7 @@
       "all": "Alle hændelser",
       "allOpen": "Alle {{count}} åbne hændelser",
       "none": "Der er ikke noget åbent her.",
+      "report": "Meld en",
       "title": "Åbne hændelser",
       "unassigned": "Ingen endnu"
     },
