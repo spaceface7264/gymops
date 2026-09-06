@@ -113,7 +113,7 @@ container out. `supabase stop && supabase start` brings it back.
 | P8 AI assistant (V1.5)   | ⬜ Not started | Needs Anthropic API key in Supabase secrets.    |
 | P8 AI assistant (V1.5)   | 🔄 In progress | Branch `assistant` (worktree `.claude/worktrees/assistant`), plan `docs/superpowers/plans/2026-09-04-assistant.md`. Needs Anthropic API key in Supabase secrets for P8-03. |
 | P8 AI assistant (V1.5)   | ✅ Complete    | P8-01 … P8-06 on `assistant` (plan `docs/superpowers/plans/2026-09-04-assistant.md`). Built and verified without an Anthropic key; the first real answer is the one line left (Blockers). |
-| P9 Hosted cutover        | ⬜ Not started | Plan `docs/superpowers/plans/2026-09-05-cutover.md` (2026-09-05): Cloudflare Pages on the default `pages.dev` origin for the pilot, plus P9-01 (admins reach gym channels) and P9-02 (branded auth mail). |
+| P9 Hosted cutover        | 🔄 in progress | P9-01 … P9-06 done 2026-09-06; origin `https://gymops-cjw.pages.dev`; next P9-07 (first superadmin). Plan `docs/superpowers/plans/2026-09-05-cutover.md` (2026-09-05): Cloudflare Pages on the default `pages.dev` origin for the pilot, plus P9-01 (admins reach gym channels) and P9-02 (branded auth mail). |
 
 ## Task status
 
@@ -226,7 +226,13 @@ Update this list as work begins:
 | P6C-13 | ✅ done | 2026-09-05 | 2026-09-05 | Bubbles in every channel kind; the rows branch and its `bubble` prop removed from `message-list.tsx`. The mention mark moved into the header ("Mentions you" in `text-accent-foreground`, sr-only on a continued line). 45 chat tests unchanged. |
 | P6C-12 | ✅ done | 2026-09-05 | 2026-09-05 | See "Currently working on". Verified in Chrome through Playwright: landing on the "New" rule, the DM as bubbles at 1280 and 390 px, "Jump to latest" after a viewport shrink with a line posted through PostgREST, a bubble sent from the phone. 45 chat tests. |
 | P6C-05 | ✅ done | 2026-09-05 | 2026-09-05 | Strings: "Join a channel" / "Find en kanal", group "Conversations" / "Samtaler", DA `Annuller` and `Haller` (the rest of the app's words), the typing line through `Intl.ListFormat`, the em dash in the assistant option gone; the box carries `aria-autocomplete` / `aria-expanded` / `aria-controls` / `aria-activedescendant` for the listbox, whose options are the `li`s; `useChannelLive` reports the socket status (a callback from a channel already let go is ignored — StrictMode's first mount answered CLOSED after the second's SUBSCRIBED) and the header shows "Not connected…" in the reserved status line under the list — which is how a P6-05 defect surfaced: `track()` ran on every keystroke, Realtime answered a burst with `Client presence rate limit exceeded` and closed the channel, and from then on nothing arrived live until a reload; the window is now renewed at most every 2 s; a deleted line keeps its author and time; the send button is `secondary` until there is something to send. 41 chat tests (390 total). |
-
+| P9-01 | ✅ done | 2026-09-06 | 2026-09-06 | `useJoinableChannels` asks for `kind in ('custom', 'gym')` and `JoinableChannel` carries `kind`; `channels_select` already decides who sees what, so an admin (who reads every gym) is offered every gym channel they are not seated in and Join seats them through the existing `channel_members_insert` self-join branch. A gym row shows the group icon in Browse. Staff still see custom channels only (their own gym channel is a membership and is filtered out). 1 new unit test (the browse filter is now recorded by the test builder). Chrome via Playwright on 5174: `admin@` was offered Aarhus C, Copenhagen Nord and Odense, joined Odense and landed in it; `staff@` was offered no gym channel. |
+| P9-02 | ✅ done | 2026-09-06 | 2026-09-06 | `supabase/templates/invite.html` and `recovery.html`, wired as `[auth.email.template.invite]` / `[auth.email.template.recovery]` in `config.toml` with bilingual subjects. One table-layout mail each, Danish first and English below, the violet pill button on `{{ .ConfirmationURL }}` twice and the raw link under it; sign-up, magic link and email change keep the defaults (never sent). Verified in Chrome via Playwright with Mailpit: the reset mail for `staff@` carried the new subject, Danish above English, and its button opened `/reset-password` where a new password was saved; the invite for `pilot@` (sent through `functions serve`) carried its subject and its link reached `/auth/callback` → Continue in the browser → `/accept-invite` → signed in. Two things the check tripped over, worth knowing for P9-07: GoTrue refuses a reset to the same password (`New password should be different`), and the local `email_sent = 2` per hour rate limit is hit by the third mail of an hour (a refused invite leaves no row: the function deletes its `invites` row when the mail fails, but a *stale pending* row from an interrupted run does block the next attempt with 409). The hosted project needs the same two files pasted into Authentication → Email Templates (P9-05). |
+| P9-03 | ✅ done | 2026-09-06 | 2026-09-06 | `public/_redirects` (`/* /index.html 200`) ships in `dist/`; README gained a Deployment section, CLAUDE.md the one line, spec §3 the hosting line and §4 the Vercel/Netlify row. Rami created the Pages project from the dashboard (the first Create screen is the Workers flow with `npx wrangler deploy` — Pages is its own tab; the name `gymops` was taken, so the project is **`gymops-cjw`**): Git-connected to `spaceface7264/gymops`, branch `main`, `npm run build` → `dist`, `NODE_VERSION=20` and the `VITE_*` variables for Production and Preview. Two failed builds on the way: the build-command field had kept its grey vitepress placeholder (`npx vitepress build` → "could not determine executable"), and the first successful build had no variables baked in (Vite reads `VITE_*` at build time — every variable change needs a redeploy). **Pilot origin: `https://gymops-cjw.pages.dev`.** Checked from the terminal: `/login` and `/chat/anything` answer 200 with the app, `manifest.webmanifest` and `sw.js` are served, the bundle carries the hosted Supabase URL and publishable key. Sign-in waits for P9-05. |
+| P9-04 | ✅ done | 2026-09-06 | 2026-09-06 | The hosted schema. `supabase link` (no DB password needed: the CLI's login role goes through the Management API), `db push --dry-run` listed the 35 migrations and no seeds, Rami ran `db push` (the auto-mode classifier refuses writes against hosted from Claude's shell) — 35 applied. Checked with `db query --linked`: pg_cron 1.6.4, pg_net and pgcrypto present (the migrations created the first two; pg_graphql is absent and unused); `storage.buckets` was empty, so Rami ran the three-bucket insert; 7 storage policies; both cron jobs registered on `postgres`. `gen types --project-id` vs the committed types: no drift. The Supabase MCP connection still points at the legacy project, so it was no help here. The CLI needs its keychain token — from Claude's shell it hangs on the keychain prompt unless macOS allows it, so hosted CLI commands run in the background with their output read from a file. |
+| P9-05 | ✅ done | 2026-09-06 | 2026-09-06 | Hosted auth mirrored from `config.toml` in the dashboard by Rami: email provider on with confirm and secure change, sign-ups off (the toggle now lives under Sign In / Providers → User Signups), password 10 + lower/upper/digits, Site URL and the six redirect URLs, emails per hour 100, custom SMTP through Resend, the two templates pasted with their bilingual subjects. Checked from outside through `/auth/v1/settings` with the publishable key. **Sender is `onboarding@resend.dev` for now** — Resend's sandbox address, delivered only to the Resend account's own mailbox — because no sending domain is verified yet; `boulders.dk` needs its DNS records before the pilot (Known gaps). |
+| P9-06 | ✅ done | 2026-09-06 | 2026-09-06 | Production VAPID pair generated (`.env.hosted.local`, gitignored). The eight function secrets set and the three functions deployed by Rami from the worktree (the classifier blocks these writes from Claude's shell; a `<placeholder>` left in a zsh command line is a file redirect and kills the whole `secrets set`). Vault: `notify_functions_url` + `notify_service_key`. `secrets list`, `functions list` and `vault.decrypted_secrets` read back as expected. Smoke test with a JWT waits for the first user (P9-07). |
+| P9-07 | 🔄 in progress | 2026-09-06 | | First superadmin `rami@boulders.dk` created in the dashboard (auto-confirmed) and promoted by SQL; six gyms created on the origin by Rami. **First hosted defect:** the invite dialog failed with "Invitationen kunne ikke sendes" — the hosted gateway forwards the browser's OPTIONS preflight to the function and `invite` answered 405 with no CORS headers, so the browser never sent the POST (locally Kong answers preflights itself, which is why every local run passed). Fix: `invite` carries the same `CORS` headers as `assistant` and answers OPTIONS with 204. Needs `functions deploy invite`, then the invite → accept → reset → push → phone lines. |
 
 Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
 
@@ -250,6 +256,7 @@ Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
 
 | Gap | Why it matters | Suggested home |
 | --- | --- | --- |
+| No verified sending domain in Resend (P9-05, 2026-09-06) | Hosted auth mail and `notify` emails go out as `onboarding@resend.dev`, which Resend delivers only to the Resend account's own mailbox — an invite to anyone else is refused. | Before the pilot: add `boulders.dk` (or a subdomain) in Resend → Domains, set the DKIM/SPF records, then change the SMTP sender and `NOTIFY_FROM` to `noreply@boulders.dk`. |
 | ~~`supabase/functions/invite` is outside every gate~~ | — | **Fixed 2026-09-02**: a `functions` CI job runs `deno check`, `deno lint` and `deno fmt --check`. A behavioural test still waits for P5-03. |
 | ~~Nothing catches `database.types.ts` drift~~ | — | **Fixed 2026-09-02**: the database job regenerates the types and fails on a diff. It caught drift on its first run. |
 | ~~Search has no ranking~~; the feed sorts drafts above published news; signed image URLs expire at 1h against a 55min stale time; ~~the vendored `dialog.tsx` carries two untranslated "Close" strings~~ (fixed by P7D-01: `t('app.close')`); guides have no acknowledgement report | Each is small and none is a correctness bug | Fold into P3 polish or take them with P5-06 (Playwright) |
@@ -261,7 +268,7 @@ Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
 | Chat attachments are unvalidated on the way in (P6-05) | Any type, any size up to the bucket's 50 MiB, and a phone photograph goes up at full resolution over gym wifi. The storage policies decide *who* may upload, not *what*. | P6 polish, or with P7-04 |
 | Phone bottom bar overflows past five entries; Danish labels make it worse | Nine nav entries scroll sideways on a phone; that's already tight, and Danish's longer words push it further. | Five primary tabs plus a More sheet is logged under Later in `PROJECT_TASKS.md`. |
 | A daily-log "issue" turned into an incident is not linked to it (P4-05/P4-06) | "Report as an incident" opens the form prefilled from the entry (first line as title, tags in the body), which is the one-click half of spec §2.2; but the incident does not know which entry it came from and the entry keeps offering the button, so a second click makes a second incident and nobody can walk from one to the other. Found by the P7-07 walkthrough, 2026-09-04. A nullable `daily_log_entries.incident_id` (or the reverse) set on creation, and a link in both cards. | P8 polish, or with the V2 tasks work |
-| An admin cannot open a gym channel they are not seated in (P6-02/P6-03) | The list shows the channels one is a member of (`channel_members!inner`) and Browse offers custom channels only, while `channels_select` lets an admin read every gym channel and `can_moderate_channel()` lets them delete there. So "delete any chat message — admin: anywhere" (spec §2.1) holds in the database and is unreachable on screen for every gym the admin has no membership in; the same admin cannot even read that gym's chat. Found by the P7-07 walkthrough, 2026-09-04. Either seat admins in every gym channel (P6-02's trigger, on the admin flag as well as on membership) or let Browse list gym channels for admins. | P6 polish, before the cutover if admins are expected to read gym chat |
+| ~~An admin cannot open a gym channel they are not seated in (P6-02/P6-03)~~ **Fixed by P9-01 (2026-09-06)** | The list shows the channels one is a member of (`channel_members!inner`) and Browse offers custom channels only, while `channels_select` lets an admin read every gym channel and `can_moderate_channel()` lets them delete there. So "delete any chat message — admin: anywhere" (spec §2.1) holds in the database and is unreachable on screen for every gym the admin has no membership in; the same admin cannot even read that gym's chat. Found by the P7-07 walkthrough, 2026-09-04. Either seat admins in every gym channel (P6-02's trigger, on the admin flag as well as on membership) or let Browse list gym channels for admins. | P6 polish, before the cutover if admins are expected to read gym chat |
 | ~~`npm test` in the primary checkout runs the worktrees' tests too~~ | — | **Fixed 2026-09-04** with P8: `test.exclude` in `vite.config.ts` now lists `.claude/**` and `supabase/**` — the latter because CI's `npm test` picked up the assistant's Deno test file and failed on `@anthropic-ai/sdk`, which only `deno test` can resolve. |
 
 ## Hosted project cutover
@@ -288,56 +295,42 @@ locally is P5-03 (`notify`, the database webhook, Resend, VAPID).
 
 - [x] ~~Confirm which hosted project is GymOps.~~ **`ngcqpftfqepvhpjikaqq`** (2026-09-02).
       `ooikemajridlhceejgmo` is a legacy project — not GymOps.
-- [ ] Confirm the project runs Postgres 17 (`db.major_version = 17` locally). A mismatch
-      changes what migrations are allowed to assume.
-- [ ] Create the Resend account and get the API key.
+- [x] ~~Confirm the project runs Postgres 17.~~ **17.6.1.166** (2026-09-06, `projects list`).
+- [x] ~~Create the Resend account and get the API key.~~ Done (2026-09-06) — key `gymops-hosted`. **No sending domain yet**: mail goes out as `onboarding@resend.dev`, which Resend delivers only to the account owner's address; `boulders.dk` must be added under Resend → Domains and its DNS records set before the pilot.
 
 **Schema and code**
 
-- [ ] `supabase link --project-ref <ref>`, then `supabase db push`. Never `db reset` against
+- [x] ~~`supabase link --project-ref <ref>`, then `supabase db push`.~~ Linked and **all 35 migrations pushed 2026-09-06** (P9-04; the dry run listed no seeds). Never `db reset` against
       hosted, and never let `supabase/seed.sql` or `supabase/seeds/` near it: they contain
       pgTAP helpers and four users with a published password.
-- [ ] Enable **pg_cron** and confirm `pg_graphql`/`pgcrypto` availability. The P4-02
-      migration runs `create extension if not exists pg_cron`, which needs the
-      privilege the dashboard toggle grants; after `db push`, check `cron.job` holds
-      `generate-checklist-runs` and that `cron.database_name` points at this database.
-- [ ] Create the three private buckets — `content`, `incidents`, `chat`, all
-      `public = false`, 50 MiB — and apply the storage RLS policies from migrations.
-- [ ] Regenerate `src/lib/database.types.ts` and check it matches; `db:types` is pinned to
-      `--local`, so a hosted-only drift would go unnoticed.
+- [x] ~~Enable **pg_cron** and confirm `pg_graphql`/`pgcrypto` availability.~~ The migrations created pg_cron 1.6.4 and pg_net themselves; pgcrypto present; pg_graphql is not installed and nothing uses it. `cron.job` holds `generate-checklist-runs` (`0 * * * *`) and `send-ack-reminders` (`0 7 * * *`), `cron.database_name = postgres` (2026-09-06).
+- [x] ~~Create the three private buckets.~~ `content`, `incidents`, `chat` inserted into `storage.buckets` (private, 50 MiB) on 2026-09-06; the 7 storage policies came with the migrations.
+- [x] ~~Regenerate `src/lib/database.types.ts` and check it matches.~~ `gen types --project-id` diffed against the committed file on 2026-09-06: no schema drift (only the generator's `__InternalSupabase` header and parenthesised generics differ).
 
 **Auth settings to mirror from `supabase/config.toml`** (the dashboard is a separate source
 of truth; nothing in config.toml applies to a hosted project)
 
-- [ ] Sign-ups **off** (`[auth] enable_signup = false`) — invite-only.
-- [ ] Email provider **on** (`[auth.email] enable_signup = true`). Turning this off kills
-      password login; it cost a debugging session in P1-09.
-- [ ] `minimum_password_length = 10` and `lower_upper_letters_digits`. `checkPassword()` in
-      `src/features/auth/password.ts` mirrors these — a mismatch means users see GoTrue's
-      untranslated error instead of ours.
-- [ ] Site URL = the deployed web origin, and the redirect allow-list must include
-      `/auth/callback`, `/reset-password`, `/accept-invite` and `gymops://auth/callback`.
-- [ ] Raise `email_sent` well above 2/hour; keep anonymous sign-ins, manual linking, MFA and
-      every external provider off.
-- [ ] Point SMTP at Resend and set the sender name and admin address.
+- [x] ~~Sign-ups **off** (`[auth] enable_signup = false`) — invite-only.~~ Off (2026-09-06) — checked through `/auth/v1/settings` (`disable_signup: true`).
+- [x] ~~Email provider **on** (`[auth.email] enable_signup = true`). Turning this off kills~~ On, confirm email on, secure email change on (2026-09-06) (`external.email: true`, `mailer_autoconfirm: false`).
+
+- [x] ~~`minimum_password_length = 10` and `lower_upper_letters_digits`. `checkPassword()` in~~ Set in the dashboard (2026-09-06).
+
+- [x] ~~Site URL = the deployed web origin, and the redirect allow-list must include~~ Site URL `https://gymops-cjw.pages.dev`; redirects: the origin, `/auth/callback`, `/reset-password`, `/accept-invite`, `gymops://auth/callback`, `https://*.gymops-cjw.pages.dev/**` (2026-09-06).
+
+- [x] ~~Raise `email_sent` well above 2/hour; keep anonymous sign-ins, manual linking, MFA and~~ Emails per hour 100; anonymous sign-ins and manual linking off (2026-09-06).
+
+- [x] ~~Point SMTP at Resend and set the sender name and admin address.~~ Custom SMTP `smtp.resend.com:465`, user `resend`, sender `GymOps <onboarding@resend.dev>` until the domain is verified (2026-09-06).
 
 **Secrets** (Supabase secrets and GitHub Actions secrets only, per spec §5)
 
-- [ ] Service-role key for the `invite` function (P2-03).
-- [ ] `RESEND_API_KEY`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`,
-      `SITE_URL` and `NOTIFY_FROM` as function secrets (P5-03). Generate the VAPID pair
-      with `npx web-push generate-vapid-keys`; the local pair in
-      `supabase/functions/.env` is a development pair and must not be reused. The
-      public key also goes to the web build as `VITE_VAPID_PUBLIC_KEY` (P5-05) — the
-      two must be the same pair, or every subscription is refused.
-- [ ] The webhook is **not** configured in the dashboard: `dispatch_notification()`
-      reads Vault, so run `select vault.create_secret('https://<ref>.supabase.co/functions/v1',
-      'notify_functions_url')` and the same for `notify_service_key` with the hosted
-      service role key. Until both exist the inbox fills and nothing is pushed or emailed.
+- [x] ~~Service-role key for the `invite` function (P2-03).~~ Injected by the platform as `SUPABASE_SERVICE_ROLE_KEY`; nothing to set (2026-09-06).
+- [x] ~~`RESEND_API_KEY`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`,~~ All set (2026-09-06) with `secrets set`: `SITE_URL`, `RESEND_API_KEY`, `RESEND_API_URL`, `NOTIFY_FROM`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `ANTHROPIC_API_KEY`. The production VAPID pair lives in `supabase/functions/.env.hosted.local` (gitignored); public key `BKCY1Ogezq4wfUIB8WvThCNaT6u3K_W1CanBXZ40_-5DV_1AEC3NvSLYDb5L6mqhAusptrtXgt3SZLsiSEwvRHo`.
+
+- [x] ~~The webhook is **not** configured in the dashboard: `dispatch_notification()`~~ Vault holds `notify_functions_url` and `notify_service_key` (the legacy `service_role` JWT) (2026-09-06). First attempt stored the literal placeholder; fixed with `vault.update_secret(id, …)`.
+
 - [ ] Verify the Resend sending domain before the first high-severity incident: an
       unverified domain answers 403 and `notify` records the email as `failed`.
-- [ ] `ANTHROPIC_API_KEY` as a function secret, then `supabase functions deploy assistant`
-      (P8-03). `SITE_URL` is what the assistant's channel replies link sources with.
+- [x] ~~`ANTHROPIC_API_KEY` as a function secret, then `supabase functions deploy assistant`~~ Set, and `invite`, `notify`, `assistant` deployed ACTIVE with `verify_jwt` (2026-09-06); each answers 401 without a JWT. Anthropic credits still pending.
 
 **First user**
 
@@ -574,6 +567,9 @@ of truth; nothing in config.toml applies to a hosted project)
 | 2026-09-05 | P6C-07: a mention is a pick, never a string. Picks live in state and are sent only if still named; the stream colours only resolved names. A hand-typed "@Name" is plain text, on purpose: it must not look like something that notified somebody. |
 | 2026-09-05 | P6C-10: the optimistic line is the sender's own row, at the head of the first page, never a placeholder in the composer. Sending is proved where the line will live; the refetch the insert triggers replaces it, and a failed insert removes it and keeps the text in the box. |
 | 2026-09-05 | P6C-05: the typing presence renews its window at most every 2 s, not on every keystroke. Realtime rate-limits presence per client and closes the channel when exceeded, and a closed channel is not rejoined; the socket status line is what made this visible. |
+| 2026-09-06 | P9-01: admins reach gym channels through Browse + Join, not by seating every admin in every gym channel — ten channels with unread badges for people who work centrally. |
+| 2026-09-06 | P9-02: one bilingual mail per type rather than a template per language — GoTrue has one template per type and no per-user locale. |
+| 2026-09-06 | P9-07: every browser-called function answers its own CORS preflight (`assistant` did, `invite` now does). The local Kong gateway answers OPTIONS for the function; hosted does not — a function that only passes locally is not proven. |
 
 ## How to update this file
 

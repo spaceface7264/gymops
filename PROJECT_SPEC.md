@@ -82,6 +82,7 @@ Permission matrix (also the RLS test spec):
 - **PWA:** `vite-plugin-pwa`, `display: standalone`, service worker handling `push` and `notificationclick`. In-app install guide (iOS needs Add to Home Screen; permission prompt only from a user gesture).
 - **Auth:** Supabase Auth email/password with PKCE. Invite/reset links open the desktop app via deep link with a web fallback page.
 - **AI assistant:** Edge Function using `@anthropic-ai/sdk`, model `claude-opus-5`, adaptive thinking, streaming via SSE. Tool runner with two tools, `search_content` (Postgres full-text search) and `read_content`, both executed with the caller's JWT so RLS applies. Stable system prompt + tool definitions cached with `cache_control`.
+- **Web hosting:** Cloudflare Pages, static bundle, `_redirects` for the SPA.
 - **Observability:** Sentry for web and desktop; token usage logged per assistant call.
 
 ### 3.1 Data model (V1)
@@ -120,6 +121,7 @@ gymops/
     seeds/                  local-only SQL loaded by `db reset`; never in `db push`
     tests/                  pgTAP RLS tests (every .sql here is run as a test)
     functions/              invite, notify, assistant, brp-sync
+    templates/              the invite and recovery mails (en + da), wired in config.toml
     seed.sql
   src-tauri/                desktop shell (Tauri 2; icons, capabilities, the Rust entry point)
   docs/                     the P7-07 manual walkthrough checklist
@@ -240,6 +242,7 @@ gymops/
 | `returning id` on the DM it just opened | `channels_select` is membership, and a channel one statement old has no members — reading back your own new DM is a row you may not see. The id is generated in the function instead. The same reason `channel_members_insert`'s DM branch needed `can_seat_in_dm()`: a policy's subquery is filtered by the referenced table's RLS, so P6-01's "the creator counts before the first row exists" was dead until it was asked through a definer function. |
 | `can_moderate_channel(id)` inside `channels_select` | It looks the channel up by id, and a command cannot see its own tuple — so a manager creating a *private* channel and reading back its id was refused, while the public case passed because its branch reads the new row's own columns. A policy filtering `channels` asks the moderation rule of the row in hand; `can_moderate_channel()` stays as it is for the tables that are asking about a channel they are not (P6-07). |
 | Editing a custom channel's scope or its privacy | Both are what the people in it joined. Moving one into another gym hands it to a different set of managers — `channels_update`'s check is on the new row, so the manager doing it could be locked out of what they just moved — and making a public channel private silently drops every reader who never joined. The dialog asks for both at creation and neither afterwards. |
+| Seating every admin in every gym channel by trigger (P9-01) | Ten gym channels, unread badges included, in the sidebar of people who mostly work centrally. Browse lists the gym channels `channels_select` lets an admin read, and Join seats them in the one they need. |
 | Reading a public channel before joining it | Posting takes membership (P6-01), so a preview would be a conversation with no way to answer, and the read marker would have nowhere to live. Browse lists what you could join, joining opens it, and leaving puts it back on the list. |
 | Telling somebody twice when they are mentioned inside a DM | Being named in a two-person conversation is not a second event. The DM branch and the mention branch never overlap: a DM is told as a DM, named or not. |
 | One notification per message in a DM | A conversation is a stream and an inbox is not. The DM branch de-duplicates per channel over five minutes; the mention branch does not, because somebody typed a name on purpose and the second one is as deliberate as the first. |
@@ -289,6 +292,7 @@ gymops/
 | Enter-to-send on a touch keyboard | Rejected 2026-09-05: a phone keyboard has no shift+Enter, so a two-line handover went out as two half-messages. Enter sends only where `(pointer: fine)` matches; on touch it starts a line and the button sends. |
 | Inserting the message row before its attachments are uploaded | Reversed 2026-09-05 (it was P6-05's order, after P4-07's): a failed upload left a fileless message in the channel and a box that said the message could not be sent, and a retry posted it twice. The files go up first and the row after; a file nobody points at is the cheaper leftover. |
 | One icon button per channel action in the conversation header | Replaced 2026-09-05: up to six unlabeled icons for a manager, with mute beside delete and a second bell under the shell's. One `…` menu (members, muted, settings, leave, delete) and a muted mark beside the title. |
+| Vercel / Netlify for the web app (P9-03) | Same shape — a static bundle behind an SPA rewrite; Cloudflare Pages chosen for the uncapped free tier and the EU edge. |
 | A flat stream of author / time / body triplets | Replaced 2026-09-05: the day is cut by headings, lines by the same person within five minutes share one name, times are 24-hour, the reader's own lines say "You", the first unread line has a "New" rule above it, and the list follows the newest line only while the reader is at the bottom. |
 
 ## 5. Conventions

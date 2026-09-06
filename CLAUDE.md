@@ -51,6 +51,7 @@ themselves and reuse one that is already running. `e2e/screens.spec.ts` re-captu
 `docs/design/screens/` and only runs with `E2E_SCREENS=1`.
 
 CI is `.github/workflows/ci.yml`: a `web` job running those gates on Node 20, and a `database` job that starts the local stack (minus the services the tests do not need) and runs `db reset` + `test db`.
+The web app deploys from `main` to Cloudflare Pages (`https://gymops-cjw.pages.dev` for the pilot); see README, Deployment.
 
 The desktop shell (P7) is `src-tauri/`, built with the Rust toolchain rustup put in
 `~/.cargo` on 2026-09-03. macOS honours the `gymops://` scheme only from a bundled

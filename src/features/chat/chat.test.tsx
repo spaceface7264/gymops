@@ -16,6 +16,7 @@ const messageRows = vi.fn<(cursor: string | null) => Row[]>()
 const updated = vi.fn<(table: string, values: Row) => void>()
 const inserted = vi.fn<(table: string, values: Row) => void>()
 const deleted = vi.fn<(table: string, filters: [string, unknown][]) => void>()
+const selectedChannels = vi.fn<(filters: [string, unknown][]) => void>()
 const uploaded = vi.fn<(bucket: string, path: string) => void>()
 const tracked = vi.fn<(state: Row) => void>()
 const invoked = vi.fn<(name: string, options: Row) => Promise<Row>>()
@@ -38,7 +39,10 @@ function builder(table: string) {
       filters.push([column, value])
       return chain
     },
-    in: () => chain,
+    in: (column: string, values: unknown) => {
+      filters.push([column, values])
+      return chain
+    },
     order: () => chain,
     limit: () => chain,
     // The keyset cursor: the last row already on screen, as PostgREST sees it.
@@ -66,6 +70,7 @@ function builder(table: string) {
     },
     then: (resolve: (value: unknown) => unknown) => {
       if (deleting) deleted(table, filters)
+      if (table === 'channels') selectedChannels(filters)
       if (table === 'message_reactions' && failing.reaction)
         return Promise.resolve({ data: null, error: { message: 'refused' } }).then(
           resolve,
@@ -1341,6 +1346,46 @@ describe('custom channels', () => {
     await waitFor(() =>
       expect(inserted).toHaveBeenCalledWith('channel_members', {
         channel_id: 'channel-setting',
+        user_id: 'user-sam',
+      }),
+    )
+  })
+
+  it('offers an admin the gym channels they are not seated in (P9-01)', async () => {
+    profile.mockReturnValue({
+      id: 'user-sam',
+      is_admin: true,
+      is_superadmin: false,
+      gym_memberships: [],
+    })
+    channelRows.mockReturnValue([
+      channel(),
+      channel({
+        id: 'channel-aarhus',
+        kind: 'gym',
+        gym_id: 'gym-aarhus',
+        name: 'Aarhus C',
+        channel_members: [],
+      }),
+    ])
+    renderChat()
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Find a channel' }))
+
+    const join = await screen.findAllByRole('button', { name: 'Join' })
+    expect(join).toHaveLength(1)
+    expect(within(screen.getByRole('dialog')).getByText('Aarhus C')).toBeInTheDocument()
+    // Custom and gym channels; never a DM, never #company (everyone is in it already).
+    await waitFor(() =>
+      expect(selectedChannels).toHaveBeenCalledWith(
+        expect.arrayContaining([['kind', ['custom', 'gym']]]),
+      ),
+    )
+
+    await userEvent.click(join[0]!)
+    await waitFor(() =>
+      expect(inserted).toHaveBeenCalledWith('channel_members', {
+        channel_id: 'channel-aarhus',
         user_id: 'user-sam',
       }),
     )

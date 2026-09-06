@@ -1,4 +1,4 @@
-import { Hash, Lock } from 'lucide-react'
+import { Hash, Lock, Users } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { EmptyState, LoadingState } from '@/components'
 import { useNavigate } from 'react-router'
@@ -46,7 +46,9 @@ export function BrowseChannelsDialog({
               key={channel.id}
               className="flex min-h-11 items-center gap-2 rounded-lg px-2 py-2 text-sm"
             >
-              {channel.is_private ? (
+              {channel.kind === 'gym' ? (
+                <Users className="size-4 shrink-0" aria-hidden="true" />
+              ) : channel.is_private ? (
                 <Lock className="size-4 shrink-0" aria-hidden="true" />
               ) : (
                 <Hash className="size-4 shrink-0" aria-hidden="true" />

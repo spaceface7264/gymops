@@ -29,10 +29,19 @@ type Caller = {
   managedGymIds: string[]
 }
 
+// The browser calls this from the web origin, and hosted forwards the
+// preflight to the function (locally Kong answered it): same headers as the
+// assistant — the bearer JWT is the gate, not the origin.
+const CORS = {
+  'access-control-allow-origin': '*',
+  'access-control-allow-headers': 'authorization, apikey, content-type, x-client-info',
+  'access-control-allow-methods': 'POST, OPTIONS',
+}
+
 const json = (body: unknown, status: number) =>
   new Response(JSON.stringify(body), {
     status,
-    headers: { 'content-type': 'application/json' },
+    headers: { ...CORS, 'content-type': 'application/json' },
   })
 
 const fail = (status: number, error: string) => json({ error }, status)
@@ -95,6 +104,9 @@ function mayInvite(caller: Caller, request: InviteRequest): boolean {
 }
 
 Deno.serve(async (request: Request) => {
+  if (request.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers: CORS })
+  }
   if (request.method !== 'POST') return fail(405, 'method_not_allowed')
 
   const token = request.headers.get('Authorization')?.replace('Bearer ', '')

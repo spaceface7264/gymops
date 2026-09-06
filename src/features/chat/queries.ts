@@ -276,14 +276,15 @@ export type ChannelInput = {
 /** A channel this person could be in but is not, with how many people are. */
 export type JoinableChannel = Pick<
   Channel,
-  'id' | 'gym_id' | 'name' | 'description' | 'is_private'
+  'id' | 'kind' | 'gym_id' | 'name' | 'description' | 'is_private'
 > & { members: number }
 
 /**
- * The custom channels this person may see and has not joined: `channels_select`
- * decides the list — a public one in a gym they read, or a private one they
- * moderate — and the ones they are already in are dropped here, because the
- * sidebar is already showing those.
+ * The channels this person may see and has not joined: `channels_select`
+ * decides the list — a public custom one in a gym they read, a private one
+ * they moderate, and (P9-01) the gym channels an admin may read without a
+ * membership, so head office can open any gym's chat. DMs are never browsed
+ * and `#company` seats everyone by trigger, so neither is asked for.
  */
 export function useJoinableChannels() {
   const { user } = useAuth()
@@ -295,8 +296,10 @@ export function useJoinableChannels() {
     queryFn: async (): Promise<JoinableChannel[]> => {
       const { data, error } = await supabase
         .from('channels')
-        .select('id, gym_id, name, description, is_private, channel_members(user_id)')
-        .eq('kind', 'custom')
+        .select(
+          'id, kind, gym_id, name, description, is_private, channel_members(user_id)',
+        )
+        .in('kind', ['custom', 'gym'])
         .order('name')
 
       if (error) throw error
