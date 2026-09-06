@@ -326,3 +326,29 @@ describe('initials', () => {
     expect(initials(null, 'staff@gymops.test')).toBe('S')
   })
 })
+
+describe('AppShell pull-to-refresh', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('has no indicator on a desktop, where the browser reloads', async () => {
+    renderShell()
+    await screen.findByRole('navigation', { name: 'Sections' })
+    expect(screen.queryByRole('status', { hidden: true })).not.toBeInTheDocument()
+  })
+
+  it('mounts the indicator on a phone', async () => {
+    vi.stubGlobal('matchMedia', (query: string) => ({
+      matches: query === '(max-width: 767px)',
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    }))
+    renderShell()
+    await screen.findByRole('navigation', { name: 'Sections' })
+    expect(screen.getByRole('status', { hidden: true })).toHaveAttribute(
+      'aria-hidden',
+      'true',
+    )
+  })
+})

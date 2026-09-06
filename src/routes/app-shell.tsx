@@ -1,8 +1,9 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { Ellipsis } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, NavLink, Outlet, useLocation } from 'react-router'
-import { Logo, UnreadCount } from '@/components'
+import { Logo, PullIndicator, UnreadCount } from '@/components'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -24,6 +25,7 @@ import { useChatUnread } from '@/features/chat'
 import { GymSwitcher } from '@/features/gyms'
 import { NotificationBell } from '@/features/notifications'
 import { usePhone } from '@/hooks/use-media-query'
+import { usePullToRefresh } from '@/hooks/use-pull-to-refresh'
 import { cn } from '@/lib/utils'
 import { isConversation, isFullBleed, phoneNav, type NavEntry } from '@/routes/nav'
 import { UpdateBanner } from '@/routes/update-banner'
@@ -65,6 +67,13 @@ export function AppShell() {
   // bell holds a Realtime subscription and may exist only once.
   const phone = usePhone()
   const headerless = phone && isConversation(pathname)
+  // A standalone PWA has no reload button: pulling the page down from the top
+  // refetches every query on screen. Chat scrolls inside itself and is live.
+  const queryClient = useQueryClient()
+  const pullToRefresh = usePullToRefresh({
+    enabled: phone && !fullBleed,
+    onRefresh: () => queryClient.refetchQueries({ type: 'active' }),
+  })
 
   // Managers administer their own gyms' staff, so the admin section is theirs
   // as well; only staff never see it.
@@ -169,6 +178,8 @@ export function AppShell() {
             </div>
           </header>
         )}
+
+        {phone && !fullBleed && <PullIndicator {...pullToRefresh} />}
 
         {/* Bottom padding keeps the last content clear of the phone nav bar;
             a full-bleed screen takes care of its own. */}
