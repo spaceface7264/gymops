@@ -32,14 +32,13 @@ export function OpenIncidentsSection() {
   return (
     <HomeSection
       title={t('home.incidents.title')}
+      // Reporting is never more than two taps from Home (PRODUCT.md), and the
+      // photo is the part that fades: the link is there whether or not
+      // anything is open (P7M-05).
       action={
-        open.length > 0 && (
-          <HomeSectionLink to="/incidents">
-            {open.length > shown
-              ? t('home.incidents.allOpen', { count: open.length })
-              : t('home.incidents.all')}
-          </HomeSectionLink>
-        )
+        <HomeSectionLink to="/incidents/new">
+          {t('home.incidents.report')}
+        </HomeSectionLink>
       }
     >
       {incidents.isPending && <LoadingState rows={2} />}
@@ -84,6 +83,13 @@ export function OpenIncidentsSection() {
             </HomeRow>
           ))}
         </HomeRows>
+      )}
+      {open.length > 0 && (
+        <HomeSectionLink to="/incidents">
+          {open.length > shown
+            ? t('home.incidents.allOpen', { count: open.length })
+            : t('home.incidents.all')}
+        </HomeSectionLink>
       )}
     </HomeSection>
   )

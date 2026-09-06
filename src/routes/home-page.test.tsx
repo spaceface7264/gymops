@@ -309,6 +309,16 @@ describe('the rest of the home page (P4-10)', () => {
     )
   })
 
+  it('offers to report an incident even when nothing is open', async () => {
+    renderWithProviders(<HomePage />)
+
+    expect(
+      await within(
+        await screen.findByRole('region', { name: 'Open incidents' }),
+      ).findByRole('link', { name: 'Report one' }),
+    ).toHaveAttribute('href', '/incidents/new')
+  })
+
   it('says so when each block is empty', async () => {
     renderWithProviders(<HomePage />)
 

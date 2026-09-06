@@ -339,6 +339,8 @@
     "activate": "Activate",
     "active": "Generates runs",
     "addItem": "Add item",
+    "addNote": "Add a note",
+    "addNoteOn": "Add a note on {{label}}",
     "byYou": "you",
     "cancel": "Cancel",
     "companyWide": "Company-wide",
@@ -593,6 +595,7 @@
       "all": "All incidents",
       "allOpen": "All {{count}} open incidents",
       "none": "Nothing is open here.",
+      "report": "Report one",
       "title": "Open incidents",
       "unassigned": "Nobody yet"
     },
