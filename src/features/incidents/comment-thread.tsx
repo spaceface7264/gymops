@@ -40,6 +40,7 @@ export function CommentThread({
                     month: 'short',
                     hour: '2-digit',
                     minute: '2-digit',
+                    hourCycle: 'h23',
                   }),
                 })}
               </p>
@@ -59,7 +60,7 @@ export function CommentThread({
         >
           <Textarea
             aria-label={t('incidents.comment')}
-            className="min-h-16 text-sm"
+            className="min-h-16"
             value={body}
             onChange={(event) => setBody(event.target.value)}
           />

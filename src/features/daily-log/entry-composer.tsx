@@ -83,7 +83,7 @@ export function EntryComposer({ gymId }: { gymId: string }) {
           <Label htmlFor={`${fieldId}-body`}>{t('dailyLog.entry')}</Label>
           <Textarea
             id={`${fieldId}-body`}
-            className="min-h-20 text-sm"
+            className="min-h-20"
             value={body}
             onChange={(event) => setBody(event.target.value)}
           />

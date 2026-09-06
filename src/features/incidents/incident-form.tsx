@@ -153,7 +153,7 @@ export function IncidentFormPage() {
             <Label htmlFor={`${fieldId}-body`}>{t('incidents.bodyLabel')}</Label>
             <Textarea
               id={`${fieldId}-body`}
-              className="min-h-24 text-sm"
+              className="min-h-24"
               value={body}
               onChange={(event) => setBody(event.target.value)}
             />

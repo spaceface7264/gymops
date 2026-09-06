@@ -57,6 +57,7 @@ export function EntryCard({
   const when = new Date(entry.created_at).toLocaleTimeString(i18n.language, {
     hour: '2-digit',
     minute: '2-digit',
+    hourCycle: 'h23',
   })
 
   return (
@@ -94,7 +95,7 @@ export function EntryCard({
           </Select>
           <Textarea
             aria-label={t('dailyLog.entry')}
-            className="min-h-20 text-sm"
+            className="min-h-20"
             value={body}
             onChange={(event) => setBody(event.target.value)}
           />

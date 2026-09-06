@@ -23,7 +23,9 @@ const buttonVariants = cva(
       size: {
         default: 'h-11 px-5 has-[>svg]:px-4',
         xs: "h-7 gap-1 px-2.5 text-xs has-[>svg]:px-2 [&_svg:not([class*='size-'])]:size-3",
-        sm: 'h-9 gap-1.5 px-4 has-[>svg]:px-3',
+        // Dense from `md` up only: on a phone there are no dense rows, so a
+        // small button is still the 44 px a thumb needs (P7M-04).
+        sm: 'h-11 gap-1.5 px-4 has-[>svg]:px-3 md:h-9',
         lg: 'h-12 px-6 text-base has-[>svg]:px-5',
         icon: 'size-11',
         'icon-xs': "size-7 [&_svg:not([class*='size-'])]:size-3",

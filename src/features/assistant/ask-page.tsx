@@ -1,7 +1,7 @@
 import { Plus, Sparkles } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link, NavLink, useParams } from 'react-router'
-import { EmptyState } from '@/components'
+import { EmptyState, PageHeader } from '@/components'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { useAssistantQuota, useConversations } from './queries'
@@ -32,9 +32,12 @@ export function AskPage() {
           showThread && 'hidden md:flex',
         )}
       >
-        <div className="p-3">
-          <h1 className="text-lg font-semibold">{t('assistant.title')}</h1>
-          <p className="text-muted-foreground text-sm">{t('assistant.description')}</p>
+        <div className="p-4 md:p-3">
+          {/* The page's one h1, like every other screen; the thread's title is an h2. */}
+          <PageHeader
+            title={t('assistant.title')}
+            description={t('assistant.description')}
+          />
           <Button asChild variant="outline" size="sm" className="mt-3 w-full">
             <Link to="/ask/new">
               <Plus className="size-4" aria-hidden="true" />

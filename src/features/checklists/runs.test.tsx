@@ -174,7 +174,16 @@ describe("today's runs", () => {
   it('saves a note when the field is left, and only if it changed', async () => {
     renderWithProviders(<ChecklistRunsPage />)
 
-    const note = await screen.findByLabelText('Note on Empty the chalk buckets')
+    // A row without a note shows no field until asked (P7M-05).
+    expect(
+      screen.queryByLabelText('Note on Empty the chalk buckets'),
+    ).not.toBeInTheDocument()
+    await userEvent.click(
+      await screen.findByRole('button', {
+        name: 'Add a note on Empty the chalk buckets',
+      }),
+    )
+    const note = screen.getByLabelText('Note on Empty the chalk buckets')
     await userEvent.type(note, 'Bucket by the cave is cracked')
     await userEvent.tab()
 

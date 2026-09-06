@@ -371,9 +371,7 @@ export function Composer({
           aria-label={t('chat.write')}
           placeholder={t('chat.write')}
           rows={1}
-          // 16px, one step over the app's 15: iOS zooms the page into any
-          // smaller field it focuses, and this is the field people focus most.
-          className="max-h-32 min-h-11 flex-1 py-2.5 text-[16px]"
+          className="max-h-32 min-h-11 flex-1 resize-none py-2.5"
           value={body}
           aria-autocomplete="list"
           aria-haspopup="listbox"
