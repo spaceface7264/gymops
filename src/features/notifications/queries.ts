@@ -31,13 +31,14 @@ export type Notification = Pick<
 
 export type NotificationPref = Pick<PrefRow, 'type' | 'in_app' | 'email' | 'push'>
 
-/** No row means every channel is on — the same default `notification_pref()`
- *  applies in the database (P5-01), so the screen and the sender agree. */
+/** No row means every channel is on, except reactions, which are opt-in
+ *  (P7M-04): the same default `notification_pref()` applies in the database
+ *  (P5-01), so the screen and the sender agree. */
 export const defaultPref = (type: NotificationType): NotificationPref => ({
   type,
-  in_app: true,
-  email: true,
-  push: true,
+  in_app: type !== 'chat_reaction',
+  email: type !== 'chat_reaction',
+  push: type !== 'chat_reaction',
 })
 
 const notificationColumns =

@@ -232,7 +232,7 @@ function AskComposer({
         aria-label={t('assistant.write')}
         placeholder={t('assistant.write')}
         rows={1}
-        className="max-h-32 min-h-9 flex-1 py-2 text-sm"
+        className="max-h-32 min-h-11 flex-1 py-2"
         value={text}
         onChange={(event) => setText(event.target.value)}
         onKeyDown={key}

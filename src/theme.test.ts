@@ -46,3 +46,11 @@ describe('theme', () => {
     expect(css).toContain('--radius-2xl: var(--radius)')
   })
 })
+
+describe('phone touch and zoom', () => {
+  // The 15px root makes rem spacing 3.75px a unit, so h-11 was 41px. Spacing is
+  // pinned in px so the 44px controls in DESIGN.md measure 44px.
+  it('sizes spacing in px so h-11 is 44px', () => {
+    expect(css).toMatch(/--spacing:\s*4px/)
+  })
+})

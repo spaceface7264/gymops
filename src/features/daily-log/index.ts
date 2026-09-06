@@ -1,4 +1,4 @@
-export { LatestLogEntryCard } from './latest-entry-card'
+export { LatestLogEntrySection } from './latest-entry-section'
 export { DailyLogPage } from './daily-log-page'
 export { EntryCard } from './entry-card'
 export { incidentDraft, incidentDraftPath } from './incident-draft'

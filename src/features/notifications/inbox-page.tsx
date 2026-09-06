@@ -105,6 +105,7 @@ function NotificationRow({ notification }: { notification: Notification }) {
             month: 'short',
             hour: '2-digit',
             minute: '2-digit',
+            hourCycle: 'h23',
           })}
         </p>
         <p className={cn('truncate', unread && 'font-medium')}>{notification.title}</p>

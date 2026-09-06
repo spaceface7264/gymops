@@ -14,7 +14,7 @@ const toggleVariants = cva(
           'border-input bg-card text-secondary-foreground border hover:bg-accent data-[state=on]:border-primary data-[state=on]:bg-accent data-[state=on]:text-accent-foreground',
       },
       size: {
-        default: 'h-9 min-w-9 px-4',
+        default: 'h-11 min-w-11 px-4 md:h-9 md:min-w-9',
         lg: 'h-11 min-w-11 px-5',
       },
     },

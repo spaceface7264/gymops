@@ -15,3 +15,10 @@ describe('Button', () => {
     expect(screen.getByRole('button').className).not.toMatch(/dark:/)
   })
 })
+
+it('keeps a small button 44 px on a phone and dense from md up', () => {
+  render(<Button size="sm">Roles</Button>)
+  const className = screen.getByRole('button', { name: 'Roles' }).className
+  expect(className).toContain('h-11')
+  expect(className).toContain('md:h-9')
+})

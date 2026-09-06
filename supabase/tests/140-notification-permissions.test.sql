@@ -5,7 +5,7 @@
 -- nothing else — not write one, not touch somebody else's, not edit the text
 -- it was sent.
 begin;
-select plan(28);
+select plan(29);
 
 -- ---------------------------------------------------------------- fixtures --
 select tests.create_user('manager_a');
@@ -128,6 +128,12 @@ select results_eq(
      from public.notification_pref(tests.get_user_id('staff_a'), 'invite') $$,
   $$ values (true, true, true) $$,
   'a type with no row is every channel on'
+);
+select results_eq(
+  $$ select in_app, email, push
+     from public.notification_pref(tests.get_user_id('staff_a'), 'chat_reaction') $$,
+  $$ values (false, false, false) $$,
+  'except reactions, which are opt-in (P7M-04)'
 );
 -- Switching a channel back on is an UPDATE, and `set_updated_at()` stamps an
 -- `updated_by` this table does not have. It cost a browser session in P5-05.

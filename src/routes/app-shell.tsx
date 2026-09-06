@@ -1,3 +1,5 @@
+import { Ellipsis } from 'lucide-react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, NavLink, Outlet, useLocation } from 'react-router'
 import { Logo, UnreadCount } from '@/components'
@@ -10,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import {
   DeactivatedNotice,
   useAuth,
@@ -22,12 +25,7 @@ import { GymSwitcher } from '@/features/gyms'
 import { NotificationBell } from '@/features/notifications'
 import { usePhone } from '@/hooks/use-media-query'
 import { cn } from '@/lib/utils'
-import {
-  isConversation,
-  isFullBleed,
-  visibleNavEntries,
-  type NavEntry,
-} from '@/routes/nav'
+import { isConversation, isFullBleed, phoneNav, type NavEntry } from '@/routes/nav'
 import { UpdateBanner } from '@/routes/update-banner'
 
 /** The letters shown on the account avatar: initials from a name, or the
@@ -75,7 +73,7 @@ export function AppShell() {
     profile?.is_superadmin ||
     profile?.gym_memberships.some((membership) => membership.role === 'manager'),
   )
-  const entries = visibleNavEntries(canAdminister)
+  const { bar, more } = phoneNav(canAdminister)
 
   // Deactivation happens mid-shift on a shared machine: RLS empties every
   // screen at once, so say so rather than showing an app with nothing in it.
@@ -99,17 +97,22 @@ export function AppShell() {
       <nav
         aria-label={t('nav.label')}
         className={cn(
-          'bg-card fixed inset-x-0 bottom-0 z-10 flex gap-1 overflow-x-auto border-t px-2 pt-1.5 pb-[calc(env(safe-area-inset-bottom)+0.375rem)]',
+          // Five equal tabs on a phone, nothing to scroll: the rest are behind More.
+          'bg-card fixed inset-x-0 bottom-0 z-10 flex gap-1 border-t px-2 pt-1.5 pb-[calc(env(safe-area-inset-bottom)+0.375rem)]',
           'md:static md:h-dvh md:w-60 md:shrink-0 md:flex-col md:gap-1 md:overflow-y-auto md:border-t-0 md:border-r md:p-3',
         )}
       >
         <Logo wordmark className="hidden px-3 pt-1 pb-4 text-base md:inline-flex" />
-        {entries.map((entry) => (
+        {bar.map((entry) => (
           <NavItem
             key={entry.to}
             entry={entry}
             unread={entry.to === '/chat' ? chatUnread : 0}
           />
+        ))}
+        <MoreTab entries={more} pathname={pathname} />
+        {more.map((entry) => (
+          <NavItem key={entry.to} entry={entry} unread={0} className="hidden md:flex" />
         ))}
       </nav>
 
@@ -186,7 +189,26 @@ export function AppShell() {
   )
 }
 
-function NavItem({ entry, unread }: { entry: NavEntry; unread: number }) {
+/** One tab of the phone bar, one pill of the sidebar. */
+const navItemClass = (active: boolean) =>
+  cn(
+    // 44px tall and an equal share of the phone bar; a pill in the sidebar.
+    'relative flex min-h-11 flex-1 flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1.5 text-[11px] font-medium transition-colors duration-150',
+    'md:min-h-0 md:w-full md:flex-none md:flex-row md:justify-start md:gap-3 md:rounded-full md:px-3.5 md:py-2.5 md:text-sm',
+    active
+      ? 'bg-accent text-accent-foreground font-semibold'
+      : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground',
+  )
+
+function NavItem({
+  entry,
+  unread,
+  className,
+}: {
+  entry: NavEntry
+  unread: number
+  className?: string
+}) {
   const { t } = useTranslation()
   const Icon = entry.icon
 
@@ -194,16 +216,7 @@ function NavItem({ entry, unread }: { entry: NavEntry; unread: number }) {
     <NavLink
       to={entry.to}
       end={entry.to === '/'}
-      className={({ isActive }) =>
-        cn(
-          // 44px tall on the phone bar; a pill in the sidebar.
-          'relative flex min-h-11 shrink-0 flex-col items-center justify-center gap-0.5 rounded-xl px-3 py-1.5 text-[11px] font-medium transition-colors duration-150',
-          'md:min-h-0 md:w-full md:flex-row md:justify-start md:gap-3 md:rounded-full md:px-3.5 md:py-2.5 md:text-sm',
-          isActive
-            ? 'bg-accent text-accent-foreground font-semibold'
-            : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground',
-        )
-      }
+      className={({ isActive }) => cn(navItemClass(isActive), className)}
     >
       <Icon className="size-5" aria-hidden="true" />
       {t(entry.labelKey)}
@@ -213,5 +226,58 @@ function NavItem({ entry, unread }: { entry: NavEntry; unread: number }) {
         aria-label={t('chat.navUnread', { count: unread })}
       />
     </NavLink>
+  )
+}
+
+/**
+ * The phone bar's fifth tab (P7M-02): a sheet from the bottom with the
+ * sections that did not fit. It reads as the current tab while the reader is
+ * in one of them, so "where am I" never points at nothing. Hidden from `md`
+ * up, where the sidebar lists everything.
+ */
+function MoreTab({ entries, pathname }: { entries: NavEntry[]; pathname: string }) {
+  const { t } = useTranslation()
+  const [open, setOpen] = useState(false)
+  const active = entries.some(
+    (entry) => pathname === entry.to || pathname.startsWith(`${entry.to}/`),
+  )
+
+  return (
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger asChild>
+        <button
+          type="button"
+          aria-current={active ? 'true' : undefined}
+          className={cn(navItemClass(active), 'md:hidden')}
+        >
+          <Ellipsis className="size-5" aria-hidden="true" />
+          {t('nav.more')}
+        </button>
+      </SheetTrigger>
+      <SheetContent side="bottom" className="gap-1 p-2 pt-4">
+        <SheetTitle className="px-3 pb-2">{t('nav.more')}</SheetTitle>
+        {entries.map((entry) => {
+          const Icon = entry.icon
+          return (
+            <NavLink
+              key={entry.to}
+              to={entry.to}
+              onClick={() => setOpen(false)}
+              className={({ isActive }) =>
+                cn(
+                  'flex min-h-11 items-center gap-3 rounded-xl px-3 font-medium transition-colors duration-150',
+                  isActive
+                    ? 'bg-accent text-accent-foreground font-semibold'
+                    : 'hover:bg-accent/60',
+                )
+              }
+            >
+              <Icon className="text-muted-foreground size-5" aria-hidden="true" />
+              {t(entry.labelKey)}
+            </NavLink>
+          )
+        })}
+      </SheetContent>
+    </Sheet>
   )
 }

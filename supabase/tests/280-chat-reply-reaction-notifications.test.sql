@@ -120,7 +120,9 @@ select is(
 -- -------------------------------------------------------------- reactions --
 -- Reacting takes a session (the trigger reads the reactor from the JWT);
 -- counting what was raised takes none (`notifications` shows each person
--- their own rows only).
+-- their own rows only). Reactions are opt-in (P7M-04): `named` asked for them.
+insert into public.notification_prefs (user_id, type, in_app, email, push)
+values (tests.get_user_id('named'), 'chat_reaction', true, false, false);
 select tests.authenticate_as('talker');
 insert into public.message_reactions (message_id, channel_id, emoji)
 values ('ffffffff-0000-0000-0000-000000000001', 'eeeeeeee-0000-0000-0000-000000000001', '👍');
@@ -164,8 +166,7 @@ select is(
   'reacting to your own line, a muted colleague''s, or the assistant''s tells nobody'
 );
 
-insert into public.notification_prefs (user_id, type, in_app, email, push)
-values (tests.get_user_id('bystander'), 'chat_reaction', false, false, false);
+-- `bystander` never touched the switch, so a reaction to their line is silent.
 insert into public.messages (id, channel_id, body, created_by)
 values ('ffffffff-0000-0000-0000-000000000005', 'eeeeeeee-0000-0000-0000-000000000001', 'Bystander line', tests.get_user_id('bystander'));
 
@@ -177,7 +178,7 @@ select is(
   (select count(*)::int from public.notifications
    where type = 'chat_reaction' and user_id = tests.get_user_id('bystander')),
   0,
-  'the per-type switch silences a reaction too'
+  'without the opt-in a reaction tells nobody'
 );
 
 select is(

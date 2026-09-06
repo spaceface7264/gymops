@@ -140,6 +140,41 @@ describe('AppShell navigation', () => {
     }
   })
 
+  it('puts the sections after the first four behind More on a phone', async () => {
+    const user = userEvent.setup()
+    renderShell()
+    const nav = await screen.findByRole('navigation', { name: 'Sections' })
+
+    // Four tabs and More share the bar; the rest are sidebar-only entries.
+    for (const label of ['Home', 'Chat', 'Checklists', 'Daily log']) {
+      expect(within(nav).getByRole('link', { name: label })).not.toHaveClass('hidden')
+    }
+    for (const label of ['Incidents', 'News', 'Events', 'Guides', 'Ask']) {
+      expect(within(nav).getByRole('link', { name: label })).toHaveClass('hidden')
+    }
+
+    await user.click(within(nav).getByRole('button', { name: 'More' }))
+    const sheet = await screen.findByRole('dialog', { name: 'More' })
+    for (const [label, href] of [
+      ['Incidents', '/incidents'],
+      ['News', '/news'],
+      ['Events', '/events'],
+      ['Guides', '/guides'],
+      ['Ask', '/ask'],
+    ] as const) {
+      expect(within(sheet).getByRole('link', { name: label })).toHaveAttribute(
+        'href',
+        href,
+      )
+    }
+    expect(within(sheet).queryByRole('link', { name: 'Admin' })).not.toBeInTheDocument()
+
+    await user.click(within(sheet).getByRole('link', { name: 'News' }))
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog', { name: 'More' })).not.toBeInTheDocument(),
+    )
+  })
+
   it('keeps Admin out of the nav for staff', async () => {
     renderShell()
     const nav = await screen.findByRole('navigation', { name: 'Sections' })

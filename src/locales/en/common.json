@@ -603,6 +603,10 @@
       "title": "News for you",
       "unread": "Unread"
     },
+    "next": {
+      "continue": "Continue {{name}}"
+    },
+    "title": "Right now",
     "today": {
       "openChecklists": "Open the checklists",
       "title": "Today's checklists"
@@ -723,6 +727,7 @@
     "home": "Home",
     "incidents": "Incidents",
     "label": "Sections",
+    "more": "More",
     "news": "News"
   },
   "news": {

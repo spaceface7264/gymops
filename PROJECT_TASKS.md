@@ -174,12 +174,21 @@ Legend: P1 = Phase 1 etc. Effort: S (< half day), M (1–2 days), L (3+ days).
 | P6C-19 | Copy to clipboard, and one `…` menu on every line (Reply, four reactions, Copy, Delete when allowed)                                     | P6C-17     | S      |
 | P6C-05 | Copy and a11y: "Join a channel", "Conversations", DA `Annuller`/`Haller`, `Intl.ListFormat` for the typing line, combobox ARIA on the box, socket status line | P6C-03     | S      |
 
+## Phone critique fixes (decided 2026-09-06, from `/impeccable critique` at 390 px, 26/40)
+
+| ID     | Task                                                                                                                                           | Depends on | Effort |
+| ------ | ---------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ------ |
+| P7M-01 | Touch and zoom at the token: `--spacing: 4px` so `h-11` is 44 px at the 15 px root; `Input`, `Textarea`, `NativeSelect` 16 px so iOS does not zoom | —          | XS     |
+| P7M-02 | Phone bar: five primary tabs (Home, Chat, Checklists, Daily log, More) and a More sheet for the rest; `sheet` vendored                          | P7M-01     | S      |
+| P7M-03 | Home: one "Right now" block with rows (unread news, today's checklist, open incidents), one primary action, a real `h1`; empty sections one line | P7M-01     | S      |
+| P7M-04 | Polish sweep: no `size="sm"` below `md`, inbox clock `hourCycle: 'h23'`, reactions do not notify (or coalesce per message)                     | P7M-01     | S      |
+
 ## Later (not scheduled)
 
 - V2: tasks (`tasks`, recurrence, assignment, incident → task). Calendars shipped early as P4-11.
 - V3: dashboards, `brp-sync` Edge Function (needs BRP API key, service account, rate limits, webhook info).
 - Chat follow-ups: threads, reactions, search, a last-message preview in the channel list (needs `chat_overview()` to carry the body), a time on hover for grouped lines.
-- Phone bottom bar: five primary tabs plus a More sheet, instead of nine entries scrolling sideways (noted in the facelift spec, P7C; needs `sheet` vendored, deferred from P7D).
+- Phone bottom bar: five primary tabs plus a More sheet, instead of nine entries scrolling sideways (noted in the facelift spec, P7C; needs `sheet` vendored, deferred from P7D). Done as P7M-02.
 - Deferred from P7D (2026-09-04): `command`/cmdk for the chat @mention listbox and a global search palette; `progress` for checklist completion; `collapsible` for the guide category tree; `scroll-area` for the chat lists; `react-hook-form` (every form is `useState` + `MissingRequirements`, and that is fine).
 - Global "search anything" in the header: relocate `ContentSearch`, then add `search_vector` columns and branches for incidents, events, daily log and people; chat last.
 - Branded en/da auth mail templates — before the cutover. (Acknowledgement reminders were listed here as missing; `send_ack_reminders()` has raised them nightly since P5-02, confirmed by the P7-07 walkthrough on 2026-09-04.)
