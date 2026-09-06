@@ -149,6 +149,7 @@ Legend: P1 = Phase 1 etc. Effort: S (< half day), M (1–2 days), L (3+ days).
 | P9-07 | First superadmin; sign-in, reset, invite, push and phone installs on the deployed origin   | P9-05, P9-06 | M    |
 | P9-08 | First desktop release (v0.1.0) and the updater line (v0.1.1); Actions secrets              | P9-07      | M      |
 | P9-09 | Pilot at one gym for a week; findings into Known gaps                                      | P9-08      | L      |
+| P9-10 | Phone install readiness: `apple-touch-icon` + `theme-color`, an "Install on this phone" row in the More sheet, `isInstalledWeb()` | P7M-02     | S      |
 
 ## Chat critique fixes (decided 2026-09-05, from `/impeccable critique`)
 
@@ -195,6 +196,7 @@ Legend: P1 = Phase 1 etc. Effort: S (< half day), M (1–2 days), L (3+ days).
 - Global "search anything" in the header: relocate `ContentSearch`, then add `search_vector` columns and branches for incidents, events, daily log and people; chat last.
 - Branded en/da auth mail templates — before the cutover. (Acknowledgement reminders were listed here as missing; `send_ack_reminders()` has raised them nightly since P5-02, confirmed by the P7-07 walkthrough on 2026-09-04.)
 - Assistant follow-ups: pgvector retrieval, live ops data, actions.
+- Store listings (decided 2026-09-06 with P9-10: Home Screen install first). Play Store: the hosted PWA as a Trusted Web Activity (Bubblewrap / PWABuilder; same origin and service worker, web push keeps working; a Google Play developer account and `assetlinks.json` on the origin). App Store: no TWA equivalent — Tauri 2 mobile over `src-tauri/` (`Cargo.toml` already builds `staticlib`/`cdylib`) plus APNs, since WKWebView in an app gets no web push: a native push plugin and a `notify` path through APNs/FCM beside VAPID, an Apple Developer account, review. Only if Add to Home Screen proves too much friction.
 
 ## Critical path
 

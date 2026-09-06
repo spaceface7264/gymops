@@ -21,6 +21,20 @@ export function isDesktop(): boolean {
 }
 
 /**
+ * True when the web app runs from the Home Screen rather than a browser tab
+ * (P9-10). The desktop shell is never "installed web": it has no Home Screen
+ * to be added to. `display-mode: standalone` is the standard signal; the
+ * `navigator.standalone` flag is what older iOS Safari sets instead.
+ */
+export function isInstalledWeb(): boolean {
+  if (isDesktop()) return false
+  const standalone =
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(display-mode: standalone)').matches
+  return standalone || (navigator as { standalone?: boolean }).standalone === true
+}
+
+/**
  * Calls `handler` with every `gymops://` URL the desktop app is opened with —
  * the one it was launched by, and each one that arrives while it runs (P7-02).
  * On the web nothing ever arrives. Returns the unsubscribe.

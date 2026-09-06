@@ -20,6 +20,17 @@ const unreadCount = vi.fn<() => Promise<{ count: number; error: null }>>()
 const chatOverview = vi.fn<() => Promise<{ data: Row[]; error: null }>>()
 let authCallback: AuthCallback | null = null
 
+// P9-10: the More sheet's install row asks where the app is running.
+const isDesktop = vi.fn<() => boolean>()
+const isInstalledWeb = vi.fn<() => boolean>()
+
+vi.mock('@/lib/platform', () => ({
+  isDesktop: () => isDesktop(),
+  isInstalledWeb: () => isInstalledWeb(),
+  checkForUpdate: () => Promise.resolve(null),
+  relaunchApp: () => Promise.resolve(),
+}))
+
 vi.mock('@/lib/supabase', () => ({
   supabase: {
     auth: {
@@ -84,6 +95,8 @@ beforeEach(async () => {
   vi.clearAllMocks()
   localStorage.clear()
   authCallback = null
+  isDesktop.mockReturnValue(false)
+  isInstalledWeb.mockReturnValue(false)
   getSession.mockResolvedValue({ data: { session }, error: null })
   signOut.mockImplementation(() => {
     queueMicrotask(() => authCallback?.('SIGNED_OUT', null))
@@ -173,6 +186,55 @@ describe('AppShell navigation', () => {
     await waitFor(() =>
       expect(screen.queryByRole('dialog', { name: 'More' })).not.toBeInTheDocument(),
     )
+  })
+
+  it('offers to put GymOps on the phone from the More sheet (P9-10)', async () => {
+    const user = userEvent.setup()
+    renderShell()
+    const nav = await screen.findByRole('navigation', { name: 'Sections' })
+
+    await user.click(within(nav).getByRole('button', { name: 'More' }))
+    const sheet = await screen.findByRole('dialog', { name: 'More' })
+    expect(
+      within(sheet).getByRole('link', { name: 'Install on this phone' }),
+    ).toHaveAttribute('href', '/install')
+    // A guide, not a section: never in the bar or the sidebar.
+    expect(
+      within(nav).queryByRole('link', { name: 'Install on this phone' }),
+    ).not.toBeInTheDocument()
+
+    await user.click(within(sheet).getByRole('link', { name: 'Install on this phone' }))
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog', { name: 'More' })).not.toBeInTheDocument(),
+    )
+  })
+
+  it('drops the install row once the app runs from the Home Screen', async () => {
+    isInstalledWeb.mockReturnValue(true)
+    const user = userEvent.setup()
+    renderShell()
+    const nav = await screen.findByRole('navigation', { name: 'Sections' })
+
+    await user.click(within(nav).getByRole('button', { name: 'More' }))
+    const sheet = await screen.findByRole('dialog', { name: 'More' })
+    expect(within(sheet).getByRole('link', { name: 'Ask' })).toBeInTheDocument()
+    expect(
+      within(sheet).queryByRole('link', { name: 'Install on this phone' }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('drops the install row in the desktop app', async () => {
+    isDesktop.mockReturnValue(true)
+    const user = userEvent.setup()
+    renderShell()
+    const nav = await screen.findByRole('navigation', { name: 'Sections' })
+
+    await user.click(within(nav).getByRole('button', { name: 'More' }))
+    const sheet = await screen.findByRole('dialog', { name: 'More' })
+    expect(within(sheet).getByRole('link', { name: 'Ask' })).toBeInTheDocument()
+    expect(
+      within(sheet).queryByRole('link', { name: 'Install on this phone' }),
+    ).not.toBeInTheDocument()
   })
 
   it('keeps Admin out of the nav for staff', async () => {

@@ -1,4 +1,4 @@
-import { Ellipsis } from 'lucide-react'
+import { Ellipsis, Smartphone } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, NavLink, Outlet, useLocation } from 'react-router'
@@ -24,6 +24,7 @@ import { useChatUnread } from '@/features/chat'
 import { GymSwitcher } from '@/features/gyms'
 import { NotificationBell } from '@/features/notifications'
 import { usePhone } from '@/hooks/use-media-query'
+import { isDesktop, isInstalledWeb } from '@/lib/platform'
 import { cn } from '@/lib/utils'
 import { isConversation, isFullBleed, phoneNav, type NavEntry } from '@/routes/nav'
 import { UpdateBanner } from '@/routes/update-banner'
@@ -277,6 +278,22 @@ function MoreTab({ entries, pathname }: { entries: NavEntry[]; pathname: string 
             </NavLink>
           )
         })}
+        {/* P9-10: a guide, not a section, so not a `NavEntry`. Only while the
+            app is a browser tab on a phone: gone from the Home Screen and in
+            the desktop shell. */}
+        {!isDesktop() && !isInstalledWeb() && (
+          <>
+            <hr className="border-border my-1" />
+            <Link
+              to="/install"
+              onClick={() => setOpen(false)}
+              className="hover:bg-accent/60 flex min-h-11 items-center gap-3 rounded-xl px-3 font-medium transition-colors duration-150"
+            >
+              <Smartphone className="text-muted-foreground size-5" aria-hidden="true" />
+              {t('nav.install')}
+            </Link>
+          </>
+        )}
       </SheetContent>
     </Sheet>
   )
