@@ -82,6 +82,7 @@ Permission matrix (also the RLS test spec):
 - **PWA:** `vite-plugin-pwa`, `display: standalone`, service worker handling `push` and `notificationclick`. In-app install guide (iOS needs Add to Home Screen; permission prompt only from a user gesture).
 - **Auth:** Supabase Auth email/password with PKCE. Invite/reset links open the desktop app via deep link with a web fallback page.
 - **AI assistant:** Edge Function using `@anthropic-ai/sdk`, model `claude-opus-5`, adaptive thinking, streaming via SSE. Tool runner with two tools, `search_content` (Postgres full-text search) and `read_content`, both executed with the caller's JWT so RLS applies. Stable system prompt + tool definitions cached with `cache_control`.
+- **Web hosting:** Cloudflare Pages, static bundle, `_redirects` for the SPA.
 - **Observability:** Sentry for web and desktop; token usage logged per assistant call.
 
 ### 3.1 Data model (V1)
@@ -288,6 +289,7 @@ gymops/
 | Enter-to-send on a touch keyboard | Rejected 2026-09-05: a phone keyboard has no shift+Enter, so a two-line handover went out as two half-messages. Enter sends only where `(pointer: fine)` matches; on touch it starts a line and the button sends. |
 | Inserting the message row before its attachments are uploaded | Reversed 2026-09-05 (it was P6-05's order, after P4-07's): a failed upload left a fileless message in the channel and a box that said the message could not be sent, and a retry posted it twice. The files go up first and the row after; a file nobody points at is the cheaper leftover. |
 | One icon button per channel action in the conversation header | Replaced 2026-09-05: up to six unlabeled icons for a manager, with mute beside delete and a second bell under the shell's. One `…` menu (members, muted, settings, leave, delete) and a muted mark beside the title. |
+| Vercel / Netlify for the web app (P9-03) | Same shape — a static bundle behind an SPA rewrite; Cloudflare Pages chosen for the uncapped free tier and the EU edge. |
 | A flat stream of author / time / body triplets | Replaced 2026-09-05: the day is cut by headings, lines by the same person within five minutes share one name, times are 24-hour, the reader's own lines say "You", the first unread line has a "New" rule above it, and the list follows the newest line only while the reader is at the bottom. |
 
 ## 5. Conventions

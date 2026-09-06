@@ -53,6 +53,15 @@ only. `supabase/functions/.env` holds a local-only development set for
 `npx supabase functions serve --env-file supabase/functions/.env`; add
 `ANTHROPIC_API_KEY` there to get real answers from the assistant locally.
 
+## Deployment
+
+The web app is a static bundle on **Cloudflare Pages** (project `gymops`,
+production branch `main`, `npm run build` → `dist/`, `public/_redirects` is the
+SPA rewrite). The four `VITE_*` values are Pages environment variables; every
+push to `main` deploys, every PR gets a preview URL. The hosted Supabase project
+is `ngcqpftfqepvhpjikaqq`; its settings and secrets are worked through in
+`PROJECT_STATE.md`, "Hosted project cutover".
+
 ## Commands
 
 | Command                                             | Purpose                                            |
