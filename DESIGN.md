@@ -47,7 +47,7 @@ Five tones, each a tinted background, dark text of the same hue and a dot, expos
 - **Scale:** page title 24 px semibold (`PageHeader`), section title 18 px semibold (`CardTitle`), body 15 px, meta 13 px.
 - **Radius:** `--radius: 1rem`. Cards and dialogs `rounded-2xl` (16 px), inputs and selects `rounded-xl` (12 px), menu items `rounded-lg` (12 px), buttons and badges pill. Inputs are less round than the card they sit in.
 - **Surfaces:** cards are white with a 1 px border and no shadow. Dialogs are the one lifted surface (they keep a shadow).
-- **Touch:** `--spacing` is 4 px, not the rem default, so `h-11` is 44 px at the 15 px root. Every control a thumb hits is at least 44 px tall: `Button` default `h-11`, `size="icon"` `size-11`, inputs and selects `h-11`, phone nav items `min-h-11`, `Switch` has a padded hit area. `size="sm"` (`h-9`) is for dense desktop-only rows.
+- **Touch:** `--spacing` is 4 px, not the rem default, so `h-11` is 44 px at the 15 px root. Every control a thumb hits is at least 44 px tall: `Button` default `h-11`, `size="icon"` `size-11`, inputs and selects `h-11`, phone nav items `min-h-11`, `Switch` has a padded hit area. `size="sm"` is `h-9` from `md` up for dense desktop rows and 44 px below it, so a small button on a phone is still a thumb's target (P7M-04); `Toggle` and `TabsTrigger` do the same.
 - **Motion:** 150 ms ease-out on hover, press and every dialog, menu and tooltip enter (100 ms for tooltips); skeleton pulse while loading. Everything respects `prefers-reduced-motion`. No layout animation; no route transitions.
 
 ## Layout
@@ -82,7 +82,7 @@ Error lines stay as they are: `<p role="alert" className="text-destructive text-
 
 ## Feedback
 
-A form that stays on screen reports its failure inline, next to the buttons. A toast (`toast` from `sonner`; the `Toaster` in `App` sits above the phone bar) is for when the result leaves the screen: saved and navigated away, a dialog that closed, or an action with no form at all (pin, mute, activate, mark read: at least an error toast, a success toast where the change is consequential). Success toasts are short nouns ("Post published", "Invitation sent"); errors reuse the feature's `*Failed` string. Nobody is toasted for their own checklist tick or chat message; the chat box says "Sending…" in a `role="status"` line while it waits and keeps the text with a "Try again" when it fails.
+A form that stays on screen reports its failure inline, next to the buttons. Every printed time is 24-hour (`hourCycle: 'h23'`), whichever language the profile is on. A toast (`toast` from `sonner`; the `Toaster` in `App` sits above the phone bar) is for when the result leaves the screen: saved and navigated away, a dialog that closed, or an action with no form at all (pin, mute, activate, mark read: at least an error toast, a success toast where the change is consequential). Success toasts are short nouns ("Post published", "Invitation sent"); errors reuse the feature's `*Failed` string. Nobody is toasted for their own checklist tick or chat message; the chat box says "Sending…" in a `role="status"` line while it waits and keeps the text with a "Try again" when it fails.
 
 ## Chat
 
@@ -100,7 +100,7 @@ The stream is cut into days (`h2` Today / Yesterday / date), lines by the same s
 - Do use `Textarea` from `ui/` for multi-line input; it auto-grows.
 - Don't add `dark:` classes; there is no dark theme and the variant is gone.
 - Don't use `bg-background` on a control; controls sit on `bg-card`.
-- Don't reach for `rounded-md`, `h-9`, `shadow-xs` on anything a user touches; those are the pre-facelift defaults. `size="sm"` is for dense desktop-only rows; a control on a phone screen is `default` or `icon`.
+- Don't reach for `rounded-md`, `h-9`, `shadow-xs` on anything a user touches; those are the pre-facelift defaults. `size="sm"` is dense from `md` up and 44 px on a phone; prefer `default` or `icon` where the row is not dense anyway.
 - Don't build a row of `aria-pressed` buttons; that is a `ToggleGroup`.
 - Don't write a bottom padding for the phone bar; use `pb-(--nav-bar-clearance)`.
 - Don't introduce a new colour. If a state needs one, it is one of the five tones.
@@ -108,4 +108,3 @@ The stream is cut into days (`h2` Today / Yesterday / date), lines by the same s
 ## Known follow-ups
 
 - Under Later from the 2026-09-04 refinement: `command` for the chat @mention listbox and a search palette, `progress` for checklist completion, `collapsible` for the guide category tree (`scroll-area` for the chat lists is superseded by `message-scroller`, 2026-09-05; `sheet` shipped with P7M-02).
-- P7M-04, the phone polish sweep: no `size="sm"` below `md`, the inbox clock on `hourCycle: 'h23'`, reactions that do not notify.

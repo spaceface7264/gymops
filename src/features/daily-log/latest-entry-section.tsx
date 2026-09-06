@@ -54,6 +54,7 @@ export function LatestLogEntrySection() {
                   month: 'short',
                   hour: '2-digit',
                   minute: '2-digit',
+                  hourCycle: 'h23',
                 }),
               }) + (gymId === null && entry.gyms ? ` · ${entry.gyms.name}` : '')
             }

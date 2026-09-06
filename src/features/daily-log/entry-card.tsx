@@ -57,6 +57,7 @@ export function EntryCard({
   const when = new Date(entry.created_at).toLocaleTimeString(i18n.language, {
     hour: '2-digit',
     minute: '2-digit',
+    hourCycle: 'h23',
   })
 
   return (

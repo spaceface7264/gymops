@@ -5,6 +5,7 @@ import {
   InboxPage,
   NotificationBell,
   NotificationPreferencesPage,
+  defaultPref,
   notificationChannels,
   notificationTypes,
 } from '@/features/notifications'
@@ -167,16 +168,16 @@ describe('inbox', () => {
 })
 
 describe('preferences', () => {
-  it('shows every channel on for a type nobody has touched', async () => {
+  it('shows every channel on for a type nobody has touched, reactions off', async () => {
     renderWithProviders(<NotificationPreferencesPage />)
 
     const switches = await screen.findAllByRole('switch')
     // Every type the enum carries, times the three channels — counted rather
     // than written down, so adding a type (P6-08 added two) is not a failure.
     expect(switches).toHaveLength(notificationTypes.length * notificationChannels.length)
-    expect(switches.every((box) => box.getAttribute('aria-checked') === 'true')).toBe(
-      true,
-    )
+    const off = switches.filter((box) => box.getAttribute('aria-checked') === 'false')
+    // Reactions are opt-in (P7M-04): their three switches are the only ones off.
+    expect(off).toHaveLength(notificationChannels.length)
   })
 
   it('writes the whole row when one channel is switched off', async () => {
@@ -242,5 +243,20 @@ describe('the badge', () => {
     realtimeHandler?.()
 
     expect(await screen.findByText('1')).toBeInTheDocument()
+  })
+})
+
+describe('defaultPref', () => {
+  it('is every channel on, except reactions, which are opt-in', () => {
+    expect(defaultPref('chat_mention')).toMatchObject({
+      in_app: true,
+      email: true,
+      push: true,
+    })
+    expect(defaultPref('chat_reaction')).toMatchObject({
+      in_app: false,
+      email: false,
+      push: false,
+    })
   })
 })

@@ -64,12 +64,14 @@ export function RunItemRow({
                     when: new Date(item.done_at).toLocaleTimeString(i18n.language, {
                       hour: '2-digit',
                       minute: '2-digit',
+                      hourCycle: 'h23',
                     }),
                   })
                 : t('checklists.doneAt', {
                     when: new Date(item.done_at).toLocaleTimeString(i18n.language, {
                       hour: '2-digit',
                       minute: '2-digit',
+                      hourCycle: 'h23',
                     }),
                   })}
             </p>
