@@ -72,7 +72,7 @@ export function PhotoGrid({
       )}
 
       {attachments.data?.length === 0 && (
-        <EmptyState bordered={false} title={t('incidents.noPhotos')} as="p" />
+        <EmptyState title={t('incidents.noPhotos')} as="p" />
       )}
 
       {canAdd && (

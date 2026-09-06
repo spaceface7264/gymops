@@ -1,4 +1,5 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { LoadError } from '@/components'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -68,9 +69,10 @@ export function EventCalendar({
       </div>
 
       {events.isError && (
-        <p role="alert" className="text-destructive text-sm">
-          {t('events.loadFailed')}
-        </p>
+        <LoadError
+          message={t('events.loadFailed')}
+          onRetry={() => void events.refetch()}
+        />
       )}
 
       <div className="grid grid-cols-7 gap-px text-xs" role="grid">

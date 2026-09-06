@@ -1,6 +1,6 @@
 import { ScrollText } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { EmptyState, LoadingState } from '@/components'
+import { EmptyState, LoadingState, LoadError } from '@/components'
 import {
   Table,
   TableBody,
@@ -52,9 +52,10 @@ export function AuditPanel() {
 
       {entries.isPending && <LoadingState rows={6} />}
       {entries.isError && (
-        <p role="alert" className="text-destructive text-sm">
-          {t('admin.loadFailed')}
-        </p>
+        <LoadError
+          message={t('admin.loadFailed')}
+          onRetry={() => void entries.refetch()}
+        />
       )}
 
       {entries.data?.length === 0 && (

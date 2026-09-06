@@ -7,6 +7,7 @@ import {
   HomeSectionLink,
   LoadingState,
   StatusBadge,
+  LoadError,
 } from '@/components'
 import { useAuth } from '@/features/auth'
 import { useGymScope } from '@/features/gyms'
@@ -38,9 +39,7 @@ export function UnreadNewsSection() {
     >
       {unread.isPending && <LoadingState rows={2} />}
       {unread.isError && (
-        <p role="alert" className="text-destructive text-sm">
-          {t('news.loadFailed')}
-        </p>
+        <LoadError message={t('news.loadFailed')} onRetry={() => void unread.refetch()} />
       )}
       {unread.data && posts.length === 0 && (
         <HomeEmpty>{t('home.news.allCaughtUp')}</HomeEmpty>

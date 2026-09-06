@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
-import { LoadingState, StatusBadge } from '@/components'
+import { LoadingState, StatusBadge, LoadError } from '@/components'
 import { Button } from '@/components/ui/button'
 import {
   Table,
@@ -46,9 +46,7 @@ export function GymsPanel() {
 
       {gyms.isPending && <LoadingState rows={6} />}
       {gyms.isError && (
-        <p role="alert" className="text-destructive text-sm">
-          {t('admin.loadFailed')}
-        </p>
+        <LoadError message={t('admin.loadFailed')} onRetry={() => void gyms.refetch()} />
       )}
 
       {gyms.data && (

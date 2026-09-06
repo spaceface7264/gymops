@@ -7,6 +7,7 @@ import {
   HomeSectionLink,
   LoadingState,
   StatusBadge,
+  LoadError,
 } from '@/components'
 import { useGymScope } from '@/features/gyms'
 import { useIncidents } from './queries'
@@ -43,9 +44,10 @@ export function OpenIncidentsSection() {
     >
       {incidents.isPending && <LoadingState rows={2} />}
       {incidents.isError && (
-        <p role="alert" className="text-destructive text-sm">
-          {t('incidents.loadFailed')}
-        </p>
+        <LoadError
+          message={t('incidents.loadFailed')}
+          onRetry={() => void incidents.refetch()}
+        />
       )}
       {incidents.data && open.length === 0 && (
         <HomeEmpty>{t('home.incidents.none')}</HomeEmpty>

@@ -6,7 +6,6 @@ import {
   NotificationBell,
   NotificationPreferencesPage,
   defaultPref,
-  notificationChannels,
   notificationTypes,
 } from '@/features/notifications'
 import { renderWithProviders } from '@/test/render'
@@ -174,17 +173,20 @@ describe('preferences', () => {
     const switches = await screen.findAllByRole('switch')
     // Every type the enum carries, times the three channels — counted rather
     // than written down, so adding a type (P6-08 added two) is not a failure.
-    expect(switches).toHaveLength(notificationTypes.length * notificationChannels.length)
+    // Inbox and push per type, plus the one email switch (P7M-07).
+    expect(switches).toHaveLength(notificationTypes.length * 2 + 1)
     const off = switches.filter((box) => box.getAttribute('aria-checked') === 'false')
-    // Reactions are opt-in (P7M-04): their three switches are the only ones off.
-    expect(off).toHaveLength(notificationChannels.length)
+    // Reactions are opt-in (P7M-04): their two switches are the only ones off.
+    expect(off).toHaveLength(2)
   })
 
   it('writes the whole row when one channel is switched off', async () => {
     renderWithProviders(<NotificationPreferencesPage />)
 
     await userEvent.click(
-      await screen.findByRole('switch', { name: 'Email for New incident' }),
+      await screen.findByRole('switch', {
+        name: 'Email me when a high-severity incident is reported',
+      }),
     )
 
     await waitFor(() =>

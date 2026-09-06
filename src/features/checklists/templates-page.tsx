@@ -2,7 +2,13 @@ import { LayoutTemplate, Plus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { Link } from 'react-router'
-import { EmptyState, LoadingState, PageHeader, StatusBadge } from '@/components'
+import {
+  EmptyState,
+  LoadingState,
+  PageHeader,
+  StatusBadge,
+  LoadError,
+} from '@/components'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { usePublishScope } from '@/features/content'
@@ -35,9 +41,10 @@ export function ChecklistTemplatesPage() {
 
       {templates.isPending && <LoadingState rows={5} />}
       {templates.isError && (
-        <p role="alert" className="text-destructive text-sm">
-          {t('checklists.loadFailed')}
-        </p>
+        <LoadError
+          message={t('checklists.loadFailed')}
+          onRetry={() => void templates.refetch()}
+        />
       )}
       {templates.data?.length === 0 && (
         <EmptyState

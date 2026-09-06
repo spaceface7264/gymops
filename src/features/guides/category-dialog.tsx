@@ -1,4 +1,5 @@
 import { useId, useState } from 'react'
+import { useFormTouched } from '@/hooks/use-form-touched'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -93,8 +94,9 @@ function CategoryForm({
     else create.mutate({ gymId, parentId, name }, { onSuccess: saved })
   }
 
+  const { touched, formProps } = useFormTouched()
   return (
-    <form onSubmit={submit} className="space-y-4">
+    <form {...formProps} onSubmit={submit} className="space-y-4">
       <DialogHeader>
         <DialogTitle>
           {category ? t('guides.renameCategoryTitle') : t('guides.newCategoryTitle')}
@@ -177,7 +179,7 @@ function CategoryForm({
       )}
 
       <MissingRequirements
-        reasons={name.trim() === '' ? [t('guides.categoryNeedsName')] : []}
+        reasons={touched && name.trim() === '' ? [t('guides.categoryNeedsName')] : []}
       />
 
       {save.isError && (

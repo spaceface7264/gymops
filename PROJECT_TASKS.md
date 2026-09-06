@@ -181,6 +181,7 @@ Legend: P1 = Phase 1 etc. Effort: S (< half day), M (1–2 days), L (3+ days).
 | P7M-01 | Touch and zoom at the token: `--spacing: 4px` so `h-11` is 44 px at the 15 px root; `Input`, `Textarea`, `NativeSelect` 16 px so iOS does not zoom | —          | XS     |
 | P7M-02 | Phone bar: five primary tabs (Home, Chat, Checklists, Daily log, More) and a More sheet for the rest; `sheet` vendored                          | P7M-01     | S      |
 | P7M-03 | Home: one "Right now" block with rows (unread news, today's checklist, open incidents), one primary action, a real `h1`; empty sections one line | P7M-01     | S      |
+| P7M-07 | Third critique (27/40): Ask composer above the safe area, `EmptyState` quiet by default, `LoadError` with Try again on every load failure and active English error copy, one honest email switch on preferences, full-width phone submits with hints only after the first keystroke | P7M-06     | M      |
 | P7M-06 | Phone polish two: `/ask` on `PageHeader` with one h1 and 44 px back/delete, admin users table as stacked rows below `md`, editor toolbar and guide tree buttons `size="icon"`, composer without a resize grip | P7M-05     | XS     |
 | P7M-05 | Re-critique fixes: `Switch` hit area 44 px, checklist row is the target with the note behind "Add a note", "Report one" beside Open incidents on Home, the Home button wraps | P7M-04     | S      |
 | P7M-04 | Polish sweep: no `size="sm"` below `md`, inbox clock `hourCycle: 'h23'`, reactions do not notify (or coalesce per message)                     | P7M-01     | S      |

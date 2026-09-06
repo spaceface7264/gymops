@@ -53,7 +53,7 @@ export function PeoplePicker({
         ))}
       </ul>
 
-      {shown.length === 0 && <EmptyState bordered={false} title={empty} as="p" />}
+      {shown.length === 0 && <EmptyState title={empty} as="p" />}
     </div>
   )
 }

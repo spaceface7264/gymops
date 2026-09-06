@@ -59,7 +59,7 @@ describe('ForgotPasswordPage', () => {
     await user.click(screen.getByRole('button', { name: 'Send reset link' }))
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      'The reset link could not be sent. Try again in a moment.',
+      "Couldn't send the reset link. Try again in a moment.",
     )
   })
 })

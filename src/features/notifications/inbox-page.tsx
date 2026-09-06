@@ -2,7 +2,7 @@ import { Bell } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { Link, useNavigate } from 'react-router'
-import { EmptyState, LoadingState, PageHeader } from '@/components'
+import { EmptyState, LoadingState, PageHeader, LoadError } from '@/components'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { notificationIcons } from './labels'
@@ -51,9 +51,10 @@ export function InboxPage() {
 
       {notifications.isPending && <LoadingState rows={6} />}
       {notifications.isError && (
-        <p role="alert" className="text-destructive text-sm">
-          {t('notifications.loadFailed')}
-        </p>
+        <LoadError
+          message={t('notifications.loadFailed')}
+          onRetry={() => void notifications.refetch()}
+        />
       )}
       {notifications.data && items.length === 0 && (
         <EmptyState icon={Bell} title={t('notifications.empty')} />

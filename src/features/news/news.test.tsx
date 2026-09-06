@@ -250,6 +250,10 @@ describe('PostEditorPage', () => {
 
   it('refuses to save a post with no body, and says which part is missing', async () => {
     renderWithProviders(<PostEditorPage />, { path: '/news/new' })
+    // An untouched form says nothing (P7M-07); the first keystroke turns the hints on.
+    const touched = await screen.findByLabelText('Headline')
+    await userEvent.type(touched, 'x')
+    await userEvent.clear(touched)
 
     expect(screen.getByText('Give the post a title.')).toBeInTheDocument()
 

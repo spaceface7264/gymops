@@ -7,6 +7,7 @@ import {
   HomeSectionLink,
   LoadingState,
   StatusBadge,
+  LoadError,
 } from '@/components'
 import { useGymScope } from '@/features/gyms'
 import { useLatestLogEntry } from './queries'
@@ -31,9 +32,10 @@ export function LatestLogEntrySection() {
     >
       {latest.isPending && <LoadingState rows={1} />}
       {latest.isError && (
-        <p role="alert" className="text-destructive text-sm">
-          {t('dailyLog.loadFailed')}
-        </p>
+        <LoadError
+          message={t('dailyLog.loadFailed')}
+          onRetry={() => void latest.refetch()}
+        />
       )}
       {latest.data === null && <HomeEmpty>{t('home.dailyLog.empty')}</HomeEmpty>}
 

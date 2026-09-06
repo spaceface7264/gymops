@@ -122,7 +122,7 @@ describe('GymsPanel', () => {
     await user.type(screen.getByLabelText('Name'), 'Aarhus Vest')
     await user.click(screen.getByRole('button', { name: 'Save' }))
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('could not be saved')
+    expect(await screen.findByRole('alert')).toHaveTextContent("Couldn't save")
   })
 })
 

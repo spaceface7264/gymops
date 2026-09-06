@@ -28,7 +28,7 @@ export function AskPage() {
         aria-label={t('assistant.title')}
         className={cn(
           'flex flex-col md:w-72 md:shrink-0 md:border-r',
-          'pb-20 md:pb-0',
+          'pb-(--nav-bar-clearance) md:pb-0',
           showThread && 'hidden md:flex',
         )}
       >
@@ -51,12 +51,7 @@ export function AskPage() {
           className="min-h-0 flex-1 overflow-y-auto"
         >
           {conversations.data?.length === 0 && (
-            <EmptyState
-              icon={Sparkles}
-              title={t('assistant.noConversations')}
-              bordered={false}
-              as="p"
-            />
+            <EmptyState icon={Sparkles} title={t('assistant.noConversations')} as="p" />
           )}
           {conversations.data && conversations.data.length > 0 && (
             <ul aria-label={t('assistant.conversations')} className="px-2">

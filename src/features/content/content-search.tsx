@@ -40,7 +40,7 @@ export function ContentSearch() {
             </p>
           )}
           {results.data?.length === 0 && (
-            <EmptyState bordered={false} title={t('content.noResults')} as="p" />
+            <EmptyState title={t('content.noResults')} as="p" />
           )}
 
           <ul aria-label={t('content.results')} className="space-y-2">

@@ -1,4 +1,5 @@
 import { useId, useState } from 'react'
+import { useFormTouched } from '@/hooks/use-form-touched'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -142,8 +143,9 @@ function EventForm({
     }
   }
 
+  const { touched, formProps } = useFormTouched()
   return (
-    <form onSubmit={submit} className="space-y-4">
+    <form {...formProps} onSubmit={submit} className="space-y-4">
       <DialogHeader>
         <DialogTitle>
           {event ? t('events.editTitle') : t('events.createTitle')}
@@ -284,7 +286,7 @@ function EventForm({
         </div>
       </div>
 
-      <MissingRequirements reasons={reasons} />
+      <MissingRequirements reasons={touched ? reasons : []} />
 
       {save.isError && (
         <p role="alert" className="text-destructive text-sm">

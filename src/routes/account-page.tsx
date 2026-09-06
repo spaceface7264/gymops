@@ -118,7 +118,11 @@ function NameCard() {
             savedText={t('auth.account.nameSaved')}
             failedText={t('auth.account.saveFailed')}
           />
-          <Button type="submit" disabled={updateName.isPending}>
+          <Button
+            type="submit"
+            className="w-full md:w-auto"
+            disabled={updateName.isPending}
+          >
             {updateName.isPending ? t('auth.account.saving') : t('auth.account.save')}
           </Button>
         </form>
@@ -180,7 +184,11 @@ function LanguageCard() {
             savedText={t('auth.account.languageSaved')}
             failedText={t('auth.account.saveFailed')}
           />
-          <Button type="submit" disabled={updateLocale.isPending}>
+          <Button
+            type="submit"
+            className="w-full md:w-auto"
+            disabled={updateLocale.isPending}
+          >
             {updateLocale.isPending ? t('auth.account.saving') : t('auth.account.save')}
           </Button>
         </form>
@@ -279,7 +287,11 @@ function PasswordCard() {
               }
             />
           )}
-          <Button type="submit" disabled={changePassword.isPending}>
+          <Button
+            type="submit"
+            className="w-full md:w-auto"
+            disabled={changePassword.isPending}
+          >
             {changePassword.isPending ? t('auth.account.saving') : t('auth.account.save')}
           </Button>
         </form>

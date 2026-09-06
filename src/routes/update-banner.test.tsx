@@ -49,7 +49,7 @@ describe('UpdateBanner', () => {
 
     await user.click(await screen.findByRole('button', { name: 'Restart to update' }))
 
-    expect(await screen.findByText(/could not be installed/)).toBeInTheDocument()
+    expect(await screen.findByText(/Couldn't install/)).toBeInTheDocument()
     expect(relaunch).not.toHaveBeenCalled()
   })
 })

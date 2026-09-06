@@ -2,7 +2,7 @@ import { ChevronDown, Plus, TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
-import { EmptyState, LoadingState, PageHeader } from '@/components'
+import { EmptyState, LoadingState, PageHeader, LoadError } from '@/components'
 import { Button } from '@/components/ui/button'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { Card } from '@/components/ui/card'
@@ -109,16 +109,13 @@ export function IncidentsPage() {
 
       {incidents.isPending && <LoadingState rows={5} />}
       {incidents.isError && (
-        <p role="alert" className="text-destructive text-sm">
-          {t('incidents.loadFailed')}
-        </p>
+        <LoadError
+          message={t('incidents.loadFailed')}
+          onRetry={() => void incidents.refetch()}
+        />
       )}
       {incidents.data?.length === 0 && (
-        <EmptyState
-          icon={TriangleAlert}
-          title={t('incidents.empty')}
-          action={reportAction}
-        />
+        <EmptyState icon={TriangleAlert} title={t('incidents.empty')} />
       )}
 
       <ul className="space-y-2">

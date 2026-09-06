@@ -8,6 +8,7 @@ import {
   LoadingState,
   PageHeader,
   StatusBadge,
+  LoadError,
 } from '@/components'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -122,9 +123,10 @@ export function GuidesPage() {
         <div className="space-y-3">
           {guides.isPending && <LoadingState rows={5} />}
           {guides.isError && (
-            <p role="alert" className="text-destructive text-sm">
-              {t('guides.loadFailed')}
-            </p>
+            <LoadError
+              message={t('guides.loadFailed')}
+              onRetry={() => void guides.refetch()}
+            />
           )}
           {guides.data && shown.length === 0 && (
             <EmptyState

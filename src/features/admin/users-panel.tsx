@@ -2,7 +2,7 @@ import { Users } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
-import { EmptyState, LoadingState, StatusBadge } from '@/components'
+import { EmptyState, LoadingState, StatusBadge, LoadError } from '@/components'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import {
@@ -98,9 +98,7 @@ export function UsersPanel() {
 
       {users.isPending && <LoadingState rows={6} />}
       {users.isError && (
-        <p role="alert" className="text-destructive text-sm">
-          {t('admin.loadFailed')}
-        </p>
+        <LoadError message={t('admin.loadFailed')} onRetry={() => void users.refetch()} />
       )}
 
       {users.data && (

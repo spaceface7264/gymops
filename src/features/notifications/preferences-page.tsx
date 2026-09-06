@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
-import { PageHeader } from '@/components'
+import { PageHeader, LoadError } from '@/components'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
@@ -17,7 +17,6 @@ import { DesktopNotificationOptIn } from './desktop-notification-opt-in'
 import { PushOptIn } from './push-opt-in'
 import {
   defaultPref,
-  notificationChannels,
   notificationTypes,
   useNotificationPrefs,
   useSetNotificationPref,
@@ -26,11 +25,17 @@ import {
   type NotificationType,
 } from './queries'
 
+/** The two channels a person can switch per kind. Email is not one of them:
+ *  it goes out for a high-severity incident and nothing else (spec §2.2), so
+ *  it is one honest switch under the table rather than a column of eight that
+ *  would do nothing (P7M-07). */
+const switchable: NotificationChannel[] = ['in_app', 'push']
+
 /**
- * `/notifications/preferences`: one row per kind of notification, one switch
- * per channel. Turning the inbox off for a type stops the row being written at
- * all (P5-02), which is why it is offered next to the two that only silence a
- * delivery.
+ * `/notifications/preferences`: one row per kind of notification, a switch for
+ * the inbox and one for push. Turning the inbox off for a type stops the row
+ * being written at all (P5-02), which is why it is offered next to the one
+ * that only silences a delivery.
  */
 export function NotificationPreferencesPage() {
   const { t } = useTranslation()
@@ -64,9 +69,10 @@ export function NotificationPreferencesPage() {
       {isDesktop() ? <DesktopNotificationOptIn /> : <PushOptIn />}
 
       {prefs.isError && (
-        <p role="alert" className="text-destructive text-sm">
-          {t('notifications.loadFailed')}
-        </p>
+        <LoadError
+          message={t('notifications.loadFailed')}
+          onRetry={() => void prefs.refetch()}
+        />
       )}
       {setPref.isError && (
         <p role="alert" className="text-destructive text-sm">
@@ -78,7 +84,7 @@ export function NotificationPreferencesPage() {
         <TableHeader>
           <TableRow>
             <TableHead scope="col">{t('notifications.typeColumn')}</TableHead>
-            {notificationChannels.map((channel) => (
+            {switchable.map((channel) => (
               <TableHead key={channel} scope="col">
                 {t(`notifications.channel.${channel}`)}
               </TableHead>
@@ -91,7 +97,7 @@ export function NotificationPreferencesPage() {
               <th scope="row" className="px-2 py-3 text-left align-middle font-normal">
                 {t(`notifications.type.${type}`)}
               </th>
-              {notificationChannels.map((channel) => (
+              {switchable.map((channel) => (
                 <TableCell key={channel}>
                   <Label htmlFor={`pref-${type}-${channel}`} className="sr-only">
                     {t('notifications.channelFor', {
@@ -111,6 +117,15 @@ export function NotificationPreferencesPage() {
           ))}
         </TableBody>
       </Table>
+
+      <label className="flex min-h-11 items-center justify-between gap-4">
+        <span>{t('notifications.emailHighSeverity')}</span>
+        <Switch
+          checked={effective('incident_reported').email}
+          disabled={prefs.isPending || setPref.isPending}
+          onCheckedChange={() => toggle('incident_reported', 'email')}
+        />
+      </label>
     </div>
   )
 }

@@ -50,9 +50,12 @@ describe('EmptyState', () => {
     ).toBeInTheDocument()
   })
 
-  it('drops the dashed border when bordered is false', () => {
-    const { container } = render(<EmptyState bordered={false} title="All caught up" />)
-    expect(container.firstElementChild?.className).not.toContain('border-dashed')
+  it('is a sentence, not a box: no border, and the icon only from md up', () => {
+    const { container } = render(
+      <EmptyState icon={TriangleAlert} title="All caught up" />,
+    )
+    expect(container.firstElementChild?.className).not.toContain('border')
+    expect(container.querySelector('svg')?.parentElement?.className).toContain('hidden')
   })
 })
 

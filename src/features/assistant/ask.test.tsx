@@ -281,7 +281,7 @@ describe('asking', () => {
     await userEvent.type(box, 'Chalk?{Enter}')
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      'The assistant could not answer. Try again in a moment.',
+      "The assistant couldn't answer. Try again in a moment.",
     )
     expect(box).toBeEnabled()
   })
