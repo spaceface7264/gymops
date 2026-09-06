@@ -119,6 +119,7 @@ gymops/
     seeds/                  local-only SQL loaded by `db reset`; never in `db push`
     tests/                  pgTAP RLS tests (every .sql here is run as a test)
     functions/              invite, notify, assistant, brp-sync
+    templates/              the invite and recovery mails (en + da), wired in config.toml
     seed.sql
   src-tauri/                desktop shell (Tauri 2; icons, capabilities, the Rust entry point)
   docs/                     the P7-07 manual walkthrough checklist

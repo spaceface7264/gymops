@@ -182,7 +182,7 @@ Legend: P1 = Phase 1 etc. Effort: S (< half day), M (1–2 days), L (3+ days).
 - Phone bottom bar: five primary tabs plus a More sheet, instead of nine entries scrolling sideways (noted in the facelift spec, P7C; needs `sheet` vendored, deferred from P7D).
 - Deferred from P7D (2026-09-04): `command`/cmdk for the chat @mention listbox and a global search palette; `progress` for checklist completion; `collapsible` for the guide category tree; `scroll-area` for the chat lists; `react-hook-form` (every form is `useState` + `MissingRequirements`, and that is fine).
 - Global "search anything" in the header: relocate `ContentSearch`, then add `search_vector` columns and branches for incidents, events, daily log and people; chat last.
-- Branded en/da auth mail templates — before the cutover. (Acknowledgement reminders were listed here as missing; `send_ack_reminders()` has raised them nightly since P5-02, confirmed by the P7-07 walkthrough on 2026-09-04.)
+- (Acknowledgement reminders were listed here as missing; `send_ack_reminders()` has raised them nightly since P5-02, confirmed by the P7-07 walkthrough on 2026-09-04. Branded auth mail templates were listed too and landed as P9-02.)
 - Assistant follow-ups: pgvector retrieval, live ops data, actions.
 
 ## Critical path
