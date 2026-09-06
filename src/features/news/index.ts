@@ -2,7 +2,7 @@ export { NewsFeed } from './news-feed'
 export { postDate } from './post-date'
 export { AcknowledgeButton, AckReport } from './acknowledgement'
 export { useTrackPostRead } from './use-track-post-read'
-export { UnreadNewsCard } from './unread-news-card'
+export { UnreadNewsSection } from './unread-news-section'
 export { PostDetailPage } from './post-detail'
 export { PostEditorPage } from './post-editor'
 export {

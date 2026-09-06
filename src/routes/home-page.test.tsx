@@ -107,9 +107,9 @@ const logEntry = (overrides: Row = {}): Row => ({
   ...overrides,
 })
 
-/** One card on the page, addressed by its title (`CardTitle` renders an `h2`). */
-const block = (title: string) =>
-  screen.getByText(title).closest('[data-slot="card"]') as HTMLElement
+/** One section of the page, addressed by its heading (`HomeSection` labels
+ *  its region by the `h2`). */
+const block = (title: string) => screen.getByRole('region', { name: title })
 
 beforeEach(() => {
   vi.useFakeTimers({ shouldAdvanceTime: true })
@@ -122,6 +122,47 @@ beforeEach(() => {
 afterEach(() => vi.useRealTimers())
 
 describe('HomePage', () => {
+  it('opens with one heading and one button for the next step', async () => {
+    tableRows.mockImplementation((table) =>
+      table === 'checklist_runs'
+        ? [
+            run({
+              id: 'run-done',
+              checklist_templates: { id: 'template-2', name: 'Evening close' },
+              checklist_run_items: [
+                {
+                  id: 'i',
+                  position: 1,
+                  label: 'Lights',
+                  required: true,
+                  done_at: '2026-09-02T15:00:00Z',
+                },
+              ],
+            }),
+            run(),
+          ]
+        : [],
+    )
+    renderWithProviders(<HomePage />)
+
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Right now' }),
+    ).toBeInTheDocument()
+    expect(
+      await screen.findByRole('link', { name: 'Continue Morning open' }),
+    ).toHaveAttribute('href', '/checklists')
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1)
+  })
+
+  it('points at the log when every checklist is done', async () => {
+    renderWithProviders(<HomePage />)
+
+    expect(await screen.findByRole('link', { name: 'Add to the log' })).toHaveAttribute(
+      'href',
+      '/daily-log',
+    )
+  })
+
   it('lists what the reader has not seen, confirmations first', async () => {
     postRows.mockReturnValue([
       post({ id: 'post-unread', title: 'Setting day moved' }),

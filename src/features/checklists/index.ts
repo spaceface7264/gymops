@@ -1,4 +1,4 @@
-export { TodaysChecklistsCard } from './today-card'
+export { TodaysChecklistsSection } from './today-section'
 export { ChecklistHistoryCard } from './history-card'
 export { ChecklistRunsPage } from './runs-page'
 export { ChecklistTemplatesPage } from './templates-page'

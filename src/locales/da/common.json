@@ -603,6 +603,10 @@
       "title": "Nyheder til dig",
       "unread": "Ulæst"
     },
+    "next": {
+      "continue": "Fortsæt {{name}}"
+    },
+    "title": "Lige nu",
     "today": {
       "openChecklists": "Åbn tjeklisterne",
       "title": "Dagens tjeklister"
