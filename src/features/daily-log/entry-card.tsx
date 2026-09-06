@@ -94,7 +94,7 @@ export function EntryCard({
           </Select>
           <Textarea
             aria-label={t('dailyLog.entry')}
-            className="min-h-20 text-sm"
+            className="min-h-20"
             value={body}
             onChange={(event) => setBody(event.target.value)}
           />

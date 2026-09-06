@@ -59,7 +59,7 @@ export function CommentThread({
         >
           <Textarea
             aria-label={t('incidents.comment')}
-            className="min-h-16 text-sm"
+            className="min-h-16"
             value={body}
             onChange={(event) => setBody(event.target.value)}
           />
