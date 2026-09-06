@@ -55,7 +55,7 @@ only. `supabase/functions/.env` holds a local-only development set for
 
 ## Deployment
 
-The web app is a static bundle on **Cloudflare Pages** (project `gymops`,
+The web app is a static bundle on **Cloudflare Pages** (project `gymops-cjw` — `gymops` was taken —
 production branch `main`, `npm run build` → `dist/`, `public/_redirects` is the
 SPA rewrite). The four `VITE_*` values are Pages environment variables; every
 push to `main` deploys, every PR gets a preview URL. The hosted Supabase project
