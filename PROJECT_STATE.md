@@ -113,7 +113,7 @@ container out. `supabase stop && supabase start` brings it back.
 | P8 AI assistant (V1.5)   | ⬜ Not started | Needs Anthropic API key in Supabase secrets.    |
 | P8 AI assistant (V1.5)   | 🔄 In progress | Branch `assistant` (worktree `.claude/worktrees/assistant`), plan `docs/superpowers/plans/2026-09-04-assistant.md`. Needs Anthropic API key in Supabase secrets for P8-03. |
 | P8 AI assistant (V1.5)   | ✅ Complete    | P8-01 … P8-06 on `assistant` (plan `docs/superpowers/plans/2026-09-04-assistant.md`). Built and verified without an Anthropic key; the first real answer is the one line left (Blockers). |
-| P9 Hosted cutover        | 🔄 in progress | P9-01 … P9-04 done 2026-09-06; origin `https://gymops-cjw.pages.dev`. Plan `docs/superpowers/plans/2026-09-05-cutover.md` (2026-09-05): Cloudflare Pages on the default `pages.dev` origin for the pilot, plus P9-01 (admins reach gym channels) and P9-02 (branded auth mail). |
+| P9 Hosted cutover        | 🔄 in progress | P9-01 … P9-06 done 2026-09-06; origin `https://gymops-cjw.pages.dev`; next P9-07 (first superadmin). Plan `docs/superpowers/plans/2026-09-05-cutover.md` (2026-09-05): Cloudflare Pages on the default `pages.dev` origin for the pilot, plus P9-01 (admins reach gym channels) and P9-02 (branded auth mail). |
 
 ## Task status
 
@@ -229,7 +229,8 @@ Update this list as work begins:
 | P9-02 | ✅ done | 2026-09-06 | 2026-09-06 | `supabase/templates/invite.html` and `recovery.html`, wired as `[auth.email.template.invite]` / `[auth.email.template.recovery]` in `config.toml` with bilingual subjects. One table-layout mail each, Danish first and English below, the violet pill button on `{{ .ConfirmationURL }}` twice and the raw link under it; sign-up, magic link and email change keep the defaults (never sent). Verified in Chrome via Playwright with Mailpit: the reset mail for `staff@` carried the new subject, Danish above English, and its button opened `/reset-password` where a new password was saved; the invite for `pilot@` (sent through `functions serve`) carried its subject and its link reached `/auth/callback` → Continue in the browser → `/accept-invite` → signed in. Two things the check tripped over, worth knowing for P9-07: GoTrue refuses a reset to the same password (`New password should be different`), and the local `email_sent = 2` per hour rate limit is hit by the third mail of an hour (a refused invite leaves no row: the function deletes its `invites` row when the mail fails, but a *stale pending* row from an interrupted run does block the next attempt with 409). The hosted project needs the same two files pasted into Authentication → Email Templates (P9-05). |
 | P9-03 | ✅ done | 2026-09-06 | 2026-09-06 | `public/_redirects` (`/* /index.html 200`) ships in `dist/`; README gained a Deployment section, CLAUDE.md the one line, spec §3 the hosting line and §4 the Vercel/Netlify row. Rami created the Pages project from the dashboard (the first Create screen is the Workers flow with `npx wrangler deploy` — Pages is its own tab; the name `gymops` was taken, so the project is **`gymops-cjw`**): Git-connected to `spaceface7264/gymops`, branch `main`, `npm run build` → `dist`, `NODE_VERSION=20` and the `VITE_*` variables for Production and Preview. Two failed builds on the way: the build-command field had kept its grey vitepress placeholder (`npx vitepress build` → "could not determine executable"), and the first successful build had no variables baked in (Vite reads `VITE_*` at build time — every variable change needs a redeploy). **Pilot origin: `https://gymops-cjw.pages.dev`.** Checked from the terminal: `/login` and `/chat/anything` answer 200 with the app, `manifest.webmanifest` and `sw.js` are served, the bundle carries the hosted Supabase URL and publishable key. Sign-in waits for P9-05. |
 | P9-04 | ✅ done | 2026-09-06 | 2026-09-06 | The hosted schema. `supabase link` (no DB password needed: the CLI's login role goes through the Management API), `db push --dry-run` listed the 35 migrations and no seeds, Rami ran `db push` (the auto-mode classifier refuses writes against hosted from Claude's shell) — 35 applied. Checked with `db query --linked`: pg_cron 1.6.4, pg_net and pgcrypto present (the migrations created the first two; pg_graphql is absent and unused); `storage.buckets` was empty, so Rami ran the three-bucket insert; 7 storage policies; both cron jobs registered on `postgres`. `gen types --project-id` vs the committed types: no drift. The Supabase MCP connection still points at the legacy project, so it was no help here. The CLI needs its keychain token — from Claude's shell it hangs on the keychain prompt unless macOS allows it, so hosted CLI commands run in the background with their output read from a file. |
-
+| P9-05 | ✅ done | 2026-09-06 | 2026-09-06 | Hosted auth mirrored from `config.toml` in the dashboard by Rami: email provider on with confirm and secure change, sign-ups off (the toggle now lives under Sign In / Providers → User Signups), password 10 + lower/upper/digits, Site URL and the six redirect URLs, emails per hour 100, custom SMTP through Resend, the two templates pasted with their bilingual subjects. Checked from outside through `/auth/v1/settings` with the publishable key. **Sender is `onboarding@resend.dev` for now** — Resend's sandbox address, delivered only to the Resend account's own mailbox — because no sending domain is verified yet; `boulders.dk` needs its DNS records before the pilot (Known gaps). |
+| P9-06 | ✅ done | 2026-09-06 | 2026-09-06 | Production VAPID pair generated (`.env.hosted.local`, gitignored). The eight function secrets set and the three functions deployed by Rami from the worktree (the classifier blocks these writes from Claude's shell; a `<placeholder>` left in a zsh command line is a file redirect and kills the whole `secrets set`). Vault: `notify_functions_url` + `notify_service_key`. `secrets list`, `functions list` and `vault.decrypted_secrets` read back as expected. Smoke test with a JWT waits for the first user (P9-07). |
 
 Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
 
@@ -253,6 +254,7 @@ Status values: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked
 
 | Gap | Why it matters | Suggested home |
 | --- | --- | --- |
+| No verified sending domain in Resend (P9-05, 2026-09-06) | Hosted auth mail and `notify` emails go out as `onboarding@resend.dev`, which Resend delivers only to the Resend account's own mailbox — an invite to anyone else is refused. | Before the pilot: add `boulders.dk` (or a subdomain) in Resend → Domains, set the DKIM/SPF records, then change the SMTP sender and `NOTIFY_FROM` to `noreply@boulders.dk`. |
 | ~~`supabase/functions/invite` is outside every gate~~ | — | **Fixed 2026-09-02**: a `functions` CI job runs `deno check`, `deno lint` and `deno fmt --check`. A behavioural test still waits for P5-03. |
 | ~~Nothing catches `database.types.ts` drift~~ | — | **Fixed 2026-09-02**: the database job regenerates the types and fails on a diff. It caught drift on its first run. |
 | ~~Search has no ranking~~; the feed sorts drafts above published news; signed image URLs expire at 1h against a 55min stale time; ~~the vendored `dialog.tsx` carries two untranslated "Close" strings~~ (fixed by P7D-01: `t('app.close')`); guides have no acknowledgement report | Each is small and none is a correctness bug | Fold into P3 polish or take them with P5-06 (Playwright) |
@@ -292,7 +294,7 @@ locally is P5-03 (`notify`, the database webhook, Resend, VAPID).
 - [x] ~~Confirm which hosted project is GymOps.~~ **`ngcqpftfqepvhpjikaqq`** (2026-09-02).
       `ooikemajridlhceejgmo` is a legacy project — not GymOps.
 - [x] ~~Confirm the project runs Postgres 17.~~ **17.6.1.166** (2026-09-06, `projects list`).
-- [ ] Create the Resend account and get the API key.
+- [x] ~~Create the Resend account and get the API key.~~ Done (2026-09-06) — key `gymops-hosted`. **No sending domain yet**: mail goes out as `onboarding@resend.dev`, which Resend delivers only to the account owner's address; `boulders.dk` must be added under Resend → Domains and its DNS records set before the pilot.
 
 **Schema and code**
 
@@ -306,35 +308,27 @@ locally is P5-03 (`notify`, the database webhook, Resend, VAPID).
 **Auth settings to mirror from `supabase/config.toml`** (the dashboard is a separate source
 of truth; nothing in config.toml applies to a hosted project)
 
-- [ ] Sign-ups **off** (`[auth] enable_signup = false`) — invite-only.
-- [ ] Email provider **on** (`[auth.email] enable_signup = true`). Turning this off kills
-      password login; it cost a debugging session in P1-09.
-- [ ] `minimum_password_length = 10` and `lower_upper_letters_digits`. `checkPassword()` in
-      `src/features/auth/password.ts` mirrors these — a mismatch means users see GoTrue's
-      untranslated error instead of ours.
-- [ ] Site URL = the deployed web origin, and the redirect allow-list must include
-      `/auth/callback`, `/reset-password`, `/accept-invite` and `gymops://auth/callback`.
-- [ ] Raise `email_sent` well above 2/hour; keep anonymous sign-ins, manual linking, MFA and
-      every external provider off.
-- [ ] Point SMTP at Resend and set the sender name and admin address.
+- [x] ~~Sign-ups **off** (`[auth] enable_signup = false`) — invite-only.~~ Off (2026-09-06) — checked through `/auth/v1/settings` (`disable_signup: true`).
+- [x] ~~Email provider **on** (`[auth.email] enable_signup = true`). Turning this off kills~~ On, confirm email on, secure email change on (2026-09-06) (`external.email: true`, `mailer_autoconfirm: false`).
+
+- [x] ~~`minimum_password_length = 10` and `lower_upper_letters_digits`. `checkPassword()` in~~ Set in the dashboard (2026-09-06).
+
+- [x] ~~Site URL = the deployed web origin, and the redirect allow-list must include~~ Site URL `https://gymops-cjw.pages.dev`; redirects: the origin, `/auth/callback`, `/reset-password`, `/accept-invite`, `gymops://auth/callback`, `https://*.gymops-cjw.pages.dev/**` (2026-09-06).
+
+- [x] ~~Raise `email_sent` well above 2/hour; keep anonymous sign-ins, manual linking, MFA and~~ Emails per hour 100; anonymous sign-ins and manual linking off (2026-09-06).
+
+- [x] ~~Point SMTP at Resend and set the sender name and admin address.~~ Custom SMTP `smtp.resend.com:465`, user `resend`, sender `GymOps <onboarding@resend.dev>` until the domain is verified (2026-09-06).
 
 **Secrets** (Supabase secrets and GitHub Actions secrets only, per spec §5)
 
-- [ ] Service-role key for the `invite` function (P2-03).
-- [ ] `RESEND_API_KEY`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`,
-      `SITE_URL` and `NOTIFY_FROM` as function secrets (P5-03). Generate the VAPID pair
-      with `npx web-push generate-vapid-keys`; the local pair in
-      `supabase/functions/.env` is a development pair and must not be reused. The
-      public key also goes to the web build as `VITE_VAPID_PUBLIC_KEY` (P5-05) — the
-      two must be the same pair, or every subscription is refused.
-- [ ] The webhook is **not** configured in the dashboard: `dispatch_notification()`
-      reads Vault, so run `select vault.create_secret('https://<ref>.supabase.co/functions/v1',
-      'notify_functions_url')` and the same for `notify_service_key` with the hosted
-      service role key. Until both exist the inbox fills and nothing is pushed or emailed.
+- [x] ~~Service-role key for the `invite` function (P2-03).~~ Injected by the platform as `SUPABASE_SERVICE_ROLE_KEY`; nothing to set (2026-09-06).
+- [x] ~~`RESEND_API_KEY`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`,~~ All set (2026-09-06) with `secrets set`: `SITE_URL`, `RESEND_API_KEY`, `RESEND_API_URL`, `NOTIFY_FROM`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `ANTHROPIC_API_KEY`. The production VAPID pair lives in `supabase/functions/.env.hosted.local` (gitignored); public key `BKCY1Ogezq4wfUIB8WvThCNaT6u3K_W1CanBXZ40_-5DV_1AEC3NvSLYDb5L6mqhAusptrtXgt3SZLsiSEwvRHo`.
+
+- [x] ~~The webhook is **not** configured in the dashboard: `dispatch_notification()`~~ Vault holds `notify_functions_url` and `notify_service_key` (the legacy `service_role` JWT) (2026-09-06). First attempt stored the literal placeholder; fixed with `vault.update_secret(id, …)`.
+
 - [ ] Verify the Resend sending domain before the first high-severity incident: an
       unverified domain answers 403 and `notify` records the email as `failed`.
-- [ ] `ANTHROPIC_API_KEY` as a function secret, then `supabase functions deploy assistant`
-      (P8-03). `SITE_URL` is what the assistant's channel replies link sources with.
+- [x] ~~`ANTHROPIC_API_KEY` as a function secret, then `supabase functions deploy assistant`~~ Set, and `invite`, `notify`, `assistant` deployed ACTIVE with `verify_jwt` (2026-09-06); each answers 401 without a JWT. Anthropic credits still pending.
 
 **First user**
 
